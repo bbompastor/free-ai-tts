@@ -152,6 +152,59 @@
       border: 1px solid rgba(139, 92, 246, 0.3);
     }
 
+    .btn-coffee-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: #facc15;
+      color: #090e1a;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(250, 204, 21, 0.3);
+      transition: all 0.15s ease;
+    }
+
+    .btn-coffee-nav:hover {
+      background: #fde047;
+      transform: translateY(-1px);
+    }
+
+    .floating-coffee {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #facc15;
+      color: #090e1a;
+      padding: 11px 20px;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(250, 204, 21, 0.4);
+      z-index: 100;
+      transition: all 0.2s ease;
+    }
+
+    .floating-coffee:hover {
+      transform: translateY(-2px) scale(1.03);
+      background: #fde047;
+    }
+
+    @media (max-width: 600px) {
+      .floating-coffee {
+        bottom: 16px;
+        right: 16px;
+        padding: 9px 15px;
+        font-size: 0.82rem;
+      }
+    }
+
     /* Main Container */
     main {
       flex: 1;
@@ -584,6 +637,9 @@
       <div class="nav-badges">
         <span class="badge badge-private">🔒 100% Private (WASM)</span>
         <span class="badge badge-free">⚡ Zero Limits</span>
+        <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="btn-coffee-nav">
+          ☕ Buy Me a Coffee
+        </a>
       </div>
     </div>
   </nav>
@@ -923,5 +979,10 @@ Count every valid IP address across the extracted text and output the addresses 
       });
     });
   </script>
+
+  <!-- Floating Buy Me a Coffee Badge -->
+  <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="floating-coffee" title="Support PureTTS on Buy Me a Coffee">
+    <span>☕</span> Buy me a coffee
+  </a>
 </body>
 </html>
