@@ -112,15 +112,14 @@
       text-decoration: none;
     }
 
-    .brand-icon {
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      width: 34px;
-      height: 34px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      object-fit: cover;
+      box-shadow: 0 0 14px rgba(139, 92, 246, 0.45);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      display: block;
     }
 
     .nav-badges {
@@ -579,7 +578,7 @@
   <nav>
     <div class="nav-container">
       <a href="#" class="brand">
-        <div class="brand-icon">🎙️</div>
+        <img src="avatar.jpg" alt="PureTTS Logo" class="brand-logo" />
         <span>PureTTS</span>
       </a>
       <div class="nav-badges">
