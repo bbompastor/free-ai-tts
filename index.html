@@ -596,22 +596,18 @@
     <section class="app-card">
       <div class="presets-row">
         <span class="preset-label">Try an example:</span>
-        <button class="chip-btn" data-preset="sre">🎧 Tech Interview</button>
+        <button class="chip-btn" data-preset="welcome">👋 Welcome</button>
         <button class="chip-btn" data-preset="story">📖 Audiobook</button>
         <button class="chip-btn" data-preset="youtube">📱 Creator Intro</button>
+        <button class="chip-btn" data-preset="sre">🎧 Tech Interview</button>
       </div>
 
       <div class="textarea-wrapper">
-        <textarea id="textInput" placeholder="Paste or type your text here... There are no character limits!">This phone screen for a senior site reliability engineering role is a short, hands-on scripting exercise in four steps, each building on the previous one. Use whichever language you are most comfortable with.
+        <textarea id="textInput" placeholder="Paste or type your text here... There are no character limits!">Welcome to OpenVoice AI! This is a completely free, unlimited text-to-speech converter that runs 100% inside your browser.
 
-You are given a URL and a request header. Send an HTTP GET request to the URL with that header and extract the value of a specified field from the response.
-From the extracted text, find all valid IP addresses.
-You are given a second URL. Extract the same field from its response.
-Count every valid IP address across the extracted text and output the addresses sorted by count.
+Because all audio synthesis is powered directly by your device's processor using WebGPU and WebAssembly, your text and generated audio never leave your computer. There are no character limits, no daily credits, and no signups required.
 
-Constraints and Clarifications:
-The interviewer supplies the URLs, the header's name and value, and the name of the field. The source does not say what the header carries; an API key or an authorization token is a common case.
-Assume the response body is JSON and that the field holds free text in which IP addresses appear among other words and numbers. The source does not show the response format, so confirm it before parsing.</textarea>
+Paste your script, article, or study notes here, choose your preferred voice, and click convert to create studio-quality speech!</textarea>
         <div class="text-stats">
           <span id="charCount">0 characters</span>
           <span id="wordCount">0 words</span>
@@ -803,6 +799,11 @@ Assume the response body is JSON and that the field holds free text in which IP 
 
     // Preset prompts
     const PRESETS = {
+      welcome: `Welcome to OpenVoice AI! This is a completely free, unlimited text-to-speech converter that runs 100% inside your browser.
+
+Because all audio synthesis is powered directly by your device's processor using WebGPU and WebAssembly, your text and generated audio never leave your computer. There are no character limits, no daily credits, and no signups required.
+
+Paste your script, article, or study notes here, choose your preferred voice, and click convert to create studio-quality speech!`,
       sre: `This phone screen for a senior site reliability engineering role is a short, hands-on scripting exercise in four steps, each building on the previous one. Use whichever language you are most comfortable with.
 
 You are given a URL and a request header. Send an HTTP GET request to the URL with that header and extract the value of a specified field from the response.
