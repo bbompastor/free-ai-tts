@@ -1,0 +1,22 @@
+# robots.txt for PureTTS (https://puretts.com)
+
+User-agent: *
+Allow: /
+
+# Explicitly allow AI search crawlers (Gemini, ChatGPT, Claude, Perplexity)
+User-agent: Google-Extended
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+Sitemap: https://puretts.com/sitemap.xml
