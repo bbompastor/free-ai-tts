@@ -1031,7 +1031,7 @@ Paste your script, article, or study notes here, choose your preferred voice, an
           <label for="quantSelect">Synthesis Engine & Audio Fidelity</label>
           <select id="quantSelect">
             <option value="wasm" selected>💻 CPU Safe Mode (WASM q8 · 100% Fluid & Stable ~85 MB)</option>
-            <option value="webgpu">🚀 WebGPU Studio (fp16 · Hardware Accelerated ~156 MB)</option>
+            <option value="webgpu">🚀 WebGPU Studio (fp32 · Crystal-Clear & Accelerated)</option>
           </select>
           <div id="longTextTip" class="speed-tip" style="display:block;">💡 CPU Safe Mode: Recommended for laptops & Macs. Zero UI freeze, rock-solid stability.</div>
           <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted);">
@@ -1224,7 +1224,7 @@ Paste your script, article, or study notes here, choose your preferred voice, an
           longTextTip.textContent = "💡 CPU Safe Mode: Recommended for laptops & Macs. Zero UI freeze, rock-solid stability.";
           longTextTip.style.display = "block";
         } else {
-          longTextTip.textContent = "🚀 WebGPU Studio: Hardware accelerated fp16, ultra-fast generation.";
+          longTextTip.textContent = "⚡ WebGPU Studio: Hardware accelerated fp32, crystal-clear audio.";
           longTextTip.style.display = "block";
         }
       }
