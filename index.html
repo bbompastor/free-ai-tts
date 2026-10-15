@@ -1030,10 +1030,10 @@ Paste your script, article, or study notes here, choose your preferred voice, an
         <div>
           <label for="quantSelect">Synthesis Engine & Audio Fidelity</label>
           <select id="quantSelect">
-            <option value="webgpu" selected>🚀 WebGPU (Studio fp32 · Crystal Clear & Fast)</option>
-            <option value="wasm">💻 CPU Safe Mode (WASM q8 · Clean & Lightweight ~85 MB)</option>
+            <option value="wasm" selected>💻 CPU Safe Mode (WASM q8 · 100% Fluid & Stable ~85 MB)</option>
+            <option value="webgpu">🚀 WebGPU Studio (fp16 · Hardware Accelerated ~156 MB)</option>
           </select>
-          <div id="longTextTip" class="speed-tip" style="display:block;">⚡ WebGPU Studio Mode: 100% crystal-clear fp32 audio, hardware-accelerated</div>
+          <div id="longTextTip" class="speed-tip" style="display:block;">💡 CPU Safe Mode: Recommended for laptops & Macs. Zero UI freeze, rock-solid stability.</div>
           <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted);">
             <input type="checkbox" id="streamToggle" style="accent-color: var(--primary); cursor: pointer;" />
             <label for="streamToggle" style="cursor: pointer; margin: 0; font-weight: normal; color: #cbd5e1;">Play audio in real-time while buffering (Instant Preview)</label>
@@ -1221,10 +1221,10 @@ Paste your script, article, or study notes here, choose your preferred voice, an
 
       if (longTextTip && quantSelect) {
         if (quantSelect.value === "wasm") {
-          longTextTip.textContent = "💡 CPU Safe Mode: ~85 MB download, rock-solid CPU synthesis";
+          longTextTip.textContent = "💡 CPU Safe Mode: Recommended for laptops & Macs. Zero UI freeze, rock-solid stability.";
           longTextTip.style.display = "block";
         } else {
-          longTextTip.textContent = "⚡ WebGPU Studio Mode: 100% crystal-clear fp32 audio, hardware-accelerated";
+          longTextTip.textContent = "🚀 WebGPU Studio: Hardware accelerated fp16, ultra-fast generation.";
           longTextTip.style.display = "block";
         }
       }
