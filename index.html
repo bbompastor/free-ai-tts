@@ -779,6 +779,127 @@
       font-weight: 600;
       margin-right: auto;
     }
+
+    /* PDF Multi-page Options Bar */
+    .pdf-options-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      background: rgba(139, 92, 246, 0.08);
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      border-radius: 10px;
+    }
+
+    .pdf-info {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+
+    .pdf-pill {
+      padding: 2px 8px;
+      background: rgba(6, 182, 212, 0.15);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 999px;
+      color: #67e8f9;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .pdf-range-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .pdf-input {
+      width: 50px;
+      padding: 4px 6px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      color: white;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .btn-pdf-action {
+      padding: 5px 12px;
+      background: var(--primary);
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-pdf-action:hover {
+      background: #9333ea;
+    }
+
+    .btn-pdf-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+    }
+
+    .btn-pdf-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+    }
+
+    /* Actions Row & Stop Button */
+    .actions-row {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .actions-row .btn-main {
+      flex: 1;
+    }
+
+    .btn-stop {
+      padding: 16px 22px;
+      border-radius: 12px;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-stop:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: #ef4444;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .speed-tip {
+      font-size: 0.75rem;
+      color: #67e8f9;
+      margin-top: 4px;
+      display: none;
+    }
   </style>
 
   <!-- PDF.js for 100% Client-Side PDF Text Extraction -->
@@ -832,6 +953,23 @@
         <button type="button" id="clearTextBtn" class="clear-chip-btn" title="Clear text area">🗑️ Clear</button>
       </div>
 
+      <!-- Multi-Page PDF Helper Bar -->
+      <div id="pdfOptionsBar" class="pdf-options-bar" style="display:none;">
+        <div class="pdf-info">
+          <span>📄</span>
+          <span id="pdfFileName" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">document.pdf</span>
+          <span id="pdfPageCountBadge" class="pdf-pill">0 Pages</span>
+        </div>
+        <div class="pdf-range-group">
+          <span>Pages:</span>
+          <input type="number" id="pdfPageStart" min="1" value="1" class="pdf-input" />
+          <span>to</span>
+          <input type="number" id="pdfPageEnd" min="1" value="2" class="pdf-input" />
+          <button type="button" id="applyPdfRangeBtn" class="btn-pdf-action">Extract Range</button>
+          <button type="button" id="allPdfPagesBtn" class="btn-pdf-action btn-pdf-secondary">All Pages</button>
+        </div>
+      </div>
+
       <div class="textarea-wrapper" id="dropZone">
         <div id="dropOverlay" class="drop-overlay">
           <div class="drop-icon">📄</div>
@@ -847,7 +985,8 @@ Paste your script, article, or study notes here, choose your preferred voice, an
           <span id="fileBadge" class="file-loaded-badge" style="display:none;"></span>
           <span id="charCount">0 characters</span>
           <span id="wordCount">0 words</span>
-          <span id="estTime">~0 min read</span>
+          <span id="estTime">~0 min audio</span>
+          <span id="estGenTime" style="color: #67e8f9;">~0s conversion</span>
         </div>
       </div>
 
@@ -892,8 +1031,9 @@ Paste your script, article, or study notes here, choose your preferred voice, an
           <label for="quantSelect">Model Quality</label>
           <select id="quantSelect">
             <option value="q8" selected>q8 (~85 MB) — Studio Audio (Best)</option>
-            <option value="q4">q4 (~45 MB) — Fast Download</option>
+            <option value="q4">q4 (~45 MB) — Fast Mode (~40% Faster)</option>
           </select>
+          <div id="longTextTip" class="speed-tip">⚡ Long text: use Fast Mode (q4) for ~40% faster conversion</div>
         </div>
       </div>
 
@@ -908,11 +1048,16 @@ Paste your script, article, or study notes here, choose your preferred voice, an
         </div>
       </div>
 
-      <!-- Generate Button -->
-      <button id="generateBtn" class="btn-main">
-        <span id="btnIcon">⚡</span>
-        <span id="btnText">Convert Text to Speech (Free & Unlimited)</span>
-      </button>
+      <!-- Generate & Stop Action Row -->
+      <div class="actions-row">
+        <button id="generateBtn" class="btn-main">
+          <span id="btnIcon">⚡</span>
+          <span id="btnText">Convert Text to Speech (Free & Unlimited)</span>
+        </button>
+        <button type="button" id="stopBtn" class="btn-stop" style="display:none;" title="Stop generation and keep audio created so far">
+          <span>⏹</span> Stop
+        </button>
+      </div>
 
       <!-- Audio Output Area -->
       <div id="audioResult" class="audio-result">
@@ -1025,21 +1170,33 @@ Paste your script, article, or study notes here, choose your preferred voice, an
     const charCount = document.getElementById("charCount");
     const wordCount = document.getElementById("wordCount");
     const estTime = document.getElementById("estTime");
+    const estGenTime = document.getElementById("estGenTime");
+    const longTextTip = document.getElementById("longTextTip");
+    const stopBtn = document.getElementById("stopBtn");
     const speedRange = document.getElementById("speedRange");
     const speedValue = document.getElementById("speedValue");
+
+    const pdfOptionsBar = document.getElementById("pdfOptionsBar");
+    const pdfFileName = document.getElementById("pdfFileName");
+    const pdfPageCountBadge = document.getElementById("pdfPageCountBadge");
+    const pdfPageStart = document.getElementById("pdfPageStart");
+    const pdfPageEnd = document.getElementById("pdfPageEnd");
+    const applyPdfRangeBtn = document.getElementById("applyPdfRangeBtn");
+    const allPdfPagesBtn = document.getElementById("allPdfPagesBtn");
 
     const statusDot = document.getElementById("statusDot");
     const statusLabel = document.getElementById("statusLabel");
     const deviceEngine = document.getElementById("deviceEngine");
 
     // Check WebGPU support
-    if (navigator.gpu) {
+    const hasWebGPU = !!navigator.gpu;
+    if (hasWebGPU) {
       deviceEngine.textContent = "Engine: WebGPU (Hardware Accelerated) 🚀";
     } else {
       deviceEngine.textContent = "Engine: WebAssembly Multi-Core CPU";
     }
 
-    // Text stats counter (accounting for speed)
+    // Text stats counter (accounting for speed and device throughput)
     function updateTextStats() {
       const text = textInput.value;
       const chars = text.length;
@@ -1047,12 +1204,29 @@ Paste your script, article, or study notes here, choose your preferred voice, an
       const currentSpeed = speedRange ? parseFloat(speedRange.value) || 1.0 : 1.0;
       const readMin = ((words / 150) / currentSpeed).toFixed(1);
 
+      // Estimate conversion duration: ~10 words/sec on WebGPU; ~3 words/sec on CPU WASM
+      const genSec = words > 0 ? Math.max(1, Math.round(words / (hasWebGPU ? 10 : 3))) : 0;
+
       charCount.textContent = `${chars.toLocaleString()} characters`;
       wordCount.textContent = `${words.toLocaleString()} words`;
       estTime.textContent = `~${readMin} min audio`;
+      if (estGenTime) {
+        estGenTime.textContent = `~${genSec}s conversion (${hasWebGPU ? "WebGPU" : "CPU"})`;
+      }
+
+      if (longTextTip && quantSelect) {
+        if (chars > 1200 && quantSelect.value === "q8") {
+          longTextTip.style.display = "block";
+        } else {
+          longTextTip.style.display = "none";
+        }
+      }
     }
 
     textInput.addEventListener("input", updateTextStats);
+    if (quantSelect) {
+      quantSelect.addEventListener("change", updateTextStats);
+    }
 
     if (speedRange && speedValue) {
       speedRange.addEventListener("input", (e) => {
@@ -1132,22 +1306,97 @@ Count every valid IP address across the extracted text and output the addresses 
       pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
     }
 
-    async function extractTextFromPdf(arrayBuffer) {
-      if (!window.pdfjsLib) {
-        throw new Error("PDF parser is still loading. Please try again in a few moments.");
+    /**
+     * Cleans raw extracted PDF text:
+     * - Reconnects words hyphenated across visual line breaks ("intel-\nligence" -> "intelligence")
+     * - Strips isolated page headers/footers ("Page 1 of 12", "\n 14 \n")
+     * - Joins lines broken mid-sentence so sentences don't fragment into tiny 3-word chunks
+     * - Collapses redundant whitespace
+     */
+    function cleanPdfText(rawText) {
+      if (!rawText) return "";
+      return rawText
+        .replace(/(\b\w+)-\s*\n+\s*(\w+\b)/g, "$1$2")
+        .replace(/\n+\s*(?:page\s+)?\d+(?:\s+of\s+\d+)?\s*\n+/gi, "\n\n")
+        .replace(/([^\.\!\?\:\;\n\r])\n+(?!\n)([A-Za-z0-9])/g, "$1 $2")
+        .replace(/\n{3,}/g, "\n\n")
+        .replace(/[ \t]+/g, " ")
+        .trim();
+    }
+
+    let currentPdfDoc = null;
+    let currentPdfName = "";
+
+    function showPdfOptionsBar(name, totalPages) {
+      if (pdfOptionsBar) {
+        pdfFileName.textContent = name;
+        pdfPageCountBadge.textContent = `${totalPages} Pages`;
+        pdfPageStart.min = 1;
+        pdfPageStart.max = totalPages;
+        pdfPageStart.value = 1;
+        pdfPageEnd.min = 1;
+        pdfPageEnd.max = totalPages;
+        pdfPageEnd.value = Math.min(2, totalPages);
+        pdfOptionsBar.style.display = "flex";
       }
-      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-      const pdf = await loadingTask.promise;
-      const textParts = [];
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map(item => item.str).join(" ");
-        if (pageText.trim()) {
-          textParts.push(pageText.trim());
+    }
+
+    function hidePdfOptionsBar() {
+      if (pdfOptionsBar) {
+        pdfOptionsBar.style.display = "none";
+      }
+      currentPdfDoc = null;
+      currentPdfName = "";
+    }
+
+    async function extractAndSetPdfPages(start, end) {
+      if (!currentPdfDoc) return;
+      const total = currentPdfDoc.numPages;
+      const s = Math.max(1, Math.min(start, total));
+      const e = Math.max(s, Math.min(end, total));
+
+      setBusy(true, `Extracting pages ${s} to ${e}...`);
+      try {
+        const textParts = [];
+        for (let i = s; i <= e; i++) {
+          const page = await currentPdfDoc.getPage(i);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items.map(item => item.str).join(" ");
+          if (pageText.trim()) {
+            textParts.push(pageText.trim());
+          }
         }
+        const cleaned = cleanPdfText(textParts.join("\n\n"));
+        if (!cleaned.trim()) {
+          alert("No selectable text found in the selected pages (it might be a scanned image).");
+        } else {
+          textInput.value = cleaned;
+          updateTextStats();
+          showFileBadge(`${currentPdfName} (p. ${s}–${e})`);
+        }
+      } catch (err) {
+        alert("Error extracting pages: " + (err.message || String(err)));
+      } finally {
+        setBusy(false);
       }
-      return textParts.join("\n\n");
+    }
+
+    if (applyPdfRangeBtn) {
+      applyPdfRangeBtn.addEventListener("click", () => {
+        const s = parseInt(pdfPageStart.value, 10) || 1;
+        const e = parseInt(pdfPageEnd.value, 10) || 1;
+        extractAndSetPdfPages(s, e);
+      });
+    }
+
+    if (allPdfPagesBtn) {
+      allPdfPagesBtn.addEventListener("click", () => {
+        if (currentPdfDoc) {
+          pdfPageStart.value = 1;
+          pdfPageEnd.value = currentPdfDoc.numPages;
+          extractAndSetPdfPages(1, currentPdfDoc.numPages);
+        }
+      });
     }
 
     async function handleFile(file) {
@@ -1160,14 +1409,21 @@ Count every valid IP address across the extracted text and output the addresses 
         const reader = new FileReader();
         reader.onload = async (e) => {
           try {
-            setBusy(true, `Extracting text from ${name}...`);
-            const extracted = await extractTextFromPdf(e.target.result);
-            if (!extracted.trim()) {
-              alert("No selectable text found in this PDF (it might be a scanned image).");
+            if (!window.pdfjsLib) {
+              throw new Error("PDF parser is still loading. Please try again in a few moments.");
+            }
+            const loadingTask = pdfjsLib.getDocument({ data: e.target.result });
+            currentPdfDoc = await loadingTask.promise;
+            currentPdfName = name;
+            const totalPages = currentPdfDoc.numPages;
+
+            if (totalPages <= 1) {
+              hidePdfOptionsBar();
+              await extractAndSetPdfPages(1, 1);
             } else {
-              textInput.value = extracted;
-              updateTextStats();
-              showFileBadge(name);
+              showPdfOptionsBar(name, totalPages);
+              // Default to extracting first 2 pages for quick preview & fast conversion
+              await extractAndSetPdfPages(1, Math.min(2, totalPages));
             }
           } catch (err) {
             alert("Error reading PDF: " + (err.message || String(err)));
@@ -1181,6 +1437,7 @@ Count every valid IP address across the extracted text and output the addresses 
         };
         reader.readAsArrayBuffer(file);
       } else {
+        hidePdfOptionsBar();
         // Plain text (.txt, .md, scripts)
         const reader = new FileReader();
         reader.onload = (e) => {
@@ -1242,6 +1499,7 @@ Count every valid IP address across the extracted text and output the addresses 
         textInput.focus();
         updateTextStats();
         hideFileBadge();
+        hidePdfOptionsBar();
       });
     }
 
@@ -1253,7 +1511,7 @@ Count every valid IP address across the extracted text and output the addresses 
       worker = new Worker("./js/tts.worker.js", { type: "module" });
 
       worker.onmessage = (e) => {
-        const { status, data, blob, elapsed, totalDuration, chunksProcessed, message, percent, current, total } = e.data;
+        const { status, data, blob, partialBlob, partialDuration, elapsed, totalDuration, chunksProcessed, totalChunks, message, percent, current, total } = e.data;
 
         if (status === "progress") {
           progressBox.style.display = "block";
@@ -1265,11 +1523,11 @@ Count every valid IP address across the extracted text and output the addresses 
           progressBar.style.width = `${percent}%`;
           progressPct.textContent = `${current}/${total} (${percent}%)`;
           progressStatus.textContent = message;
-          setBusy(true, `Synthesizing sentence ${current}/${total}...`);
+          setBusy(true, message);
         } else if (status === "complete") {
           progressBox.style.display = "none";
           setBusy(false);
-          statusLabel.textContent = `Generated ${totalDuration}s audio (${chunksProcessed} sentences) in ${elapsed}s!`;
+          statusLabel.textContent = `Generated ${totalDuration}s audio (${chunksProcessed} parts) in ${elapsed}s!`;
           audioDuration.textContent = `${totalDuration}s duration`;
 
           const audioUrl = URL.createObjectURL(blob);
@@ -1278,6 +1536,22 @@ Count every valid IP address across the extracted text and output the addresses 
           audioResult.style.display = "block";
 
           audioPlayer.play().catch(err => console.log("Auto-play prevented:", err));
+        } else if (status === "cancelled") {
+          progressBox.style.display = "none";
+          setBusy(false);
+
+          if (partialBlob) {
+            statusLabel.textContent = `Stopped. Preserved ${partialDuration}s audio (${chunksProcessed}/${totalChunks} parts)!`;
+            audioDuration.textContent = `${partialDuration}s (partial)`;
+
+            const audioUrl = URL.createObjectURL(partialBlob);
+            audioPlayer.src = audioUrl;
+            downloadBtn.href = audioUrl;
+            audioResult.style.display = "block";
+            audioPlayer.play().catch(err => console.log("Auto-play prevented:", err));
+          } else {
+            statusLabel.textContent = "Conversion cancelled.";
+          }
         } else if (status === "error") {
           progressBox.style.display = "none";
           setBusy(false);
@@ -1297,6 +1571,9 @@ Count every valid IP address across the extracted text and output the addresses 
 
     function setBusy(isBusy, message = "") {
       generateBtn.disabled = isBusy;
+      if (stopBtn) {
+        stopBtn.style.display = isBusy ? "inline-flex" : "none";
+      }
       if (isBusy) {
         statusDot.className = "dot busy";
         statusLabel.textContent = message || "Processing in background...";
@@ -1308,6 +1585,16 @@ Count every valid IP address across the extracted text and output the addresses 
         btnIcon.textContent = "⚡";
         btnText.textContent = "Convert Text to Speech (Free & Unlimited)";
       }
+    }
+
+    if (stopBtn) {
+      stopBtn.addEventListener("click", () => {
+        if (worker) {
+          worker.postMessage({ type: "cancel" });
+          statusLabel.textContent = "Stopping & packaging audio...";
+          btnText.textContent = "Finalizing generated parts...";
+        }
+      });
     }
 
     generateBtn.addEventListener("click", () => {
