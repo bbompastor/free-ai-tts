@@ -23,15 +23,15 @@
 ## 🏗️ Architecture
 
 ```mermaid
-flowchart LR
-    A["User Input (Text & Voice)"] --> B["Main UI Thread (index.html)"]
-    B -->|postMessage| C["Background Web Worker (tts.worker.js)"]
-    C --> D["Sentence Chunker (Regex)"]
-    D --> E["Kokoro-82M (WebGPU / ONNX WASM)"]
-    E --> F["Float32Array Concatenation"]
-    F --> G["16-bit PCM WAV Serialization"]
-    G -->|postMessage (Blob)| B
-    B --> H["Audio Player & WAV Download"]
+flowchart TD
+    User["User Input (Text & Voice)"] --> MainUI["Main UI Thread (index.html)"]
+    MainUI -->|postMessage| Worker["Background Web Worker (tts.worker.js)"]
+    Worker --> Chunker["Intelligent Sentence Chunker"]
+    Chunker --> Model["Kokoro-82M (WebGPU / WASM)"]
+    Model --> Concat["Float32Array Concatenation"]
+    Concat --> WavEncoder["16-bit PCM WAV Encoder"]
+    WavEncoder -->|Audio Blob| MainUI
+    MainUI --> Player["Audio Player & WAV Download"]
 ```
 
 ---
