@@ -682,7 +682,107 @@
     .footer-links a:hover {
       color: var(--primary);
     }
+
+    /* Drag & Drop Overlay and File Upload */
+    .drop-overlay {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 26px;
+      background: rgba(7, 10, 19, 0.94);
+      border: 2px dashed var(--primary);
+      border-radius: 12px;
+      z-index: 20;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      pointer-events: none;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 0 30px rgba(139, 92, 246, 0.25);
+    }
+
+    .drop-overlay.active {
+      display: flex;
+    }
+
+    .drop-icon {
+      font-size: 2.5rem;
+      animation: bounceDrop 0.8s infinite alternate ease-in-out;
+    }
+
+    @keyframes bounceDrop {
+      from { transform: translateY(0); }
+      to { transform: translateY(-8px); }
+    }
+
+    .drop-title {
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: #fff;
+    }
+
+    .drop-subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .upload-chip-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      color: #67e8f9;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .upload-chip-btn:hover {
+      background: rgba(6, 182, 212, 0.25);
+      border-color: #06b6d4;
+    }
+
+    .clear-chip-btn {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      margin-left: auto;
+      transition: all 0.15s ease;
+    }
+
+    .clear-chip-btn:hover {
+      color: #f87171;
+      border-color: #f87171;
+    }
+
+    .file-loaded-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: auto;
+    }
   </style>
+
+  <!-- PDF.js for 100% Client-Side PDF Text Extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
 
@@ -722,17 +822,29 @@
         <span class="preset-label">Try an example:</span>
         <button class="chip-btn" data-preset="welcome">👋 Welcome</button>
         <button class="chip-btn" data-preset="story">📖 Audiobook</button>
-        <button class="chip-btn" data-preset="youtube">📱 Creator Intro</button>
-        <button class="chip-btn" data-preset="sre">🎧 Tech Interview</button>
+        <button class="chip-btn" data-preset="youtube">📱 Creator</button>
+        <button class="chip-btn" data-preset="sre">🎧 Tech</button>
+
+        <label for="fileUploadInput" class="upload-chip-btn" title="Import a .txt, .pdf, or .md file">
+          📁 <span>Import .txt / .pdf</span>
+        </label>
+        <input type="file" id="fileUploadInput" accept=".txt,.pdf,.md,text/plain,application/pdf" style="display:none;" />
+        <button type="button" id="clearTextBtn" class="clear-chip-btn" title="Clear text area">🗑️ Clear</button>
       </div>
 
-      <div class="textarea-wrapper">
-        <textarea id="textInput" placeholder="Paste or type your text here... There are no character limits!">Welcome to PureTTS! This is a completely free, unlimited text-to-speech converter that runs 100% inside your browser.
+      <div class="textarea-wrapper" id="dropZone">
+        <div id="dropOverlay" class="drop-overlay">
+          <div class="drop-icon">📄</div>
+          <div class="drop-title">Drop your file here to convert</div>
+          <div class="drop-subtitle">Supports .txt, .pdf, and .md files (100% private in-browser)</div>
+        </div>
+        <textarea id="textInput" placeholder="Paste text here or drop a .txt, .pdf, or .md file... There are no character limits!">Welcome to PureTTS! This is a completely free, unlimited text-to-speech converter that runs 100% inside your browser.
 
 Because all audio synthesis is powered directly by your device's processor using WebGPU and WebAssembly, your text and generated audio never leave your computer. There are no character limits, no daily credits, and no signups required.
 
 Paste your script, article, or study notes here, choose your preferred voice, and click convert to create studio-quality speech!</textarea>
         <div class="text-stats">
+          <span id="fileBadge" class="file-loaded-badge" style="display:none;"></span>
           <span id="charCount">0 characters</span>
           <span id="wordCount">0 words</span>
           <span id="estTime">~0 min read</span>
@@ -989,9 +1101,149 @@ Count every valid IP address across the extracted text and output the addresses 
         if (PRESETS[key]) {
           textInput.value = PRESETS[key];
           updateTextStats();
+          hideFileBadge();
         }
       });
     });
+
+    // Drag & Drop and File Upload (.txt, .pdf, .md)
+    const dropZone = document.getElementById("dropZone");
+    const dropOverlay = document.getElementById("dropOverlay");
+    const fileUploadInput = document.getElementById("fileUploadInput");
+    const clearTextBtn = document.getElementById("clearTextBtn");
+    const fileBadge = document.getElementById("fileBadge");
+
+    function showFileBadge(fileName) {
+      if (fileBadge) {
+        fileBadge.textContent = `📄 ${fileName}`;
+        fileBadge.style.display = "inline-flex";
+      }
+    }
+
+    function hideFileBadge() {
+      if (fileBadge) {
+        fileBadge.style.display = "none";
+        fileBadge.textContent = "";
+      }
+    }
+
+    // PDF.js worker setup
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    }
+
+    async function extractTextFromPdf(arrayBuffer) {
+      if (!window.pdfjsLib) {
+        throw new Error("PDF parser is still loading. Please try again in a few moments.");
+      }
+      const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+      const pdf = await loadingTask.promise;
+      const textParts = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map(item => item.str).join(" ");
+        if (pageText.trim()) {
+          textParts.push(pageText.trim());
+        }
+      }
+      return textParts.join("\n\n");
+    }
+
+    async function handleFile(file) {
+      if (!file) return;
+      const name = file.name || "uploaded file";
+      const ext = name.split(".").pop().toLowerCase();
+
+      if (ext === "pdf" || file.type === "application/pdf") {
+        setBusy(true, `Reading PDF: ${name}...`);
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            setBusy(true, `Extracting text from ${name}...`);
+            const extracted = await extractTextFromPdf(e.target.result);
+            if (!extracted.trim()) {
+              alert("No selectable text found in this PDF (it might be a scanned image).");
+            } else {
+              textInput.value = extracted;
+              updateTextStats();
+              showFileBadge(name);
+            }
+          } catch (err) {
+            alert("Error reading PDF: " + (err.message || String(err)));
+          } finally {
+            setBusy(false);
+          }
+        };
+        reader.onerror = () => {
+          alert("Failed to read file.");
+          setBusy(false);
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        // Plain text (.txt, .md, scripts)
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          textInput.value = e.target.result;
+          updateTextStats();
+          showFileBadge(name);
+        };
+        reader.onerror = () => {
+          alert("Failed to read file.");
+        };
+        reader.readAsText(file);
+      }
+    }
+
+    // Drag and drop listeners on dropZone
+    let dragCounter = 0;
+    if (dropZone && dropOverlay) {
+      dropZone.addEventListener("dragenter", (e) => {
+        e.preventDefault();
+        dragCounter++;
+        dropOverlay.classList.add("active");
+      });
+
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+      });
+
+      dropZone.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        dragCounter--;
+        if (dragCounter <= 0) {
+          dragCounter = 0;
+          dropOverlay.classList.remove("active");
+        }
+      });
+
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dragCounter = 0;
+        dropOverlay.classList.remove("active");
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+          handleFile(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    if (fileUploadInput) {
+      fileUploadInput.addEventListener("change", (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          handleFile(e.target.files[0]);
+          e.target.value = "";
+        }
+      });
+    }
+
+    if (clearTextBtn) {
+      clearTextBtn.addEventListener("click", () => {
+        textInput.value = "";
+        textInput.focus();
+        updateTextStats();
+        hideFileBadge();
+      });
+    }
 
     // Background Web Worker
     let worker = null;
