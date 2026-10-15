@@ -123,7 +123,7 @@ function createWavBlob(float32Array, sampleRate = 24000) {
 }
 
 self.onmessage = async (e) => {
-  const { type, text, voice, dtype, id } = e.data;
+  const { type, text, voice, dtype, speed, id } = e.data;
 
   if (type === "preload") {
     try {
@@ -139,6 +139,7 @@ self.onmessage = async (e) => {
     try {
       const tts = await getOrInitTTS(dtype || "q8");
       const startTime = performance.now();
+      const speedValue = speed ? Math.max(0.5, Math.min(2.0, parseFloat(speed))) : 1.0;
 
       const chunks = chunkText(text, 240);
       if (chunks.length === 0) {
@@ -162,7 +163,8 @@ self.onmessage = async (e) => {
         });
 
         const res = await tts.generate(chunk, {
-          voice: voice || "af_heart"
+          voice: voice || "af_heart",
+          speed: speedValue
         });
 
         if (res.sampling_rate) {

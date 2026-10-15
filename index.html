@@ -344,15 +344,64 @@
     /* Controls Grid */
     .controls-grid {
       display: grid;
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: 1.8fr 1.3fr 1fr;
       gap: 16px;
       margin-bottom: 24px;
     }
 
-    @media (max-width: 650px) {
+    @media (max-width: 820px) {
       .controls-grid {
         grid-template-columns: 1fr;
       }
+    }
+
+    .speed-slider-wrap {
+      background: var(--card-inner);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .speed-slider {
+      width: 100%;
+      height: 6px;
+      border-radius: 3px;
+      background: #1e293b;
+      outline: none;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .speed-presets {
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+    }
+
+    .speed-pill {
+      background: transparent;
+      border: 1px solid #1e293b;
+      color: var(--text-muted);
+      border-radius: 6px;
+      padding: 2px 7px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .speed-pill:hover {
+      color: var(--text);
+      border-color: var(--primary);
+    }
+
+    .speed-pill.active {
+      background: rgba(139, 92, 246, 0.2);
+      color: #c4b5fd;
+      border-color: var(--primary);
     }
 
     label {
@@ -712,6 +761,22 @@ Paste your script, article, or study notes here, choose your preferred voice, an
         </div>
 
         <div>
+          <label for="speedRange">
+            <span>Speaking Speed</span>
+            <span id="speedValue" style="color: var(--primary); font-weight: 700;">1.00x</span>
+          </label>
+          <div class="speed-slider-wrap">
+            <input type="range" id="speedRange" min="0.5" max="2.0" step="0.05" value="1.0" class="speed-slider" />
+            <div class="speed-presets">
+              <button type="button" class="speed-pill" data-speed="0.8">0.8x</button>
+              <button type="button" class="speed-pill active" data-speed="1.0">1.0x</button>
+              <button type="button" class="speed-pill" data-speed="1.25">1.25x</button>
+              <button type="button" class="speed-pill" data-speed="1.5">1.5x</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
           <label for="quantSelect">Model Quality</label>
           <select id="quantSelect">
             <option value="q8" selected>q8 (~85 MB) — Studio Audio (Best)</option>
@@ -848,6 +913,8 @@ Paste your script, article, or study notes here, choose your preferred voice, an
     const charCount = document.getElementById("charCount");
     const wordCount = document.getElementById("wordCount");
     const estTime = document.getElementById("estTime");
+    const speedRange = document.getElementById("speedRange");
+    const speedValue = document.getElementById("speedValue");
 
     const statusDot = document.getElementById("statusDot");
     const statusLabel = document.getElementById("statusLabel");
@@ -860,12 +927,13 @@ Paste your script, article, or study notes here, choose your preferred voice, an
       deviceEngine.textContent = "Engine: WebAssembly Multi-Core CPU";
     }
 
-    // Text stats counter
+    // Text stats counter (accounting for speed)
     function updateTextStats() {
       const text = textInput.value;
       const chars = text.length;
       const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-      const readMin = (words / 150).toFixed(1);
+      const currentSpeed = speedRange ? parseFloat(speedRange.value) || 1.0 : 1.0;
+      const readMin = ((words / 150) / currentSpeed).toFixed(1);
 
       charCount.textContent = `${chars.toLocaleString()} characters`;
       wordCount.textContent = `${words.toLocaleString()} words`;
@@ -873,6 +941,29 @@ Paste your script, article, or study notes here, choose your preferred voice, an
     }
 
     textInput.addEventListener("input", updateTextStats);
+
+    if (speedRange && speedValue) {
+      speedRange.addEventListener("input", (e) => {
+        const val = parseFloat(e.target.value);
+        speedValue.textContent = `${val.toFixed(2)}x`;
+        updateTextStats();
+        document.querySelectorAll(".speed-pill").forEach(p => {
+          p.classList.toggle("active", parseFloat(p.dataset.speed).toFixed(2) === val.toFixed(2));
+        });
+      });
+
+      document.querySelectorAll(".speed-pill").forEach(pill => {
+        pill.addEventListener("click", () => {
+          document.querySelectorAll(".speed-pill").forEach(p => p.classList.remove("active"));
+          pill.classList.add("active");
+          const spd = parseFloat(pill.dataset.speed);
+          speedRange.value = spd;
+          speedValue.textContent = `${spd.toFixed(2)}x`;
+          updateTextStats();
+        });
+      });
+    }
+
     updateTextStats();
 
     // Preset prompts
@@ -976,6 +1067,7 @@ Count every valid IP address across the extracted text and output the addresses 
 
       const selectedVoice = voiceSelect.value;
       const selectedQuant = quantSelect.value;
+      const selectedSpeed = speedRange ? parseFloat(speedRange.value) || 1.0 : 1.0;
 
       setBusy(true, "Initializing neural engine...");
       const ttsWorker = getWorker();
@@ -985,6 +1077,7 @@ Count every valid IP address across the extracted text and output the addresses 
         text: text,
         voice: selectedVoice,
         dtype: selectedQuant,
+        speed: selectedSpeed,
         id: Date.now()
       });
     });
