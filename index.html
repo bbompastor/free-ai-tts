@@ -1509,6 +1509,7 @@ Count every valid IP address across the extracted text and output the addresses 
     let currentPlayingChunk = -1;
     let isStreamingMode = false;
     let masterBlob = null;
+    let isStopping = false;
 
     // Advance to next audio chunk seamlessly when current chunk ends
     audioPlayer.addEventListener("ended", () => {
@@ -1536,6 +1537,9 @@ Count every valid IP address across the extracted text and output the addresses 
       worker = new Worker("./js/tts.worker.js", { type: "module" });
 
       worker.onmessage = (e) => {
+        // If user clicked Stop, ignore any leftover messages in transit
+        if (isStopping) return;
+
         const { status, data, blob, partialBlob, partialDuration, elapsed, totalDuration, chunksProcessed, totalChunks, message, percent, current, total, chunkIndex, chunkBlob, chunkDuration } = e.data;
 
         if (status === "device_ready") {
@@ -1626,6 +1630,7 @@ Count every valid IP address across the extracted text and output the addresses 
     }
 
     function setBusy(isBusy, message = "") {
+      if (isStopping && isBusy) return;
       generateBtn.disabled = isBusy;
       if (stopBtn) {
         stopBtn.style.display = isBusy ? "inline-flex" : "none";
@@ -1645,11 +1650,37 @@ Count every valid IP address across the extracted text and output the addresses 
 
     if (stopBtn) {
       stopBtn.addEventListener("click", () => {
+        isStopping = true;
+        isStreamingMode = false;
+
+        // Instantly terminate the worker to kill any ongoing GPU / WASM inference immediately
         if (worker) {
-          worker.postMessage({ type: "cancel" });
-          statusLabel.textContent = "Stopping & packaging audio...";
-          btnText.textContent = "Finalizing generated parts...";
+          try {
+            worker.terminate();
+          } catch (e) {
+            console.warn("Worker termination error:", e);
+          }
+          worker = null;
         }
+
+        // Immediately reset UI controls
+        setBusy(false);
+        progressBox.style.display = "none";
+
+        // Check if any streamed audio chunks were synthesized before stopping
+        const readyChunks = streamPlaylist.filter(Boolean);
+        if (readyChunks.length > 0) {
+          statusLabel.textContent = `Stopped by user. Preserved ${readyChunks.length} audio part(s)!`;
+          audioDuration.textContent = `Stopped (${readyChunks.length} parts ready)`;
+          audioResult.style.display = "block";
+          downloadBtn.href = readyChunks[0].url;
+        } else {
+          statusLabel.textContent = "Conversion stopped.";
+        }
+
+        setTimeout(() => {
+          isStopping = false;
+        }, 150);
       });
     }
 
@@ -1660,6 +1691,7 @@ Count every valid IP address across the extracted text and output the addresses 
         return;
       }
 
+      isStopping = false;
       // Reset streaming playlist
       streamPlaylist = [];
       currentPlayingChunk = -1;
