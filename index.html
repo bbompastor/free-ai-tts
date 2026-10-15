@@ -27,21 +27,21 @@
   <meta name="author" content="PureTTS" />
 
   <!-- Favicon & Brand Icons -->
-  <link rel="icon" type="image/jpeg" href="avatar.jpg" />
-  <link rel="apple-touch-icon" href="avatar.jpg" />
+  <link rel="icon" type="image/jpeg" href="assets/avatar.jpg" />
+  <link rel="apple-touch-icon" href="assets/avatar.jpg" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://puretts.com/" />
   <meta property="og:title" content="PureTTS — Free Unlimited AI Text to Speech (100% Private)" />
   <meta property="og:description" content="Generate natural studio-quality AI voices right in your browser. No signups, no subscriptions, unlimited characters." />
-  <meta property="og:image" content="https://puretts.com/avatar.jpg" />
+  <meta property="og:image" content="https://puretts.com/assets/avatar.jpg" />
 
   <!-- Twitter -->
   <meta property="twitter:card" content="summary_large_image" />
   <meta property="twitter:title" content="PureTTS — Free Unlimited AI Text to Speech (100% Private)" />
   <meta property="twitter:description" content="Generate natural studio-quality AI voices right in your browser. No signups, no subscriptions, unlimited characters." />
-  <meta property="twitter:image" content="https://puretts.com/avatar.jpg" />
+  <meta property="twitter:image" content="https://puretts.com/assets/avatar.jpg" />
 
   <!-- Structured Data: FAQPage & WebApplication for Google Rich Snippets -->
   <script type="application/ld+json">
@@ -641,7 +641,7 @@
   <nav>
     <div class="nav-container">
       <a href="#" class="brand">
-        <img src="avatar.jpg" alt="PureTTS Logo" class="brand-logo" />
+        <img src="assets/avatar.jpg" alt="PureTTS Logo" class="brand-logo" />
         <span>PureTTS</span>
       </a>
       <div class="nav-badges">
@@ -907,7 +907,7 @@ Count every valid IP address across the extracted text and output the addresses 
 
     function getWorker() {
       if (worker) return worker;
-      worker = new Worker("./tts.worker.js", { type: "module" });
+      worker = new Worker("./js/tts.worker.js", { type: "module" });
 
       worker.onmessage = (e) => {
         const { status, data, blob, elapsed, totalDuration, chunksProcessed, message, percent, current, total } = e.data;

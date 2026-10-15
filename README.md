@@ -55,15 +55,22 @@ Open `http://localhost:8080/` in your browser.
 ## 📁 Repository Structure
 
 ```
-├── index.html       # Modern dark-mode UI, SEO metadata, JSON-LD schema, GA4 & AdSense
-├── tts.worker.js    # Background Web Worker with sentence chunker, Kokoro-82M inference & WAV encoder
-├── ads.txt          # Google AdSense publisher verification record
-├── llms.txt         # Machine-readable discovery file for AI search engines (Gemini, ChatGPT, Perplexity)
-├── robots.txt       # AI crawler permissions & sitemap directive
-├── sitemap.xml      # Domain index of all static routes
-├── avatar.jpg       # Brand logo, favicon, and OpenGraph preview
-├── privacy.html     # Privacy Policy (AdSense compliant)
-└── terms.html       # Terms of Service
+├── assets/
+│   ├── avatar.jpg       # Brand logo, favicon, and OpenGraph preview
+│   └── avatar_variant.jpg
+├── js/
+│   └── tts.worker.js    # Background Web Worker (Kokoro-82M, chunker & WAV encoder)
+├── docs/
+│   ├── DEPLOY.md        # Deployment guides (GitHub Pages, DNS)
+│   └── DEVTO_POST.md    # Published technical article
+├── index.html           # Main dark-mode UI, WebGPU client, SEO & GA4
+├── ads.txt              # Google AdSense publisher verification
+├── llms.txt             # AI crawler standard (Gemini, ChatGPT, Perplexity)
+├── robots.txt           # Crawler index directives & sitemap reference
+├── sitemap.xml          # XML sitemap for search engines
+├── privacy.html         # Privacy Policy (AdSense compliant)
+├── terms.html           # Terms of Service
+└── LICENSE              # MIT License
 ```
 
 ---
