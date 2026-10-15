@@ -1028,12 +1028,12 @@ Paste your script, article, or study notes here, choose your preferred voice, an
         </div>
 
         <div>
-          <label for="quantSelect">Model Quality</label>
+          <label for="quantSelect">Synthesis Engine & Audio Fidelity</label>
           <select id="quantSelect">
-            <option value="q8" selected>q8 (~85 MB) — Studio Audio (Best)</option>
-            <option value="q4">q4 (~45 MB) — Fast Mode (~40% Faster)</option>
+            <option value="webgpu" selected>🚀 WebGPU (Studio fp32 · Crystal Clear & Fast)</option>
+            <option value="wasm">💻 CPU Safe Mode (WASM q8 · Clean & Lightweight ~85 MB)</option>
           </select>
-          <div id="longTextTip" class="speed-tip">⚡ Long text: use Fast Mode (q4) for ~40% faster conversion</div>
+          <div id="longTextTip" class="speed-tip" style="display:block;">⚡ WebGPU Studio Mode: 100% crystal-clear fp32 audio, hardware-accelerated</div>
         </div>
       </div>
 
@@ -1215,10 +1215,12 @@ Paste your script, article, or study notes here, choose your preferred voice, an
       }
 
       if (longTextTip && quantSelect) {
-        if (chars > 1200 && quantSelect.value === "q8") {
+        if (quantSelect.value === "wasm") {
+          longTextTip.textContent = "💡 CPU Safe Mode: ~85 MB download, rock-solid CPU synthesis";
           longTextTip.style.display = "block";
         } else {
-          longTextTip.style.display = "none";
+          longTextTip.textContent = "⚡ WebGPU Studio Mode: 100% crystal-clear fp32 audio, hardware-accelerated";
+          longTextTip.style.display = "block";
         }
       }
     }
@@ -1544,10 +1546,11 @@ Count every valid IP address across the extracted text and output the addresses 
 
         if (status === "device_ready") {
           const dev = e.data.device;
+          const dt = e.data.dtype ? e.data.dtype.toUpperCase() : "";
           if (dev === "webgpu") {
-            deviceEngine.textContent = "Engine: WebGPU (Hardware Accelerated 🚀)";
+            deviceEngine.textContent = `Engine: WebGPU (${dt} Hardware Accelerated 🚀)`;
           } else {
-            deviceEngine.textContent = "Engine: WebAssembly Multi-Core CPU";
+            deviceEngine.textContent = `Engine: WebAssembly CPU (${dt})`;
           }
         } else if (status === "progress") {
           progressBox.style.display = "block";

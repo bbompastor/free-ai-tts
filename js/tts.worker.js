@@ -10,14 +10,20 @@ let currentDtype = null;
 
 let currentDevice = null;
 
-async function getOrInitTTS(dtype) {
-  if (ttsInstance && currentDtype === dtype) {
-    return ttsInstance;
-  }
+/**
+ * Initializes Kokoro TTS with the optimal precision for the target device:
+ * - WebGPU: Enforces "fp32" on "onnx-community/Kokoro-82M-v1.0-ONNX".
+ *   CRITICAL: ONNX Runtime WebGPU integer quantization (q8/q4) has known shader kernel bugs
+ *   that cause garbled/robotic noise (q8) or accelerated/chipmunk speech (q4).
+ *   Float32 runs natively on GPU tensor cores with 100% mathematical fidelity and crystal-clear human sound.
+ * - WASM CPU: Uses "q8" (or "q4") which runs smoothly via CPU SIMD instructions with zero GPU driver bugs.
+ */
+async function getOrInitTTS(requestedMode = "webgpu") {
+  const wantsWasm = requestedMode === "wasm" || requestedMode === "q8";
 
-  // Detect whether WebGPU is available in this worker environment
+  // Check if WebGPU is available in this worker environment
   let canUseWebGPU = false;
-  if (typeof navigator !== "undefined" && navigator.gpu) {
+  if (!wantsWasm && typeof navigator !== "undefined" && navigator.gpu) {
     try {
       const adapter = await navigator.gpu.requestAdapter();
       if (adapter) {
@@ -27,6 +33,14 @@ async function getOrInitTTS(dtype) {
       console.warn("Worker WebGPU requestAdapter failed:", e);
       canUseWebGPU = false;
     }
+  }
+
+  const targetDevice = canUseWebGPU ? "webgpu" : "wasm";
+  const targetDtype = canUseWebGPU ? "fp32" : "q8";
+  const cacheKey = `${targetDevice}-${targetDtype}`;
+
+  if (ttsInstance && currentDtype === cacheKey) {
+    return ttsInstance;
   }
 
   const progressCb = (p) => {
@@ -44,22 +58,22 @@ async function getOrInitTTS(dtype) {
     }
   };
 
-  // Attempt WebGPU hardware acceleration first
+  // 1. Attempt WebGPU hardware acceleration with fp32 (Pristine studio audio + hardware speed)
   if (canUseWebGPU) {
     try {
       self.postMessage({
         status: "progress",
-        data: { percent: 0, file: "Connecting...", message: `Initializing ${dtype.toUpperCase()} on WebGPU (Hardware Accelerated 🚀)...` }
+        data: { percent: 0, file: "Connecting...", message: `Initializing Kokoro on WebGPU (Hardware Accelerated 🚀)...` }
       });
 
-      ttsInstance = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-ONNX", {
-        dtype: dtype,
+      ttsInstance = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
+        dtype: "fp32",
         device: "webgpu",
         progress_callback: progressCb
       });
       currentDevice = "webgpu";
-      currentDtype = dtype;
-      self.postMessage({ status: "device_ready", device: "webgpu" });
+      currentDtype = cacheKey;
+      self.postMessage({ status: "device_ready", device: "webgpu", dtype: "fp32" });
       return ttsInstance;
     } catch (gpuErr) {
       console.warn("WebGPU initialization failed, falling back to WASM CPU:", gpuErr);
@@ -67,20 +81,20 @@ async function getOrInitTTS(dtype) {
     }
   }
 
-  // Fallback to WebAssembly CPU
+  // 2. Fallback to WebAssembly CPU with q8 (Rock-solid, crystal-clear, zero distortion)
   self.postMessage({
     status: "progress",
-    data: { percent: 0, file: "Connecting...", message: `Initializing ${dtype.toUpperCase()} on WebAssembly Multi-Core CPU...` }
+    data: { percent: 0, file: "Connecting...", message: `Initializing Kokoro on WebAssembly CPU (Safe Mode)...` }
   });
 
-  ttsInstance = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-ONNX", {
-    dtype: dtype,
+  ttsInstance = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
+    dtype: "q8",
     device: "wasm",
     progress_callback: progressCb
   });
   currentDevice = "wasm";
-  currentDtype = dtype;
-  self.postMessage({ status: "device_ready", device: "wasm" });
+  currentDtype = `wasm-q8`;
+  self.postMessage({ status: "device_ready", device: "wasm", dtype: "q8" });
   return ttsInstance;
 }
 
