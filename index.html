@@ -1034,6 +1034,10 @@ Paste your script, article, or study notes here, choose your preferred voice, an
             <option value="wasm">💻 CPU Safe Mode (WASM q8 · Clean & Lightweight ~85 MB)</option>
           </select>
           <div id="longTextTip" class="speed-tip" style="display:block;">⚡ WebGPU Studio Mode: 100% crystal-clear fp32 audio, hardware-accelerated</div>
+          <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted);">
+            <input type="checkbox" id="streamToggle" style="accent-color: var(--primary); cursor: pointer;" />
+            <label for="streamToggle" style="cursor: pointer; margin: 0; font-weight: normal; color: #cbd5e1;">Play audio in real-time while buffering (Instant Preview)</label>
+          </div>
         </div>
       </div>
 
@@ -1172,6 +1176,7 @@ Paste your script, article, or study notes here, choose your preferred voice, an
     const estTime = document.getElementById("estTime");
     const estGenTime = document.getElementById("estGenTime");
     const longTextTip = document.getElementById("longTextTip");
+    const streamToggle = document.getElementById("streamToggle");
     const stopBtn = document.getElementById("stopBtn");
     const speedRange = document.getElementById("speedRange");
     const speedValue = document.getElementById("speedValue");
@@ -1568,18 +1573,31 @@ Count every valid IP address across the extracted text and output the addresses 
           const chunkUrl = URL.createObjectURL(chunkBlob);
           streamPlaylist[chunkIndex] = { url: chunkUrl, duration: chunkDuration };
 
-          // Instant playback: Start playing immediately when Part 1 is generated (~1.5s)!
-          if (chunkIndex === 0 && !isStreamingMode) {
-            isStreamingMode = true;
-            currentPlayingChunk = 0;
-            audioResult.style.display = "block";
-            audioPlayer.src = chunkUrl;
-            audioDuration.textContent = `Streaming Part 1 of ${totalChunks} ⚡`;
-            statusLabel.textContent = `Streaming speech in real-time (Part 1 of ${totalChunks})...`;
-            audioPlayer.play().catch(err => console.log("Streaming auto-play prevented:", err));
-          } else if (isStreamingMode) {
+          const shouldStream = streamToggle ? streamToggle.checked : false;
+
+          // If user enabled real-time streaming preview, wait for 2 chunks (or 1 if total is 1) before starting
+          // to ensure a generous buffer and eliminate audio underruns ("chugging")
+          if (shouldStream) {
             const bufferedCount = streamPlaylist.filter(Boolean).length;
-            audioDuration.textContent = `Streaming Part ${currentPlayingChunk + 1} of ${totalChunks} (${bufferedCount}/${totalChunks} buffered)`;
+            const bufferReady = totalChunks === 1 || bufferedCount >= 2;
+
+            if (bufferReady && !isStreamingMode && currentPlayingChunk === -1) {
+              isStreamingMode = true;
+              currentPlayingChunk = 0;
+              audioResult.style.display = "block";
+              audioPlayer.src = streamPlaylist[0].url;
+              audioDuration.textContent = `Streaming Part 1 of ${totalChunks} ⚡`;
+              statusLabel.textContent = `Streaming speech in real-time (Part 1 of ${totalChunks})...`;
+              audioPlayer.play().catch(err => console.log("Streaming auto-play prevented:", err));
+            } else if (isStreamingMode) {
+              if (audioPlayer.paused && currentPlayingChunk >= 0 && streamPlaylist[currentPlayingChunk + 1]) {
+                currentPlayingChunk++;
+                audioPlayer.src = streamPlaylist[currentPlayingChunk].url;
+                audioDuration.textContent = `Streaming Part ${currentPlayingChunk + 1} of ${totalChunks} ⚡`;
+                audioPlayer.play().catch(err => console.log("Streaming playback resume prevented:", err));
+              }
+              audioDuration.textContent = `Streaming Part ${currentPlayingChunk + 1} of ${totalChunks} (${bufferedCount}/${totalChunks} buffered)`;
+            }
           }
         } else if (status === "complete") {
           progressBox.style.display = "none";
@@ -1591,11 +1609,13 @@ Count every valid IP address across the extracted text and output the addresses 
 
           statusLabel.textContent = `Generated ${totalDuration}s audio (${chunksProcessed} parts) in ${elapsed}s!`;
 
-          // If playback hasn't started or is paused, load the unified master track
-          if (!isStreamingMode || audioPlayer.paused) {
+          // If streaming was disabled (default for smooth gapless playback) or playback finished,
+          // load the unified continuous master track and auto-play seamlessly!
+          if (!isStreamingMode || audioPlayer.paused || currentPlayingChunk === -1) {
             isStreamingMode = false;
             audioPlayer.src = masterUrl;
-            audioDuration.textContent = `${totalDuration}s full audio`;
+            audioDuration.textContent = `${totalDuration}s full audio (gapless)`;
+            audioPlayer.play().catch(err => console.log("Auto-play prevented:", err));
           } else {
             audioDuration.textContent = `Streaming Part ${currentPlayingChunk + 1} of ${chunksProcessed} · Master WAV ready ⬇`;
           }

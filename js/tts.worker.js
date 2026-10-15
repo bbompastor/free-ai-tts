@@ -302,6 +302,8 @@ self.onmessage = async (e) => {
           if (i < chunks.length - 1) {
             const pauseSamples = new Float32Array(Math.round(sampleRate * 0.20));
             audioSegments.push(pauseSamples);
+            // Brief yield to prevent GPU queue and system audio driver starvation
+            await new Promise((resolve) => setTimeout(resolve, 40));
           }
         }
       }
