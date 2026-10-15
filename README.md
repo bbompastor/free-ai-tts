@@ -61,8 +61,7 @@ Open `http://localhost:8080/` in your browser.
 ├── js/
 │   └── tts.worker.js    # Background Web Worker (Kokoro-82M, chunker & WAV encoder)
 ├── docs/
-│   ├── DEPLOY.md        # Deployment guides (GitHub Pages, DNS)
-│   └── DEVTO_POST.md    # Published technical article
+│   └── DEPLOY.md        # Deployment guides (GitHub Pages, DNS)
 ├── index.html           # Main dark-mode UI, WebGPU client, SEO & GA4
 ├── ads.txt              # Google AdSense publisher verification
 ├── llms.txt             # AI crawler standard (Gemini, ChatGPT, Perplexity)
