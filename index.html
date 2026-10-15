@@ -1503,17 +1503,49 @@ Count every valid IP address across the extracted text and output the addresses 
       });
     }
 
-    // Background Web Worker
+    // Background Web Worker & Progressive Streaming Queue
     let worker = null;
+    let streamPlaylist = [];
+    let currentPlayingChunk = -1;
+    let isStreamingMode = false;
+    let masterBlob = null;
+
+    // Advance to next audio chunk seamlessly when current chunk ends
+    audioPlayer.addEventListener("ended", () => {
+      if (isStreamingMode) {
+        const nextIndex = currentPlayingChunk + 1;
+        if (nextIndex < streamPlaylist.length && streamPlaylist[nextIndex]) {
+          currentPlayingChunk = nextIndex;
+          audioPlayer.src = streamPlaylist[nextIndex].url;
+          audioDuration.textContent = `Streaming Part ${nextIndex + 1} of ${streamPlaylist.length} ⚡`;
+          audioPlayer.play().catch(err => console.log("Next chunk auto-play prevented:", err));
+        } else if (masterBlob) {
+          // All streaming parts have finished playing; switch to complete continuous track
+          isStreamingMode = false;
+          const masterUrl = URL.createObjectURL(masterBlob);
+          audioPlayer.src = masterUrl;
+          audioDuration.textContent = "Full audio complete ✓";
+        } else {
+          audioDuration.textContent = `Buffering Part ${nextIndex + 1}...`;
+        }
+      }
+    });
 
     function getWorker() {
       if (worker) return worker;
       worker = new Worker("./js/tts.worker.js", { type: "module" });
 
       worker.onmessage = (e) => {
-        const { status, data, blob, partialBlob, partialDuration, elapsed, totalDuration, chunksProcessed, totalChunks, message, percent, current, total } = e.data;
+        const { status, data, blob, partialBlob, partialDuration, elapsed, totalDuration, chunksProcessed, totalChunks, message, percent, current, total, chunkIndex, chunkBlob, chunkDuration } = e.data;
 
-        if (status === "progress") {
+        if (status === "device_ready") {
+          const dev = e.data.device;
+          if (dev === "webgpu") {
+            deviceEngine.textContent = "Engine: WebGPU (Hardware Accelerated 🚀)";
+          } else {
+            deviceEngine.textContent = "Engine: WebAssembly Multi-Core CPU";
+          }
+        } else if (status === "progress") {
           progressBox.style.display = "block";
           progressBar.style.width = `${data.percent}%`;
           progressPct.textContent = `${data.percent}%`;
@@ -1524,18 +1556,42 @@ Count every valid IP address across the extracted text and output the addresses 
           progressPct.textContent = `${current}/${total} (${percent}%)`;
           progressStatus.textContent = message;
           setBusy(true, message);
+        } else if (status === "chunk_ready") {
+          // Store chunk audio URL in playlist
+          const chunkUrl = URL.createObjectURL(chunkBlob);
+          streamPlaylist[chunkIndex] = { url: chunkUrl, duration: chunkDuration };
+
+          // Instant playback: Start playing immediately when Part 1 is generated (~1.5s)!
+          if (chunkIndex === 0 && !isStreamingMode) {
+            isStreamingMode = true;
+            currentPlayingChunk = 0;
+            audioResult.style.display = "block";
+            audioPlayer.src = chunkUrl;
+            audioDuration.textContent = `Streaming Part 1 of ${totalChunks} ⚡`;
+            statusLabel.textContent = `Streaming speech in real-time (Part 1 of ${totalChunks})...`;
+            audioPlayer.play().catch(err => console.log("Streaming auto-play prevented:", err));
+          } else if (isStreamingMode) {
+            const bufferedCount = streamPlaylist.filter(Boolean).length;
+            audioDuration.textContent = `Streaming Part ${currentPlayingChunk + 1} of ${totalChunks} (${bufferedCount}/${totalChunks} buffered)`;
+          }
         } else if (status === "complete") {
           progressBox.style.display = "none";
           setBusy(false);
-          statusLabel.textContent = `Generated ${totalDuration}s audio (${chunksProcessed} parts) in ${elapsed}s!`;
-          audioDuration.textContent = `${totalDuration}s duration`;
-
-          const audioUrl = URL.createObjectURL(blob);
-          audioPlayer.src = audioUrl;
-          downloadBtn.href = audioUrl;
+          masterBlob = blob;
+          const masterUrl = URL.createObjectURL(blob);
+          downloadBtn.href = masterUrl;
           audioResult.style.display = "block";
 
-          audioPlayer.play().catch(err => console.log("Auto-play prevented:", err));
+          statusLabel.textContent = `Generated ${totalDuration}s audio (${chunksProcessed} parts) in ${elapsed}s!`;
+
+          // If playback hasn't started or is paused, load the unified master track
+          if (!isStreamingMode || audioPlayer.paused) {
+            isStreamingMode = false;
+            audioPlayer.src = masterUrl;
+            audioDuration.textContent = `${totalDuration}s full audio`;
+          } else {
+            audioDuration.textContent = `Streaming Part ${currentPlayingChunk + 1} of ${chunksProcessed} · Master WAV ready ⬇`;
+          }
         } else if (status === "cancelled") {
           progressBox.style.display = "none";
           setBusy(false);
@@ -1603,6 +1659,12 @@ Count every valid IP address across the extracted text and output the addresses 
         alert("Please enter some text to speak.");
         return;
       }
+
+      // Reset streaming playlist
+      streamPlaylist = [];
+      currentPlayingChunk = -1;
+      isStreamingMode = false;
+      masterBlob = null;
 
       const selectedVoice = voiceSelect.value;
       const selectedQuant = quantSelect.value;

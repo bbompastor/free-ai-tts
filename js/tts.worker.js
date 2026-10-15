@@ -8,35 +8,79 @@ import { KokoroTTS } from "https://esm.sh/kokoro-js";
 let ttsInstance = null;
 let currentDtype = null;
 
+let currentDevice = null;
+
 async function getOrInitTTS(dtype) {
   if (ttsInstance && currentDtype === dtype) {
     return ttsInstance;
   }
 
+  // Detect whether WebGPU is available in this worker environment
+  let canUseWebGPU = false;
+  if (typeof navigator !== "undefined" && navigator.gpu) {
+    try {
+      const adapter = await navigator.gpu.requestAdapter();
+      if (adapter) {
+        canUseWebGPU = true;
+      }
+    } catch (e) {
+      console.warn("Worker WebGPU requestAdapter failed:", e);
+      canUseWebGPU = false;
+    }
+  }
+
+  const progressCb = (p) => {
+    if (p.status === "progress" && p.total > 0) {
+      const pct = Math.round((p.loaded / p.total) * 100);
+      self.postMessage({
+        status: "progress",
+        data: { percent: pct, file: p.file || "weights", message: `Downloading ${p.file || "weights"}: ${pct}%` }
+      });
+    } else if (p.status === "done") {
+      self.postMessage({
+        status: "progress",
+        data: { percent: 100, file: "weights", message: "Weights cached locally! Ready to speak." }
+      });
+    }
+  };
+
+  // Attempt WebGPU hardware acceleration first
+  if (canUseWebGPU) {
+    try {
+      self.postMessage({
+        status: "progress",
+        data: { percent: 0, file: "Connecting...", message: `Initializing ${dtype.toUpperCase()} on WebGPU (Hardware Accelerated 🚀)...` }
+      });
+
+      ttsInstance = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-ONNX", {
+        dtype: dtype,
+        device: "webgpu",
+        progress_callback: progressCb
+      });
+      currentDevice = "webgpu";
+      currentDtype = dtype;
+      self.postMessage({ status: "device_ready", device: "webgpu" });
+      return ttsInstance;
+    } catch (gpuErr) {
+      console.warn("WebGPU initialization failed, falling back to WASM CPU:", gpuErr);
+      ttsInstance = null;
+    }
+  }
+
+  // Fallback to WebAssembly CPU
   self.postMessage({
     status: "progress",
-    data: { percent: 0, file: "Connecting...", message: `Initializing ${dtype.toUpperCase()} model runtime...` }
+    data: { percent: 0, file: "Connecting...", message: `Initializing ${dtype.toUpperCase()} on WebAssembly Multi-Core CPU...` }
   });
 
   ttsInstance = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-ONNX", {
     dtype: dtype,
-    progress_callback: (p) => {
-      if (p.status === "progress" && p.total > 0) {
-        const pct = Math.round((p.loaded / p.total) * 100);
-        self.postMessage({
-          status: "progress",
-          data: { percent: pct, file: p.file || "weights", message: `Downloading ${p.file || "weights"}: ${pct}%` }
-        });
-      } else if (p.status === "done") {
-        self.postMessage({
-          status: "progress",
-          data: { percent: 100, file: "weights", message: "Weights cached locally! Ready to speak." }
-        });
-      }
-    }
+    device: "wasm",
+    progress_callback: progressCb
   });
-
+  currentDevice = "wasm";
   currentDtype = dtype;
+  self.postMessage({ status: "device_ready", device: "wasm" });
   return ttsInstance;
 }
 
@@ -226,6 +270,20 @@ self.onmessage = async (e) => {
 
         if (res.audio) {
           audioSegments.push(res.audio);
+
+          // Dispatch individual chunk immediately for real-time progressive streaming
+          const chunkBlob = createWavBlob(res.audio, sampleRate);
+          const chunkDuration = (res.audio.length / sampleRate).toFixed(1);
+          self.postMessage({
+            status: "chunk_ready",
+            id,
+            chunkIndex: i,
+            totalChunks: chunks.length,
+            chunkBlob,
+            chunkDuration,
+            percent: progressPct
+          });
+
           // Insert 200ms natural pause between sentences
           if (i < chunks.length - 1) {
             const pauseSamples = new Float32Array(Math.round(sampleRate * 0.20));
