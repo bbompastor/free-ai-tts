@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-3T94467EX6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-3T94467EX6');
+  </script>
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4208863632802309"
+       crossorigin="anonymous"></script>
+
+  <!-- Primary Meta Tags -->
+  <title>Best Free ElevenLabs Alternative (100% Unlimited & Private) | PureTTS</title>
+  <meta name="title" content="Best Free ElevenLabs Alternative (100% Unlimited & Private) | PureTTS" />
+  <meta name="description" content="Tired of ElevenLabs 10,000-character caps and expensive subscriptions? PureTTS is a 100% free, unlimited in-browser AI voice generator with zero signups and complete privacy." />
+  <meta name="keywords" content="elevenlabs alternative, free elevenlabs alternative, elevenlabs free alternative without limit, unlimited ai voice generator, realistic text to speech free, text to speech without character limits, kokoro tts online" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://puretts.com/elevenlabs-alternative.html" />
+
+  <!-- Favicon & Brand Icons -->
+  <link rel="icon" type="image/jpeg" href="assets/avatar.jpg" />
+  <link rel="apple-touch-icon" href="assets/avatar.jpg" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://puretts.com/elevenlabs-alternative.html" />
+  <meta property="og:title" content="Best Free ElevenLabs Alternative (100% Unlimited & Private) | PureTTS" />
+  <meta property="og:description" content="Studio-quality AI voice synthesis with no character limits, no subscriptions, and 100% in-browser privacy. Powered by Kokoro-82M and WebGPU." />
+  <meta property="og:image" content="https://puretts.com/assets/avatar.jpg" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:title" content="Best Free ElevenLabs Alternative (100% Unlimited & Private) | PureTTS" />
+  <meta property="twitter:description" content="Studio-quality AI voice synthesis with no character limits, no subscriptions, and 100% in-browser privacy." />
+  <meta property="twitter:image" content="https://puretts.com/assets/avatar.jpg" />
+
+  <!-- Structured Data: FAQPage & SoftwareApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "PureTTS - Free ElevenLabs Alternative",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "All modern browsers",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "A completely free, unlimited client-side alternative to ElevenLabs powered by Kokoro-82M on WebGPU and WASM."
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Why is PureTTS a better alternative to ElevenLabs for creators?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "PureTTS has zero character limits, requires no sign-up or credit card, and never charges monthly subscriptions. Furthermore, all synthesis runs locally in your browser, guaranteeing 100% privacy."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does PureTTS enforce monthly quotas like ElevenLabs' 10,000 character cap?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Because PureTTS uses your own device's hardware via WebGPU and WebAssembly instead of costly cloud servers, there are zero character or document limits."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I use generated speech commercially on YouTube and podcasts?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes! The neural model (Kokoro-82M) is open-weight and licensed under Apache 2.0. You own all synthesized audio files for commercial and personal use."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg: #070a13;
+      --card-bg: #0f172a;
+      --card-border: #1e293b;
+      --card-inner: #090e1a;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #8b5cf6;
+      --primary-hover: #7c3aed;
+      --primary-glow: rgba(139, 92, 246, 0.3);
+      --accent: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.6;
+    }
+
+    nav {
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .nav-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      object-fit: cover;
+      box-shadow: 0 0 14px rgba(139, 92, 246, 0.45);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+    }
+
+    .nav-badges {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .badge-free {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    .btn-coffee-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(253, 224, 71, 0.15);
+      color: #fde047;
+      border: 1px solid rgba(253, 224, 71, 0.3);
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-coffee-nav:hover {
+      background: rgba(253, 224, 71, 0.25);
+      transform: translateY(-1px);
+    }
+
+    main {
+      flex: 1;
+      max-width: 1000px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+
+    .hero-seo {
+      text-align: center;
+      padding: 30px 0 20px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 4px 14px;
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      color: #c084fc;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    .hero-seo h1 {
+      font-size: 2.3rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #ffffff 40%, var(--primary) 80%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-seo p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* Converter Card */
+    .app-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    .presets-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .preset-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .chip-btn, .upload-chip-btn, .clear-chip-btn {
+      background: var(--card-inner);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .chip-btn:hover, .upload-chip-btn:hover {
+      background: #1e293b;
+      color: var(--text);
+      border-color: var(--primary);
+    }
+
+    .textarea-wrapper {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 140px;
+      background: var(--card-inner);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      color: var(--text);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .text-stats {
+      display: flex;
+      justify-content: flex-end;
+      gap: 16px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    select, input[type="range"] {
+      width: 100%;
+      background: var(--card-inner);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.85rem;
+    }
+
+    .speed-presets {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .speed-pill {
+      background: var(--card-inner);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      cursor: pointer;
+    }
+
+    .speed-pill.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .progress-box {
+      display: none;
+      margin-bottom: 16px;
+      background: var(--card-inner);
+      border: 1px solid var(--card-border);
+      padding: 12px 16px;
+      border-radius: 10px;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+    }
+
+    .progress-bar-bg {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 9999px;
+      height: 6px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.2s ease;
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .btn-main {
+      flex: 1;
+      background: linear-gradient(135deg, var(--primary) 0%, #6d28d9 100%);
+      color: #fff;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-main:hover {
+      box-shadow: 0 0 20px var(--primary-glow);
+      transform: translateY(-1px);
+    }
+
+    .btn-stop {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      padding: 12px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .audio-result {
+      display: none;
+      margin-top: 20px;
+      background: var(--card-inner);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .audio-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: var(--success);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    audio {
+      width: 100%;
+      height: 40px;
+      margin-bottom: 12px;
+    }
+
+    .audio-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .btn-download {
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.85rem;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .dot.ready { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .dot.busy { background: var(--warning); box-shadow: 0 0 8px var(--warning); }
+
+    /* Comparison Table Section */
+    .comparison-section {
+      margin: 50px 0;
+    }
+
+    .comparison-section h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 16px 20px;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.95);
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    .highlight-cell {
+      background: rgba(139, 92, 246, 0.08);
+      color: #c084fc;
+      font-weight: 700;
+    }
+
+    .pill-green {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .pill-red {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* Content & Benefit Cards */
+    .deep-content {
+      margin: 40px 0;
+    }
+
+    .deep-content h3 {
+      font-size: 1.4rem;
+      margin: 28px 0 12px;
+      color: #fff;
+    }
+
+    .deep-content p {
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      line-height: 1.7;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin: 24px 0;
+    }
+
+    .info-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .info-card h4 {
+      font-size: 1.1rem;
+      color: #fff;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* FAQ */
+    .faq-section {
+      margin-top: 50px;
+    }
+
+    .faq-section h2 {
+      font-size: 1.8rem;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .faq-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 14px;
+    }
+
+    .faq-item h4 {
+      font-size: 1rem;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .faq-item p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--card-border);
+      background: #090e1a;
+      padding: 36px 20px;
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      color: var(--primary);
+    }
+
+    footer p {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <img src="assets/avatar.jpg" alt="PureTTS Logo" class="brand-logo" />
+        <span>PureTTS</span>
+      </a>
+      <div class="nav-badges">
+        <span class="badge badge-free">⚡ 100% Free & Unlimited</span>
+        <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="btn-coffee-nav">
+          ☕ Buy Me a Coffee
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Hero Header -->
+    <section class="hero-seo">
+      <span class="hero-badge">Zero Limits · Zero Signups · 100% Client-Side</span>
+      <h1>The 100% Free, Unlimited ElevenLabs Alternative</h1>
+      <p>Studio-quality AI voice synthesis powered by Kokoro-82M. No 10,000 character monthly limits, no $22/mo subscriptions, and zero data uploads.</p>
+    </section>
+
+    <!-- Embedded Live Converter -->
+    <section class="app-card">
+      <div class="presets-row">
+        <span class="preset-label">Pre-filled example:</span>
+        <button class="chip-btn" id="loadElevenlabsDemoBtn">✨ ElevenLabs Comparison</button>
+        <button class="chip-btn" id="loadStoryBtn">📖 Audiobook Demo</button>
+        <button type="button" id="clearTextBtn" class="clear-chip-btn">🗑️ Clear</button>
+      </div>
+
+      <div class="textarea-wrapper">
+        <textarea id="textInput">Looking for a free ElevenLabs alternative without character limits or monthly subscriptions? 
+
+Welcome to PureTTS! All voice synthesis runs 100% inside your web browser using WebGPU and WebAssembly. Your text never leaves your device, there are no character caps, and you can export uncompressed 24kHz studio WAV files instantly.
+
+Choose your favorite voice below and click Convert to test it for free!</textarea>
+        <div class="text-stats">
+          <span id="charCount">0 characters</span>
+          <span id="wordCount">0 words</span>
+          <span id="estTime">~0 min audio</span>
+          <span id="estGenTime" style="color: #67e8f9;">~0s conversion</span>
+        </div>
+      </div>
+
+      <div class="controls-grid">
+        <div>
+          <label for="voiceSelect">AI Voice Character</label>
+          <select id="voiceSelect">
+            <optgroup label="🇺🇸 American Voices (Natural & Expressive)">
+              <option value="af_heart" selected>🇺🇸 Heart (Warm, Highly Expressive Female)</option>
+              <option value="af_bella">🇺🇸 Bella (Crisp, Professional Interviewer)</option>
+              <option value="af_sky">🇺🇸 Sky (Conversational & Engaging)</option>
+              <option value="af_sarah">🇺🇸 Sarah (Calm, Informative Pacing)</option>
+              <option value="am_adam">🇺🇸 Adam (Deep, Confident Male)</option>
+              <option value="am_michael">🇺🇸 Michael (Authoritative Tech Lead)</option>
+            </optgroup>
+            <optgroup label="🇬🇧 British Voices">
+              <option value="bf_emma">🇬🇧 Emma (Polished & Professional Female)</option>
+              <option value="bf_isabella">🇬🇧 Isabella (Conversational)</option>
+              <option value="bm_george">🇬🇧 George (Executive & Senior Narrator)</option>
+              <option value="bm_lewis">🇬🇧 Lewis (Articulate Male)</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div>
+          <label for="speedRange">
+            <span>Speaking Speed</span>
+            <span id="speedValue" style="color: var(--primary); font-weight: 700;">1.00x</span>
+          </label>
+          <div class="speed-slider-wrap">
+            <input type="range" id="speedRange" min="0.5" max="2.0" step="0.05" value="1.0" class="speed-slider" />
+            <div class="speed-presets">
+              <button type="button" class="speed-pill" data-speed="0.8">0.8x</button>
+              <button type="button" class="speed-pill active" data-speed="1.0">1.0x</button>
+              <button type="button" class="speed-pill" data-speed="1.25">1.25x</button>
+              <button type="button" class="speed-pill" data-speed="1.5">1.5x</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label for="quantSelect">Synthesis Engine</label>
+          <select id="quantSelect">
+            <option value="webgpu" selected>🚀 WebGPU Studio (fp32 · Hardware Accelerated)</option>
+            <option value="wasm">💻 CPU Safe Mode (WASM q8 · Ultra-Stable ~85 MB)</option>
+          </select>
+          <div id="longTextTip" class="speed-tip" style="display:block; font-size: 0.75rem; color: #67e8f9; margin-top: 4px;">⚡ WebGPU Studio Mode: 100% crystal-clear fp32 audio, hardware-accelerated</div>
+        </div>
+      </div>
+
+      <!-- Live Progress Bar -->
+      <div id="progressBox" class="progress-box">
+        <div class="progress-header">
+          <span id="progressStatus">Downloading neural model weights...</span>
+          <span id="progressPct" style="color: var(--primary); font-family: monospace;">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div id="progressBar" class="progress-bar-fill"></div>
+        </div>
+      </div>
+
+      <!-- Generate & Stop Action Row -->
+      <div class="actions-row">
+        <button id="generateBtn" class="btn-main">
+          <span id="btnIcon">⚡</span>
+          <span id="btnText">Convert Text to Speech Free</span>
+        </button>
+        <button type="button" id="stopBtn" class="btn-stop" style="display:none;">
+          <span>⏹</span> Stop
+        </button>
+      </div>
+
+      <!-- Audio Output Area -->
+      <div id="audioResult" class="audio-result">
+        <div class="audio-header">
+          <span>✓ Speech Generated Successfully</span>
+          <span id="audioDuration">0.0s</span>
+        </div>
+        <audio id="audioPlayer" controls></audio>
+        <div class="audio-actions">
+          <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="btn-coffee-nav" style="background: rgba(255,255,255,0.05); color:#fde047; padding:8px 14px; border-radius:8px;">
+            ☕ Buy me a coffee
+          </a>
+          <a id="downloadBtn" class="btn-download" download="puretts_audio.wav">
+            ⬇ Download .WAV Audio
+          </a>
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <div class="status-indicator">
+          <div id="statusDot" class="dot ready"></div>
+          <span id="statusLabel">Ready</span>
+        </div>
+        <span id="deviceEngine">Engine: WebGPU / WASM</span>
+      </div>
+    </section>
+
+    <!-- Side-by-Side Comparison Table -->
+    <section class="comparison-section">
+      <h2>ElevenLabs vs. PureTTS Comparison</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>ElevenLabs (Free Plan)</th>
+              <th>ElevenLabs (Starter $5/mo)</th>
+              <th style="background: rgba(139, 92, 246, 0.2);">PureTTS (100% Free)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Monthly Character Limit</strong></td>
+              <td><span class="pill-red">10,000 chars (~10 mins)</span></td>
+              <td>30,000 chars (~30 mins)</td>
+              <td class="highlight-cell"><span class="pill-green">Unlimited (Zero Caps)</span></td>
+            </tr>
+            <tr>
+              <td><strong>Price</strong></td>
+              <td>$0 / month</td>
+              <td>$5 - $22 / month</td>
+              <td class="highlight-cell"><span class="pill-green">$0 Forever</span></td>
+            </tr>
+            <tr>
+              <td><strong>Privacy & Data Transmission</strong></td>
+              <td>Sent & stored on cloud servers</td>
+              <td>Sent & stored on cloud servers</td>
+              <td class="highlight-cell"><span class="pill-green">100% Local (Never leaves device)</span></td>
+            </tr>
+            <tr>
+              <td><strong>Sign-up Required</strong></td>
+              <td>Yes (Account & Email)</td>
+              <td>Yes (Credit Card)</td>
+              <td class="highlight-cell"><span class="pill-green">No Account Needed</span></td>
+            </tr>
+            <tr>
+              <td><strong>Audio Output Format</strong></td>
+              <td>Compressed 128kbps MP3</td>
+              <td>Compressed 128kbps MP3</td>
+              <td class="highlight-cell"><strong>Uncompressed 24kHz Studio WAV</strong></td>
+            </tr>
+            <tr>
+              <td><strong>PDF & Document Reader</strong></td>
+              <td>Manual copy-pasting</td>
+              <td>Manual copy-pasting</td>
+              <td class="highlight-cell"><strong>Built-in PDF reader with page range</strong></td>
+            </tr>
+            <tr>
+              <td><strong>Commercial Usage</strong></td>
+              <td>Requires attribution</td>
+              <td>Commercial license included</td>
+              <td class="highlight-cell"><strong>Commercial License Included (Apache 2.0)</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Deep SEO Content -->
+    <section class="deep-content">
+      <h3>Why Creators Are Switching from ElevenLabs to PureTTS</h3>
+      <p>ElevenLabs produces impressive speech synthesis, but their aggressive character pricing and restrictive tiers can quickly derail your budget. A single 20-minute YouTube video or a single chapter of an audiobook can easily consume 20,000 to 30,000 characters—exhausting your entire monthly allocation in minutes.</p>
+      
+      <p>PureTTS takes a fundamentally different engineering approach: rather than processing your voiceover on costly GPU cloud clusters and billing you for every character, <strong>PureTTS runs the neural AI model (Kokoro-82M v1.0) directly on your device's graphics card (WebGPU) and multi-core CPU (WebAssembly)</strong>. Because our hosting costs are zero, we never need to cap your characters, track your usage, or charge you a subscription.</p>
+
+      <div class="cards-grid">
+        <div class="info-card">
+          <h4>🔒 Absolute Privacy</h4>
+          <p>Lawyers, doctors, researchers, and enterprises cannot upload proprietary documents or patient notes to third-party cloud APIs. PureTTS operates in a secure, sandboxed browser tab where zero bytes of your text or audio ever touch a server.</p>
+        </div>
+        <div class="info-card">
+          <h4>⚡ Zero Server Latency</h4>
+          <p>No waiting in cloud queue lines or facing rate-limit throttling during peak hours. Once model weights are cached in your browser (~85 MB), synthesis begins instantly with multi-chunk parallel execution.</p>
+        </div>
+        <div class="info-card">
+          <h4>🎧 Studio WAV Export</h4>
+          <p>Don't settle for lossy, compressed MP3 files. PureTTS outputs pristine, 24,000Hz 16-bit uncompressed WAV files ready for direct import into Premiere Pro, DaVinci Resolve, Audacity, or Final Cut.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+
+      <div class="faq-item">
+        <h4>Is PureTTS really completely free?</h4>
+        <p>Yes, 100%. There are no hidden trials, no "credit packs," and no credit card requirements. The application runs entirely client-side using your computer's computing power.</p>
+      </div>
+
+      <div class="faq-item">
+        <h4>How does PureTTS voice quality compare to ElevenLabs?</h4>
+        <p>PureTTS is powered by Kokoro-82M v1.0, an open-weight model trained on high-fidelity studio datasets. It achieves exceptional natural cadence, human-like breath pacing, and emotional warmth across multiple male and female American and British voices.</p>
+      </div>
+
+      <div class="faq-item">
+        <h4>Can I convert long documents and books?</h4>
+        <p>Yes! PureTTS features automatic sentence-level chunking and continuous WAV concatenation, allowing you to synthesize articles, multi-page PDFs, and book chapters without hitches.</p>
+      </div>
+
+      <div class="faq-item">
+        <h4>Can I use the audio for monetized YouTube videos?</h4>
+        <p>Yes. The Kokoro model weights are released under Apache 2.0. You own all audio generated through PureTTS and are free to use it for monetized YouTube videos, podcasts, and commercial products.</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-links">
+      <a href="index.html">PureTTS Home</a>
+      <a href="pdf-to-speech.html">PDF to Speech Converter</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener">☕ Support Project</a>
+    </div>
+    <p>© 2026 PureTTS. The free, private, unlimited text-to-speech engine.</p>
+  </footer>
+
+  <!-- Application Script -->
+  <script type="module">
+    const textInput = document.getElementById("textInput");
+    const voiceSelect = document.getElementById("voiceSelect");
+    const quantSelect = document.getElementById("quantSelect");
+    const generateBtn = document.getElementById("generateBtn");
+    const btnText = document.getElementById("btnText");
+    const btnIcon = document.getElementById("btnIcon");
+    const stopBtn = document.getElementById("stopBtn");
+    const speedRange = document.getElementById("speedRange");
+    const speedValue = document.getElementById("speedValue");
+
+    const progressBox = document.getElementById("progressBox");
+    const progressStatus = document.getElementById("progressStatus");
+    const progressPct = document.getElementById("progressPct");
+    const progressBar = document.getElementById("progressBar");
+
+    const audioResult = document.getElementById("audioResult");
+    const audioPlayer = document.getElementById("audioPlayer");
+    const audioDuration = document.getElementById("audioDuration");
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    const statusDot = document.getElementById("statusDot");
+    const statusLabel = document.getElementById("statusLabel");
+    const deviceEngine = document.getElementById("deviceEngine");
+    const charCount = document.getElementById("charCount");
+    const wordCount = document.getElementById("wordCount");
+    const estTime = document.getElementById("estTime");
+    const estGenTime = document.getElementById("estGenTime");
+    const longTextTip = document.getElementById("longTextTip");
+    const clearTextBtn = document.getElementById("clearTextBtn");
+
+    let worker = null;
+    let isStopping = false;
+
+    function getWorker() {
+      if (worker) return worker;
+      worker = new Worker("./js/tts.worker.js", { type: "module" });
+
+      worker.onmessage = (e) => {
+        if (isStopping) return;
+        const { status, data, blob, elapsed, totalDuration, chunksProcessed, message, percent, current, total } = e.data;
+
+        if (status === "device_ready") {
+          const dev = e.data.device;
+          const dt = e.data.dtype ? e.data.dtype.toUpperCase() : "";
+          if (dev === "webgpu") {
+            deviceEngine.textContent = `Engine: WebGPU (${dt} Hardware Accelerated 🚀)`;
+          } else {
+            deviceEngine.textContent = `Engine: WebAssembly CPU (${dt})`;
+          }
+        } else if (status === "progress") {
+          progressBox.style.display = "block";
+          progressBar.style.width = `${data.percent}%`;
+          progressPct.textContent = `${data.percent}%`;
+          progressStatus.textContent = data.message;
+        } else if (status === "synthesizing") {
+          progressBox.style.display = "block";
+          progressBar.style.width = `${percent}%`;
+          progressPct.textContent = `${current}/${total} (${percent}%)`;
+          progressStatus.textContent = message;
+          setBusy(true, message);
+        } else if (status === "complete") {
+          progressBox.style.display = "none";
+          setBusy(false);
+          const masterUrl = URL.createObjectURL(blob);
+          downloadBtn.href = masterUrl;
+          audioResult.style.display = "block";
+          audioPlayer.src = masterUrl;
+          audioDuration.textContent = `${totalDuration}s full audio (gapless)`;
+          statusLabel.textContent = `Generated ${totalDuration}s audio in ${elapsed}s!`;
+          audioPlayer.play().catch(err => console.log("Auto-play prevented:", err));
+        } else if (status === "error") {
+          progressBox.style.display = "none";
+          setBusy(false);
+          alert(`TTS Error: ${message}`);
+        }
+      };
+
+      worker.onerror = (err) => {
+        console.error("Worker error:", err);
+        progressBox.style.display = "none";
+        setBusy(false);
+      };
+
+      return worker;
+    }
+
+    function setBusy(isBusy, message = "") {
+      if (isStopping && isBusy) return;
+      generateBtn.disabled = isBusy;
+      if (stopBtn) stopBtn.style.display = isBusy ? "inline-flex" : "none";
+      if (isBusy) {
+        statusDot.className = "dot busy";
+        statusLabel.textContent = message || "Processing in background...";
+        btnIcon.textContent = "⏳";
+        btnText.textContent = message || "Synthesizing audio...";
+      } else {
+        statusDot.className = "dot ready";
+        statusLabel.textContent = "Ready";
+        btnIcon.textContent = "⚡";
+        btnText.textContent = "Convert Text to Speech Free";
+      }
+    }
+
+    function updateStats() {
+      const text = textInput.value;
+      const chars = text.length;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      const currentSpeed = speedRange ? parseFloat(speedRange.value) || 1.0 : 1.0;
+      const readMin = ((words / 150) / currentSpeed).toFixed(1);
+      const hasWebGPU = !!navigator.gpu;
+      const genSec = words > 0 ? Math.max(1, Math.round(words / (hasWebGPU ? 10 : 3))) : 0;
+
+      charCount.textContent = `${chars.toLocaleString()} characters`;
+      wordCount.textContent = `${words.toLocaleString()} words`;
+      estTime.textContent = `~${readMin} min audio`;
+      if (estGenTime) estGenTime.textContent = `~${genSec}s conversion`;
+    }
+
+    textInput.addEventListener("input", updateStats);
+    updateStats();
+
+    if (speedRange && speedValue) {
+      speedRange.addEventListener("input", (e) => {
+        const val = parseFloat(e.target.value);
+        speedValue.textContent = `${val.toFixed(2)}x`;
+        updateStats();
+        document.querySelectorAll(".speed-pill").forEach(p => {
+          p.classList.toggle("active", parseFloat(p.dataset.speed) === val);
+        });
+      });
+
+      document.querySelectorAll(".speed-pill").forEach(pill => {
+        pill.addEventListener("click", () => {
+          const val = parseFloat(pill.dataset.speed);
+          speedRange.value = val;
+          speedValue.textContent = `${val.toFixed(2)}x`;
+          document.querySelectorAll(".speed-pill").forEach(p => p.classList.remove("active"));
+          pill.classList.add("active");
+          updateStats();
+        });
+      });
+    }
+
+    if (clearTextBtn) {
+      clearTextBtn.addEventListener("click", () => {
+        textInput.value = "";
+        updateStats();
+      });
+    }
+
+    const loadElevenlabsDemoBtn = document.getElementById("loadElevenlabsDemoBtn");
+    if (loadElevenlabsDemoBtn) {
+      loadElevenlabsDemoBtn.addEventListener("click", () => {
+        textInput.value = `Looking for an unlimited ElevenLabs alternative without character limits or subscriptions? PureTTS runs 100% inside your browser using WebGPU and WebAssembly. No character caps, zero data sent to external servers, and instant 16-bit WAV downloads!`;
+        updateStats();
+      });
+    }
+
+    const loadStoryBtn = document.getElementById("loadStoryBtn");
+    if (loadStoryBtn) {
+      loadStoryBtn.addEventListener("click", () => {
+        textInput.value = `The air was crisp and scented with pine as the morning fog drifted through the high mountain valley. Deep in the quiet woods, a crystal stream wound its way between weathered stones, murmuring ancient secrets to the towering cedars.`;
+        updateStats();
+      });
+    }
+
+    if (stopBtn) {
+      stopBtn.addEventListener("click", () => {
+        isStopping = true;
+        if (worker) {
+          try { worker.terminate(); } catch (e) {}
+          worker = null;
+        }
+        setBusy(false);
+        progressBox.style.display = "none";
+        statusLabel.textContent = "Conversion stopped.";
+        setTimeout(() => { isStopping = false; }, 150);
+      });
+    }
+
+    generateBtn.addEventListener("click", () => {
+      const text = textInput.value.trim();
+      if (!text) {
+        alert("Please enter some text to speak.");
+        return;
+      }
+
+      isStopping = false;
+      const selectedVoice = voiceSelect.value;
+      const selectedQuant = quantSelect.value;
+      const selectedSpeed = speedRange ? parseFloat(speedRange.value) || 1.0 : 1.0;
+
+      setBusy(true, "Initializing neural engine...");
+      const ttsWorker = getWorker();
+
+      ttsWorker.postMessage({
+        type: "generate",
+        text: text,
+        voice: selectedVoice,
+        dtype: selectedQuant,
+        speed: selectedSpeed,
+        id: Date.now()
+      });
+    });
+  </script>
+</body>
+</html>
