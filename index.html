@@ -257,6 +257,115 @@
       }
     }
 
+    /* Post-Download Gratitude Toast */
+    .gratitude-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(140%);
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(250, 204, 21, 0.4);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 25px rgba(250, 204, 21, 0.25);
+      border-radius: 16px;
+      padding: 20px 24px;
+      max-width: 500px;
+      width: calc(100% - 32px);
+      z-index: 1000;
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .gratitude-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .gratitude-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .gratitude-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fde047;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .gratitude-close {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+      transition: color 0.15s ease;
+    }
+
+    .gratitude-close:hover {
+      color: #ffffff;
+    }
+
+    .gratitude-body {
+      font-size: 0.88rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .gratitude-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-gratitude-coffee {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: #facc15;
+      color: #090e1a;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(250, 204, 21, 0.4);
+      transition: all 0.15s ease;
+    }
+
+    .btn-gratitude-coffee:hover {
+      background: #fde047;
+      transform: translateY(-1px);
+    }
+
+    .btn-gratitude-dismiss {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #94a3b8;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-gratitude-dismiss:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+
     /* Main Container */
     main {
       flex: 1;
@@ -1787,7 +1896,53 @@ Count every valid IP address across the extracted text and output the addresses 
         id: Date.now()
       });
     });
+
+    // Post-Download Gratitude Toast Handler
+    const gratitudeToast = document.getElementById("gratitudeToast");
+    const closeGratitudeBtn = document.getElementById("closeGratitudeBtn");
+    const dismissGratitudeBtn = document.getElementById("dismissGratitudeBtn");
+
+    function showGratitudeToast() {
+      if (!gratitudeToast) return;
+      const lastDismissed = localStorage.getItem("puretts_tip_dismissed");
+      if (lastDismissed && Date.now() - parseInt(lastDismissed, 10) < 12 * 60 * 60 * 1000) {
+        return;
+      }
+      gratitudeToast.classList.add("show");
+    }
+
+    function hideGratitudeToast() {
+      if (!gratitudeToast) return;
+      gratitudeToast.classList.remove("show");
+      localStorage.setItem("puretts_tip_dismissed", Date.now().toString());
+    }
+
+    if (downloadBtn) {
+      downloadBtn.addEventListener("click", () => {
+        setTimeout(showGratitudeToast, 600);
+      });
+    }
+
+    if (closeGratitudeBtn) closeGratitudeBtn.addEventListener("click", hideGratitudeToast);
+    if (dismissGratitudeBtn) dismissGratitudeBtn.addEventListener("click", hideGratitudeToast);
   </script>
+
+  <!-- Post-Download Gratitude Toast -->
+  <div id="gratitudeToast" class="gratitude-toast">
+    <div class="gratitude-header">
+      <span class="gratitude-title">☕ Enjoying PureTTS?</span>
+      <button type="button" class="gratitude-close" id="closeGratitudeBtn" aria-label="Close notification">✕</button>
+    </div>
+    <p class="gratitude-body">
+      PureTTS has zero character limits, no subscriptions, and complete privacy. If it saved you money or time today, please consider buying a coffee to keep it 100% free!
+    </p>
+    <div class="gratitude-actions">
+      <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="btn-gratitude-coffee">
+        ☕ Buy Me a Coffee ($3)
+      </a>
+      <button type="button" class="btn-gratitude-dismiss" id="dismissGratitudeBtn">Maybe Later</button>
+    </div>
+  </div>
 
   <!-- Floating Buy Me a Coffee Badge -->
   <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="floating-coffee" title="Support PureTTS on Buy Me a Coffee">
