@@ -174,10 +174,52 @@
       border: 1px solid rgba(139, 92, 246, 0.4);
     }
 
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .nav-link:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-link.active {
+      color: #ffffff;
+      background: rgba(6, 182, 212, 0.2);
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      font-weight: 600;
+    }
+
     .nav-badges {
       display: flex;
       align-items: center;
       gap: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        gap: 8px;
+      }
+      .nav-link {
+        font-size: 0.8rem;
+        padding: 3px 6px;
+      }
+      .badge-hide-mobile {
+        display: none !important;
+      }
     }
 
     .badge {
@@ -915,10 +957,15 @@
         <img src="assets/avatar.jpg" alt="PureTTS Logo" class="brand-logo" />
         <span>PureTTS</span>
       </a>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link">TTS Studio</a>
+        <a href="pdf-to-speech.html" class="nav-link active">PDF to Speech</a>
+        <a href="elevenlabs-alternative.html" class="nav-link">ElevenLabs Alternative</a>
+      </div>
       <div class="nav-badges">
-        <span class="badge badge-pdf">📄 PDF to Speech</span>
+        <span class="badge badge-pdf badge-hide-mobile">📄 PDF Reader</span>
         <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="btn-coffee-nav">
-          ☕ Buy Me a Coffee
+          ☕ Support
         </a>
       </div>
     </div>
@@ -1217,13 +1264,16 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
   <!-- Footer -->
   <footer>
     <div class="footer-links">
-      <a href="index.html">PureTTS Home</a>
+      <a href="index.html">TTS Studio</a>
+      <a href="pdf-to-speech.html">PDF to Speech</a>
       <a href="elevenlabs-alternative.html">ElevenLabs Alternative</a>
       <a href="privacy.html">Privacy Policy</a>
       <a href="terms.html">Terms of Service</a>
-      <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener">☕ Support Project</a>
+      <a href="https://github.com/bbompastor/free-ai-tts/issues" target="_blank" rel="noopener">Contact & Support</a>
+      <a href="https://github.com/hexgrad/kokoro" target="_blank" rel="noopener">Kokoro Model</a>
+      <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener">☕ Support This Project</a>
     </div>
-    <p>© 2026 PureTTS. Free, private, unlimited text-to-speech for everyone.</p>
+    <p>© 2026 PureTTS. Free, 100% private in-browser text-to-speech for everyone.</p>
   </footer>
 
   <!-- Application Script -->
