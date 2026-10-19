@@ -19,13 +19,16 @@ let currentDevice = null;
  * - WASM CPU: Uses "q8" (or "q4") which runs smoothly via CPU SIMD instructions with zero GPU driver bugs.
  */
 async function getOrInitTTS(requestedMode = "webgpu") {
-  const wantsWasm = requestedMode === "wasm" || requestedMode === "q8";
+  const wantsWasm = requestedMode === "wasm" || requestedMode === "wasm-mobile" || requestedMode === "q8";
+  const isMobileWebGPU = requestedMode === "webgpu-mobile";
 
   // Check if WebGPU is available in this worker environment
   let canUseWebGPU = false;
   if (!wantsWasm && typeof navigator !== "undefined" && navigator.gpu) {
     try {
-      const adapter = await navigator.gpu.requestAdapter();
+      const adapter = await navigator.gpu.requestAdapter({
+        powerPreference: isMobileWebGPU ? "low-power" : "high-performance"
+      });
       if (adapter) {
         canUseWebGPU = true;
       }
@@ -35,15 +38,20 @@ async function getOrInitTTS(requestedMode = "webgpu") {
     }
   }
 
-  // WebGPU MUST use fp32 with Kokoro-82M-v1.0-ONNX:
-  // - fp16 causes kokoro-js to fail tensor readback and return empty/silent audio because style/speed inputs are float32.
-  // - Quantized (q8/q4) has known shader kernel bugs causing distorted or accelerated speech.
-  // - fp32 produces 100% full mathematical fidelity and crystal-clear human sound.
+  // WebGPU uses fp32 with Kokoro-82M-v1.0-ONNX for 100% mathematical fidelity and crystal-clear human sound.
+  // On mobile WebGPU ("webgpu-mobile"), we pair it with low-power adapter hints and 110-char micro-chunking
+  // so transient GPU activation buffers stay well under mobile OS per-tab memory limits.
   const targetDevice = canUseWebGPU ? "webgpu" : "wasm";
   const targetDtype = canUseWebGPU ? "fp32" : "q8";
   const cacheKey = `${targetDevice}-${targetDtype}`;
 
   if (ttsInstance && currentDtype === cacheKey) {
+    self.postMessage({
+      status: "device_ready",
+      device: currentDevice,
+      dtype: targetDtype,
+      mobile: isMobileWebGPU || requestedMode === "wasm-mobile"
+    });
     return ttsInstance;
   }
 
@@ -62,12 +70,13 @@ async function getOrInitTTS(requestedMode = "webgpu") {
     }
   };
 
-  // 1. Attempt WebGPU hardware acceleration with fp32 (Pristine studio audio + hardware speed)
+  // 1. Attempt WebGPU hardware acceleration (Desktop Studio or Mobile Low-VRAM WebGPU)
   if (canUseWebGPU) {
     try {
+      const modeLabel = isMobileWebGPU ? "Mobile WebGPU (Low-VRAM Mode ⚡)" : "WebGPU (FP32 Hardware Accelerated 🚀)";
       self.postMessage({
         status: "progress",
-        data: { percent: 0, file: "Connecting...", message: `Initializing Kokoro on WebGPU (FP32 Hardware Accelerated 🚀)...` }
+        data: { percent: 0, file: "Connecting...", message: `Initializing Kokoro on ${modeLabel}...` }
       });
 
       ttsInstance = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
@@ -77,7 +86,7 @@ async function getOrInitTTS(requestedMode = "webgpu") {
       });
       currentDevice = "webgpu";
       currentDtype = cacheKey;
-      self.postMessage({ status: "device_ready", device: "webgpu", dtype: "fp32" });
+      self.postMessage({ status: "device_ready", device: "webgpu", dtype: "fp32", mobile: isMobileWebGPU });
       return ttsInstance;
     } catch (gpuErr) {
       console.warn("WebGPU initialization failed, falling back to WASM CPU:", gpuErr);
@@ -85,10 +94,10 @@ async function getOrInitTTS(requestedMode = "webgpu") {
     }
   }
 
-  // 2. Fallback to WebAssembly CPU with q8 (Rock-solid, crystal-clear, zero distortion)
+  // 2. Fallback to WebAssembly CPU with q8 (Rock-solid, crystal-clear, ~85 MB)
   self.postMessage({
     status: "progress",
-    data: { percent: 0, file: "Connecting...", message: `Initializing Kokoro on WebAssembly CPU (Safe Mode)...` }
+    data: { percent: 0, file: "Connecting...", message: `Initializing Kokoro on WebAssembly (${requestedMode === "wasm-mobile" ? "Mobile Fast Mode 📱" : "Safe Mode 💻"})...` }
   });
 
   ttsInstance = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
@@ -98,7 +107,7 @@ async function getOrInitTTS(requestedMode = "webgpu") {
   });
   currentDevice = "wasm";
   currentDtype = `wasm-q8`;
-  self.postMessage({ status: "device_ready", device: "wasm", dtype: "q8" });
+  self.postMessage({ status: "device_ready", device: "wasm", dtype: "q8", mobile: requestedMode === "wasm-mobile" });
   return ttsInstance;
 }
 
@@ -218,16 +227,18 @@ self.onmessage = async (e) => {
       const speedValue = speed ? Math.max(0.5, Math.min(2.0, parseFloat(speed))) : 1.0;
 
       // Dynamic chunk sizing:
-      // - WebGPU: 220 chars (~1-2 sentences) keeps each forward pass around ~400ms, preventing GPU command queue saturation
+      // - Mobile WebGPU: 110 chars keeps transient GPU activation tensors small so mobile Safari/Chrome never exceed per-tab memory limits
+      // - Desktop WebGPU: 220 chars (~1-2 sentences) keeps each forward pass around ~400ms, preventing GPU command queue saturation
       // - WASM CPU: 320 chars provides optimal SIMD batch throughput.
-      const targetMaxChars = currentDevice === "webgpu" ? 220 : 320;
+      const isMobileGpu = currentDevice === "webgpu" && dtype === "webgpu-mobile";
+      const targetMaxChars = isMobileGpu ? 110 : (currentDevice === "webgpu" ? 220 : 320);
       const chunks = chunkText(text, targetMaxChars);
       if (chunks.length === 0) {
         throw new Error("Please enter text to synthesize.");
       }
 
       // Initial breather to allow browser GPU context and VRAM allocation to settle
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, isMobileGpu ? 90 : 50));
 
       const audioSegments = [];
       let sampleRate = 24000;
@@ -318,10 +329,10 @@ self.onmessage = async (e) => {
         }
 
         // Cooperative GPU & CPU yield between chunks:
-        // 90ms on WebGPU allows macOS WindowServer and display compositor to render frames
-        // smoothly with zero stutter.
+        // 160ms on Mobile WebGPU allows mobile OS memory manager to reclaim temporary tensor buffers,
+        // 90ms on Desktop WebGPU allows macOS WindowServer / display compositor to render frames smoothly.
         if (i < chunks.length - 1) {
-          const yieldMs = currentDevice === "webgpu" ? 90 : 30;
+          const yieldMs = isMobileGpu ? 160 : (currentDevice === "webgpu" ? 90 : 30);
           await new Promise((resolve) => setTimeout(resolve, yieldMs));
         }
       }

@@ -1383,22 +1383,81 @@ Choose your favorite voice below and click Convert to test it for free!</textare
       }
     }
 
+    const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const hasWebGPU = !!navigator.gpu;
+
+    function configureEngineOptions() {
+      if (!quantSelect) return;
+      quantSelect.innerHTML = "";
+
+      if (isMobileDevice) {
+        const mobileWasmOpt = document.createElement("option");
+        mobileWasmOpt.value = "wasm-mobile";
+        mobileWasmOpt.textContent = "📱 Mobile Fast Mode (WASM q8 · 100% Compatible ~85 MB)";
+        mobileWasmOpt.selected = true;
+        quantSelect.appendChild(mobileWasmOpt);
+
+        if (hasWebGPU) {
+          const mobileGpuOpt = document.createElement("option");
+          mobileGpuOpt.value = "webgpu-mobile";
+          mobileGpuOpt.textContent = "⚡ Mobile WebGPU (Low-VRAM Mobile GPU · Hardware Accelerated)";
+          quantSelect.appendChild(mobileGpuOpt);
+        }
+        deviceEngine.textContent = "Engine: Mobile Neural Engine 📱";
+      } else {
+        if (hasWebGPU) {
+          const desktopGpuOpt = document.createElement("option");
+          desktopGpuOpt.value = "webgpu";
+          desktopGpuOpt.textContent = "🚀 WebGPU Studio (fp32 · Hardware Accelerated)";
+          desktopGpuOpt.selected = true;
+          quantSelect.appendChild(desktopGpuOpt);
+          deviceEngine.textContent = "Engine: WebGPU (Hardware Accelerated) 🚀";
+        } else {
+          deviceEngine.textContent = "Engine: WebAssembly Multi-Core CPU";
+        }
+
+        const desktopWasmOpt = document.createElement("option");
+        desktopWasmOpt.value = "wasm";
+        desktopWasmOpt.textContent = "💻 CPU Safe Mode (WASM q8 · Ultra-Stable ~85 MB)";
+        if (!hasWebGPU) desktopWasmOpt.selected = true;
+        quantSelect.appendChild(desktopWasmOpt);
+      }
+    }
+    configureEngineOptions();
+
     function updateStats() {
       const text = textInput.value;
       const chars = text.length;
       const words = text.trim() ? text.trim().split(/\s+/).length : 0;
       const currentSpeed = speedRange ? parseFloat(speedRange.value) || 1.0 : 1.0;
       const readMin = ((words / 150) / currentSpeed).toFixed(1);
-      const hasWebGPU = !!navigator.gpu;
-      const genSec = words > 0 ? Math.max(1, Math.round(words / (hasWebGPU ? 10 : 3))) : 0;
+      const selectedMode = quantSelect ? quantSelect.value : "wasm";
+      const isGpuSelected = selectedMode === "webgpu" || selectedMode === "webgpu-mobile";
+      const genSec = words > 0 ? Math.max(1, Math.round(words / (isGpuSelected ? 10 : 3))) : 0;
 
       charCount.textContent = `${chars.toLocaleString()} characters`;
       wordCount.textContent = `${words.toLocaleString()} words`;
       estTime.textContent = `~${readMin} min audio`;
-      if (estGenTime) estGenTime.textContent = `~${genSec}s conversion`;
+      if (estGenTime) estGenTime.textContent = `~${genSec}s conversion (${isGpuSelected ? "WebGPU" : "CPU"})`;
+
+      if (longTextTip && quantSelect) {
+        if (selectedMode === "wasm-mobile") {
+          longTextTip.textContent = "📱 Mobile Fast Mode: Lightweight ~85 MB neural engine optimized for iOS & Android";
+        } else if (selectedMode === "webgpu-mobile") {
+          longTextTip.textContent = "⚡ Mobile WebGPU Mode: Low-VRAM micro-chunking for hardware-accelerated mobile GPUs";
+        } else if (selectedMode === "wasm") {
+          longTextTip.textContent = "💡 CPU Safe Mode: Recommended for laptops & Macs. Zero UI freeze, rock-solid stability.";
+        } else {
+          longTextTip.textContent = "⚡ WebGPU Studio Mode: 100% crystal-clear fp32 audio, hardware-accelerated";
+        }
+        longTextTip.style.display = "block";
+      }
     }
 
     textInput.addEventListener("input", updateStats);
+    if (quantSelect) {
+      quantSelect.addEventListener("change", updateStats);
+    }
     updateStats();
 
     if (speedRange && speedValue) {
@@ -1492,14 +1551,6 @@ Choose your favorite voice below and click Convert to test it for free!</textare
         id: Date.now()
       });
     });
-
-    // Auto-select lightweight WASM q8 engine on mobile phones to prevent mobile GPU memory crashes
-    if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) && quantSelect) {
-      quantSelect.value = "wasm";
-      if (longTextTip) {
-        longTextTip.textContent = "📱 Mobile Safe Mode (WASM q8): Optimized ~85 MB neural engine for mobile browsers";
-      }
-    }
 
     // Track ElevenLabs affiliate and Buy Me a Coffee clicks in GA4
     document.querySelectorAll('a[href*="elevenlabs.io"]').forEach(link => {
