@@ -1473,6 +1473,14 @@ Choose your favorite voice below and click Convert to test it for free!</textare
       const selectedSpeed = speedRange ? parseFloat(speedRange.value) || 1.0 : 1.0;
 
       setBusy(true, "Initializing neural engine...");
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "tts_generate", {
+          voice: selectedVoice,
+          engine: selectedQuant,
+          char_length: text.length,
+          page_type: "elevenlabs_alternative"
+        });
+      }
       const ttsWorker = getWorker();
 
       ttsWorker.postMessage({
@@ -1482,6 +1490,30 @@ Choose your favorite voice below and click Convert to test it for free!</textare
         dtype: selectedQuant,
         speed: selectedSpeed,
         id: Date.now()
+      });
+    });
+
+    // Auto-select lightweight WASM q8 engine on mobile phones to prevent mobile GPU memory crashes
+    if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) && quantSelect) {
+      quantSelect.value = "wasm";
+      if (longTextTip) {
+        longTextTip.textContent = "📱 Mobile Safe Mode (WASM q8): Optimized ~85 MB neural engine for mobile browsers";
+      }
+    }
+
+    // Track ElevenLabs affiliate and Buy Me a Coffee clicks in GA4
+    document.querySelectorAll('a[href*="elevenlabs.io"]').forEach(link => {
+      link.addEventListener("click", () => {
+        if (typeof window.gtag === "function") {
+          window.gtag("event", "elevenlabs_affiliate_click", { page_type: "elevenlabs_alternative" });
+        }
+      });
+    });
+    document.querySelectorAll('a[href*="buymeacoffee.com"]').forEach(link => {
+      link.addEventListener("click", () => {
+        if (typeof window.gtag === "function") {
+          window.gtag("event", "bmac_support_click", { page_type: "elevenlabs_alternative" });
+        }
       });
     });
 
@@ -1507,6 +1539,9 @@ Choose your favorite voice below and click Convert to test it for free!</textare
 
     if (downloadBtn) {
       downloadBtn.addEventListener("click", () => {
+        if (typeof window.gtag === "function") {
+          window.gtag("event", "wav_download", { page_type: "elevenlabs_alternative" });
+        }
         setTimeout(showGratitudeToast, 600);
       });
     }
