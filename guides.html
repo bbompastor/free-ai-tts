@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-3T94467EX6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-3T94467EX6');
+  </script>
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4208863632802309"
+       crossorigin="anonymous"></script>
+
+  <title>AI Voice Directing, Pacing & Audio Mastering Guide | PureTTS</title>
+  <meta name="description" content="Master natural AI voiceovers with PureTTS. Learn punctuation prosody engineering, vocal profiles for all 10 American & British Kokoro-82M voices, and how to master 24kHz WAV audio for YouTube and audiobooks." />
+  <link rel="canonical" href="https://puretts.com/guides.html" />
+  <link rel="icon" type="image/jpeg" href="assets/avatar.jpg" />
+
+  <style>
+    :root {
+      --bg: #070a13;
+      --card-bg: #0f172a;
+      --card-inner: #15203b;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #8b5cf6;
+      --accent: #06b6d4;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.14) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      line-height: 1.7;
+    }
+    nav {
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(7, 10, 19, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid rgba(139, 92, 246, 0.5);
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      flex-wrap: wrap;
+    }
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 7px;
+      transition: all 0.15s ease;
+    }
+    .nav-link:hover { color: var(--text); background: rgba(255, 255, 255, 0.05); }
+    .nav-link.active { color: #ffffff; background: var(--primary); }
+    main {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+    .article-header {
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      color: #c084fc;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: clamp(1.9rem, 4vw, 2.7rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #fff;
+      margin-bottom: 14px;
+      line-height: 1.2;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .content-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 34px;
+      margin-bottom: 32px;
+    }
+    h2 {
+      font-size: 1.5rem;
+      color: #fff;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    h3 {
+      font-size: 1.15rem;
+      color: #e2e8f0;
+      margin: 24px 0 10px;
+    }
+    p {
+      color: var(--text-muted);
+      font-size: 0.98rem;
+      margin-bottom: 16px;
+    }
+    ul, ol {
+      color: var(--text-muted);
+      padding-left: 24px;
+      margin-bottom: 18px;
+    }
+    li { margin-bottom: 10px; font-size: 0.96rem; }
+    strong { color: #f1f5f9; }
+    .code-example {
+      background: #070a13;
+      border: 1px solid var(--card-border);
+      border-left: 3px solid var(--primary);
+      padding: 16px 20px;
+      border-radius: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.9rem;
+      color: #e2e8f0;
+      margin: 16px 0 22px;
+      overflow-x: auto;
+    }
+    .table-wrap { overflow-x: auto; margin: 20px 0; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+    }
+    th {
+      background: rgba(255, 255, 255, 0.03);
+      color: #fff;
+      font-weight: 700;
+    }
+    td { color: var(--text-muted); }
+    .cta-banner {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(6, 182, 212, 0.15));
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      border-radius: var(--radius);
+      padding: 32px;
+      text-align: center;
+      margin-top: 40px;
+    }
+    .btn-primary {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--primary), #6366f1);
+      color: #fff;
+      font-weight: 700;
+      border-radius: 10px;
+      text-decoration: none;
+    }
+    footer {
+      border-top: 1px solid var(--card-border);
+      background: var(--card-bg);
+      padding: 30px 20px;
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 12px;
+    }
+    .footer-links a { color: var(--text-muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--primary); }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-container">
+      <a href="index.html" class="brand">
+        <img src="assets/avatar.jpg" alt="PureTTS Logo" class="brand-logo" />
+        <span>PureTTS</span>
+      </a>
+      <div class="nav-links">
+        <a href="index.html" class="nav-link">TTS Studio</a>
+        <a href="pdf-to-speech.html" class="nav-link">PDF to Speech</a>
+        <a href="elevenlabs-alternative.html" class="nav-link">ElevenLabs Alternative</a>
+        <a href="guides.html" class="nav-link active">Voice Guide</a>
+        <a href="architecture.html" class="nav-link">How It Works</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="article-header">
+      <span class="badge">📚 Production Handbook</span>
+      <h1>The Complete Guide to AI Voice Directing, Prosody &amp; Audio Mastering</h1>
+      <p class="subtitle">How to write scripts for neural text-to-speech, select the ideal Kokoro-82M vocal timbre, control breathing and cadence with punctuation, and master 24kHz WAV exports for YouTube, podcasts, and audiobooks.</p>
+    </header>
+
+    <article class="content-card">
+      <h2>1. Understanding Neural Prosody in Kokoro-82M</h2>
+      <p>Unlike legacy concatenative or basic parametric text-to-speech systems that read each word in isolation, modern neural acoustic models like <strong>Kokoro-82M</strong> evaluate entire clauses at once. Before generating a single millisecond of audio, the model converts your raw English text into International Phonetic Alphabet (IPA) phoneme sequences paired with stress markers, pitch contours, and prosodic boundary tokens.</p>
+      <p>Because the neural network predicts pitch rise, vocal warmth, and breath pauses directly from the grammatical structure of a sentence, <strong>how you punctuate and structure your script acts as your "director's prompt."</strong> Small adjustments to sentence length, punctuation marks, and numeric spelling can transform a flat reading into an expressive, human-grade narration.</p>
+
+      <h3>How Punctuation Controls Breathing and Inflection</h3>
+      <ul>
+        <li><strong>Periods (<code>.</code>) — Full Downward Cadence (~350ms–450ms pause):</strong> Signals the end of a complete thought. The voice naturally drops in pitch at the final syllable and takes a subtle breath before starting the next sentence.</li>
+        <li><strong>Commas (<code>,</code>) — Mid-Clause Continuation Pause (~150ms–200ms pause):</strong> Keeps the vocal pitch slightly elevated on the word preceding the comma, signaling to the listener that the thought is continuing. Avoid placing commas between a subject and verb, as this introduces an unnatural hesitation.</li>
+        <li><strong>Em-Dashes (<code>—</code>) &amp; Semicolons (<code>;</code>) — Dramatic Beat (~250ms–300ms pause):</strong> When you want a conversational aside or a dramatic rhetorical pause without dropping pitch all the way to a period, use an em-dash or semicolon.</li>
+        <li><strong>Question Marks (<code>?</code>) — Interrogative Pitch Rise:</strong> Automatically shifts the fundamental frequency (F0 contour) upward on the final stressed syllable of the clause, creating genuine curiosity or questioning tone.</li>
+        <li><strong>Exclamation Marks (<code>!</code>) — Elevated Energy &amp; Projection:</strong> Increases vocal intensity and slightly raises baseline pitch across the entire sentence. Use sparingly for genuine moments of excitement or urgency.</li>
+      </ul>
+
+      <div class="code-example">
+        <strong>Flat Script (Avoid):</strong><br/>
+        "In 2026 AI voice generation runs in the browser at 24kHz and costs $0/mo for creators."<br/><br/>
+        <strong>Directed Prosody Script (Recommended):</strong><br/>
+        "In twenty twenty-six, AI voice generation runs entirely inside your browser—delivering twenty-four kilohertz studio audio, at zero dollars per month."
+      </div>
+    </article>
+
+    <article class="content-card">
+      <h2>2. Complete Studio Voice Directory &amp; Vocal Profiles</h2>
+      <p>PureTTS includes ten curated American and British English voices from the Kokoro-82M v1.0 studio release. Each voice embedding was trained on distinct vocal characteristics, resonance profiles, and speaking cadences. Use the reference table below to match the right voice and speed multiplier to your project:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Voice Name</th>
+              <th>Accent &amp; Gender</th>
+              <th>Vocal Timbre &amp; Character</th>
+              <th>Recommended Speed</th>
+              <th>Best Production Use Cases</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Heart (<code>af_heart</code>)</strong></td>
+              <td>🇺🇸 US Female</td>
+              <td>Warm, highly expressive, rich dynamic range, natural breathiness</td>
+              <td><code>0.95x – 1.05x</code></td>
+              <td>Fiction audiobooks, storytelling, essays, flagship YouTube narration</td>
+            </tr>
+            <tr>
+              <td><strong>Bella (<code>af_bella</code>)</strong></td>
+              <td>🇺🇸 US Female</td>
+              <td>Crisp, articulate, broadcast-ready clarity, upbeat energy</td>
+              <td><code>1.00x – 1.10x</code></td>
+              <td>Product explainers, SaaS demos, podcast intros, news summaries</td>
+            </tr>
+            <tr>
+              <td><strong>Sky (<code>af_sky</code>)</strong></td>
+              <td>🇺🇸 US Female</td>
+              <td>Youthful, conversational, approachable and modern cadence</td>
+              <td><code>1.05x – 1.15x</code></td>
+              <td>YouTube Shorts, TikTok/Reels voiceovers, lifestyle &amp; creator vlogs</td>
+            </tr>
+            <tr>
+              <td><strong>Sarah (<code>af_sarah</code>)</strong></td>
+              <td>🇺🇸 US Female</td>
+              <td>Calm, measured, steady instructional pacing, low sibilance</td>
+              <td><code>0.90x – 1.00x</code></td>
+              <td>E-learning modules, medical/scientific PDFs, guided meditation</td>
+            </tr>
+            <tr>
+              <td><strong>Adam (<code>am_adam</code>)</strong></td>
+              <td>🇺🇸 US Male</td>
+              <td>Deep baritone resonance, grounded, confident and cinematic</td>
+              <td><code>0.95x – 1.05x</code></td>
+              <td>History documentaries, video essays, true crime, game trailers</td>
+            </tr>
+            <tr>
+              <td><strong>Michael (<code>am_michael</code>)</strong></td>
+              <td>🇺🇸 US Male</td>
+              <td>Clear, authoritative mid-range voice, structured delivery</td>
+              <td><code>1.00x – 1.15x</code></td>
+              <td>Software engineering tutorials, finance breakdowns, study guides</td>
+            </tr>
+            <tr>
+              <td><strong>Emma (<code>bf_emma</code>)</strong></td>
+              <td>🇬🇧 UK Female</td>
+              <td>Polished Received Pronunciation (RP), refined and articulate</td>
+              <td><code>0.95x – 1.05x</code></td>
+              <td>Literature audiobooks, academic lectures, luxury brand narration</td>
+            </tr>
+            <tr>
+              <td><strong>Isabella (<code>bf_isabella</code>)</strong></td>
+              <td>🇬🇧 UK Female</td>
+              <td>Warm modern British tone, intimate and conversational</td>
+              <td><code>1.00x</code></td>
+              <td>Narrative podcasts, indie game NPC dialogue, cultural essays</td>
+            </tr>
+            <tr>
+              <td><strong>George (<code>bm_george</code>)</strong></td>
+              <td>🇬🇧 UK Male</td>
+              <td>Distinguished senior narrator, rich chest resonance, deliberate pace</td>
+              <td><code>0.90x – 1.00x</code></td>
+              <td>Nature documentaries, classic literature, executive presentations</td>
+            </tr>
+            <tr>
+              <td><strong>Lewis (<code>bm_lewis</code>)</strong></td>
+              <td>🇬🇧 UK Male</td>
+              <td>Crisp, modern British male voice, brisk and engaging</td>
+              <td><code>1.00x – 1.10x</code></td>
+              <td>Tech journalism, research paper listening, journalistic articles</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="content-card">
+      <h2>3. Formatting Numbers, Acronyms, Technical Terms &amp; Dialogue</h2>
+      <p>Although PureTTS includes an automated Grapheme-to-Phoneme (G2P) normalizer, ambiguous abbreviations or dense technical notation can occasionally be interpreted in multiple ways. Applying these script-prep rules guarantees flawless pronunciation on the first take:</p>
+
+      <h3>A. Acronyms vs. Initialisms</h3>
+      <p>If an uppercase abbreviation should be spoken letter-by-letter (an initialism), separate the letters with spaces or hyphens if the default dictionary tries to read it as a single word:</p>
+      <ul>
+        <li>Write <code>A I</code> or <code>A.I.</code> for clear letter separation, whereas acronyms pronounced as words like <code>NASA</code> or <code>RAM</code> can be left as normal words.</li>
+        <li>For file extensions and protocols, write <code>dot W A V</code>, <code>P D F</code>, <code>H T T P S</code>, or <code>S Q L</code> ("sequel" vs "S Q L") depending on your preferred pronunciation style.</li>
+      </ul>
+
+      <h3>B. Years, Currencies, and Units of Measure</h3>
+      <ul>
+        <li><strong>Years &amp; Version Numbers:</strong> Write <code>v1.0</code> as <code>version one point oh</code>, and <code>24kHz</code> as <code>twenty-four kilohertz</code> so the synthesizer applies natural word stress.</li>
+        <li><strong>Equations &amp; Code Snippets:</strong> When converting computer science papers or developer documentation, replace raw symbols like <code>O(n log n)</code> with <code>big O of n log n</code>.</li>
+      </ul>
+
+      <h3>C. Multi-Paragraph Chunking for Long-Form Audiobooks</h3>
+      <p>PureTTS automatically splits long manuscripts at sentence boundaries (<code>.</code>, <code>!</code>, <code>?</code>) so that every chunk fits within the optimal neural context window (~250 to 400 characters per pass) before stitching the output into a single seamless 24kHz WAV file. Keeping individual sentences under 45 words ensures maximum vocal expressiveness and prevents run-on breath fatigue.</p>
+    </article>
+
+    <article class="content-card">
+      <h2>4. Post-Processing &amp; Mastering 24kHz WAV Exports</h2>
+      <p>One of PureTTS's biggest technical advantages over cloud freemium tools is that it exports <strong>uncompressed 24,000 Hz, 16-bit PCM WAV files</strong> rather than heavily compressed 128 kbps MP3s. Uncompressed WAV preserves crisp high-frequency consonants and eliminates MP3 ringing artifacts when you import the track into your video editor or Digital Audio Workstation (DAW).</p>
+
+      <h3>Recommended Mastering Chain (Audacity, DaVinci Resolve Fairlight, or Premiere Pro)</h3>
+      <ol>
+        <li><strong>High-Pass Filter (80 Hz, 12 dB/octave):</strong> Gently rolls off sub-bass rumble below the fundamental human vocal range, leaving extra headroom in your mix.</li>
+        <li><strong>Subtle Presence Boost (+1.5 dB wide bell at 3.5 kHz):</strong> Helps the voice cut cleanly through background music beds or ambient soundscapes in YouTube videos.</li>
+        <li><strong>Gentle Optical Compression (2:1 ratio, -18 dB threshold, fast attack, slow release):</strong> Evens out dynamic peaks between quiet reflective sentences and emphasized statements by 2 to 3 dB.</li>
+        <li><strong>Loudness Normalization:</strong>
+          <ul>
+            <li><strong>YouTube, TikTok &amp; Streaming Video:</strong> Normalize integrated loudness to <strong>-14 LUFS</strong> (with True Peak at <code>-1.0 dBTP</code>).</li>
+            <li><strong>Podcasts (Apple Podcasts / Spotify):</strong> Target <strong>-16 LUFS</strong> stereo or <strong>-19 LUFS</strong> mono.</li>
+            <li><strong>Audiobooks (ACX / Audible Standard):</strong> Maintain RMS levels between <strong>-23 dB and -18 dB</strong> with peak values no higher than <strong>-3.0 dB</strong>.</li>
+          </ul>
+        </li>
+      </ol>
+
+      <div class="cta-banner">
+        <h3 style="margin-top: 0; color: #fff;">Ready to Test These Voice Directing Techniques?</h3>
+        <p style="margin-bottom: 0;">Open the PureTTS Studio to synthesize unlimited 24kHz WAV voiceovers right in your browser—100% free and private.</p>
+        <a href="index.html" class="btn-primary">⚡ Open PureTTS Studio</a>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    <div class="footer-links">
+      <a href="index.html">TTS Studio</a>
+      <a href="pdf-to-speech.html">PDF to Speech</a>
+      <a href="elevenlabs-alternative.html">ElevenLabs Alternative</a>
+      <a href="guides.html">Voice Guide</a>
+      <a href="architecture.html">How It Works</a>
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+    </div>
+    <p>© 2026 PureTTS. Free, 100% private in-browser text-to-speech for everyone.</p>
+  </footer>
+
+</body>
+</html>

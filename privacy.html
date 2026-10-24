@@ -12,22 +12,23 @@
 
     gtag('config', 'G-3T94467EX6');
   </script>
-  <!-- Google AdSense -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4208863632802309"
-       crossorigin="anonymous"></script>
-  <title>Privacy Policy - PureTTS</title>
+  <title>Privacy Policy - PureTTS | 100% Client-Side AI Text to Speech</title>
+  <meta name="description" content="Privacy Policy for PureTTS. Learn how PureTTS processes all text and speech synthesis 100% locally in your browser via WebGPU and WebAssembly, plus cookie and advertising disclosures." />
+  <link rel="canonical" href="https://puretts.com/privacy.html" />
   <style>
     body {
       background: #070a13;
       color: #f8fafc;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      line-height: 1.6;
-      max-width: 800px;
+      line-height: 1.7;
+      max-width: 840px;
       margin: 0 auto;
-      padding: 40px 20px;
+      padding: 40px 20px 60px;
     }
-    h1, h2 { color: #fff; margin-top: 24px; }
-    p, li { color: #94a3b8; font-size: 0.95rem; margin-bottom: 12px; }
+    h1 { color: #fff; font-size: 2rem; margin-bottom: 8px; }
+    h2 { color: #f1f5f9; font-size: 1.25rem; margin-top: 32px; margin-bottom: 10px; border-bottom: 1px solid #1e293b; padding-bottom: 6px; }
+    p, li { color: #94a3b8; font-size: 0.96rem; margin-bottom: 12px; }
+    ul { padding-left: 22px; margin-bottom: 16px; }
     a { color: #8b5cf6; text-decoration: none; }
     a:hover { text-decoration: underline; }
     .back-btn {
@@ -37,38 +38,74 @@
       background: #1e293b;
       color: #fff;
       border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .policy-box {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin: 20px 0;
     }
   </style>
 </head>
 <body>
-  <a href="index.html" class="back-btn">← Back to Converter</a>
+  <a href="index.html" class="back-btn">← Back to PureTTS Studio</a>
   <h1>Privacy Policy</h1>
-  <p>Last updated: October 2026</p>
+  <p><strong>Effective Date &amp; Last Updated:</strong> October 23, 2026</p>
 
-  <h2>1. 100% Client-Side Processing Guarantee</h2>
-  <p>PureTTS is engineered with a strict privacy-first architecture. Any text you enter or audio you synthesize is processed <strong>entirely within your browser's local memory</strong> using WebAssembly and WebGPU. <strong>Your text and audio are never transmitted to, saved on, or analyzed by any external server.</strong></p>
+  <div class="policy-box">
+    <p style="margin: 0; color: #e2e8f0;"><strong>Summary of Our Privacy Architecture:</strong> PureTTS is engineered as a 100% client-side web application. Any text you type, paste, or import (including PDF, TXT, and Markdown files) and any audio you generate are processed exclusively inside your own device's memory using WebGPU and WebAssembly. We never upload, store, log, or inspect your text inputs or synthesized audio files on any server.</p>
+  </div>
 
-  <h2>2. Cookies and Third-Party Advertising</h2>
-  <p>To keep this tool 100% free with no subscriptions or character limits, we may display third-party advertisements (such as Google AdSense).</p>
+  <h2>1. 100% Client-Side Text &amp; Audio Processing</h2>
+  <p>Unlike traditional cloud-based text-to-speech platforms that transmit your scripts to remote GPU servers for processing, PureTTS executes the open-weight <strong>Kokoro-82M</strong> neural model and <strong>Mozilla PDF.js</strong> parser directly inside your web browser sandbox:</p>
   <ul>
-    <li>Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to this or other websites.</li>
-    <li>Google's use of advertising cookies enables it and its partners to serve ads to users based on their visits to our site and/or other sites on the Internet.</li>
-    <li>Users may opt out of personalized advertising by visiting <a href="https://adssettings.google.com/" target="_blank" rel="noopener">Google Ads Settings</a>.</li>
+    <li><strong>Zero Text Uploads:</strong> The text you enter into the editor or extract from local PDF documents never leaves your device.</li>
+    <li><strong>Zero Audio Recording or Retention:</strong> Synthesized 24kHz WAV audio buffers are generated in your browser's local RAM (`AudioContext` and `Blob` URLs) and are immediately cleared when you close or refresh the browser tab.</li>
+    <li><strong>Suitability for Sensitive Content:</strong> Because no document data is transmitted over the network during speech generation, PureTTS preserves complete confidentiality for personal study notes, research drafts, and internal documents.</li>
   </ul>
 
-  <h2>3. Local Storage and Model Caching</h2>
-  <p>This website uses standard browser Cache Storage API (Cache / OPFS) to store public neural model weights locally on your device. This allows subsequent speech conversions to execute instantly and work offline without re-downloading files.</p>
+  <h2>2. Local Browser Storage &amp; Neural Model Caching</h2>
+  <p>When you run speech synthesis for the first time, your browser downloads the public, open-weight neural model files (~45 MB to ~85 MB depending on whether you select FP32 WebGPU or 8-bit Quantized WebAssembly mode) from public content delivery networks (such as Hugging Face / jsDelivr CDN).</p>
+  <p>To prevent redundant downloads and enable offline functionality, your browser stores these read-only neural model weights in its standard <strong>Cache Storage API</strong> or <strong>Origin Private File System (OPFS)</strong>. You can clear these cached model weights at any time through your browser's normal "Clear Site Data / Cached Images and Files" settings.</p>
 
-  <h2>4. Contact Us</h2>
-  <p>If you have questions about this Privacy Policy, suggestions, or technical support requests, please open an issue on our <a href="https://github.com/bbompastor/free-ai-tts/issues" target="_blank" rel="noopener">GitHub Issues tracker</a>.</p>
+  <h2>3. Cookies, Analytics, and Third-Party Advertising</h2>
+  <p>To keep PureTTS 100% free with no subscriptions, no accounts, and no character limits, we use aggregated traffic analytics and display third-party advertisements and partner recommendations:</p>
+  <ul>
+    <li><strong>Google AdSense &amp; DoubleClick Cookie:</strong> Third-party vendors, including Google, use cookies (such as the DoubleClick DART cookie) to serve ads based on a user's prior visits to PureTTS or other websites on the internet.</li>
+    <li><strong>Personalized Advertising Opt-Out:</strong> Google's use of advertising cookies enables it and its partners to serve relevant advertisements to you. You may opt out of personalized advertising at any time by visiting <a href="https://adssettings.google.com/" target="_blank" rel="noopener">Google Ads Settings</a> or by visiting <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener">www.aboutads.info</a>.</li>
+    <li><strong>Google Analytics (GA4):</strong> We use Google Analytics to measure anonymized, aggregate usage metrics (such as page views, device category, and browser compatibility) so we can optimize WebGPU and WebAssembly performance across desktop and mobile devices. We do not log or send any user-entered text to Google Analytics.</li>
+    <li><strong>Affiliate &amp; Partner Disclosure:</strong> For specialized capabilities that cannot run locally inside a browser (such as custom voice cloning or translation into 29+ non-English languages), PureTTS links to partner platforms such as ElevenLabs via affiliate tracking links (including Impact.com). If you choose to click a partner link and purchase a subscription on their platform, PureTTS may earn a commission at no additional cost to you.</li>
+  </ul>
+
+  <h2>4. GDPR (European Economic Area) &amp; CCPA (California) Rights</h2>
+  <p>Because PureTTS does not require user accounts, email addresses, or personal profiles, we do not maintain a database of personally identifiable user accounts. Depending on your jurisdiction (including the EU/EEA, UK, and California), you have the right to:</p>
+  <ul>
+    <li>Control or reject non-essential advertising and analytics cookies via your browser settings or consent preferences.</li>
+    <li>Request information regarding any third-party cookie identifiers processed by our advertising partners.</li>
+    <li>Clear all locally cached data stored by PureTTS at any time using your browser's site data controls.</li>
+  </ul>
+
+  <h2>5. Children's Privacy</h2>
+  <p>PureTTS is a general-audience educational and creative productivity utility. We do not knowingly collect personal information from children under the age of 13. Because our tool requires no registration and transmits no user text to any backend server, no personal student data is collected when students use PureTTS to listen to study materials.</p>
+
+  <h2>6. Changes to This Privacy Policy</h2>
+  <p>We may update this Privacy Policy periodically to reflect technical improvements, new browser APIs, or regulatory requirements. Any changes will be posted on this page with an updated effective date.</p>
+
+  <h2>7. Contact Us</h2>
+  <p>If you have questions about this Privacy Policy, data protection inquiries, or technical feedback, please reach out via our official <a href="https://github.com/bbompastor/free-ai-tts/issues" target="_blank" rel="noopener">GitHub Repository &amp; Support Tracker</a> or visit our <a href="about.html">About &amp; Documentation</a> page.</p>
 
   <hr style="border: none; border-top: 1px solid #1e293b; margin: 40px 0 20px;" />
-  <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.85rem;">
+  <div style="display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.88rem;">
     <a href="index.html">TTS Studio</a>
     <a href="pdf-to-speech.html">PDF to Speech</a>
     <a href="elevenlabs-alternative.html">ElevenLabs Alternative</a>
+    <a href="guides.html">Voice &amp; Prompting Guide</a>
+    <a href="architecture.html">How WebGPU TTS Works</a>
+    <a href="about.html">About PureTTS</a>
     <a href="terms.html">Terms of Service</a>
-    <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener">☕ Support Project</a>
   </div>
 </body>
 </html>

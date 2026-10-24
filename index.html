@@ -1179,6 +1179,8 @@
         <a href="index.html" class="nav-link active">TTS Studio</a>
         <a href="pdf-to-speech.html" class="nav-link">PDF to Speech</a>
         <a href="elevenlabs-alternative.html" class="nav-link">ElevenLabs Alternative</a>
+        <a href="guides.html" class="nav-link">Voice Guide</a>
+        <a href="architecture.html" class="nav-link">How It Works</a>
       </div>
       <div class="nav-badges">
         <span class="badge badge-free badge-hide-mobile">⚡ 100% Free</span>
@@ -1372,40 +1374,168 @@ Paste your script, article, or study notes here, choose your preferred voice, an
       </div>
     </section>
 
+    <!-- Comprehensive Editorial Guide: How PureTTS Works & Voice Directory -->
+    <section class="faq-section" style="margin-bottom: 40px;">
+      <h2 style="text-align: left; margin-bottom: 14px;">How Browser-Based WebGPU &amp; WebAssembly AI Voice Synthesis Works</h2>
+      <p style="color: var(--text-muted); font-size: 0.96rem; margin-bottom: 16px;">Traditional text-to-speech platforms transmit your scripts to remote cloud GPU servers, which forces them to meter every character, require user accounts, and lock high-fidelity voices behind monthly subscriptions. <strong>PureTTS is engineered differently:</strong> it runs the entire 82-million-parameter <strong>Kokoro-82M v1.0</strong> neural speech synthesis architecture directly inside an isolated browser Web Worker on your own computer or phone.</p>
+      <p style="color: var(--text-muted); font-size: 0.96rem; margin-bottom: 20px;">When you click <em>Convert Text to Speech</em>, PureTTS executes a four-stage acoustic pipeline locally in your device's memory:</p>
+
+      <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 24px;">
+        <div class="feature-card" style="background: var(--card-inner);">
+          <h3 style="color: #67e8f9; margin-bottom: 8px;">1. Sentence &amp; PDF Normalization</h3>
+          <p>Long manuscripts, Markdown notes, and multi-page PDF documents are segmented along natural clause boundaries (~250–400 characters) while repairing split line-break hyphens so memory usage stays low and constant.</p>
+        </div>
+        <div class="feature-card" style="background: var(--card-inner);">
+          <h3 style="color: #67e8f9; margin-bottom: 8px;">2. Phoneme (IPA) Tokenization</h3>
+          <p>A Grapheme-to-Phoneme (G2P) engine translates English words, numbers, and punctuation into International Phonetic Alphabet (IPA) phoneme sequences complete with lexical stress and pitch contour markers.</p>
+        </div>
+        <div class="feature-card" style="background: var(--card-inner);">
+          <h3 style="color: #67e8f9; margin-bottom: 8px;">3. Local WebGPU / WASM Inference</h3>
+          <p>ONNX Runtime Web executes the Kokoro StyleTTS2 + ISTFTNet neural network using either hardware-accelerated 32-bit floating-point (<code>fp32</code>) WebGPU compute shaders or multi-threaded 8-bit (<code>q8</code>) SIMD WebAssembly.</p>
+        </div>
+        <div class="feature-card" style="background: var(--card-inner);">
+          <h3 style="color: #67e8f9; margin-bottom: 8px;">4. Lossless 24kHz WAV Mastering</h3>
+          <p>Synthesized audio buffers stream to your browser's audio player in real time and concatenate into an uncompressed 24,000 Hz, 16-bit PCM <code>.wav</code> file ready for Premiere Pro, DaVinci Resolve, or Audacity.</p>
+        </div>
+      </div>
+
+      <p style="color: var(--text-muted); font-size: 0.94rem; margin-bottom: 0;">Want to explore the underlying neural network architecture in detail? Read our <a href="architecture.html" style="color: #c084fc; font-weight: 600; text-decoration: underline;">Technical Deep Dive on Client-Side WebGPU &amp; WASM Neural TTS</a>.</p>
+    </section>
+
+    <!-- Studio Voice Directory & Selection Guide -->
+    <section class="faq-section" style="margin-bottom: 40px;">
+      <h2 style="text-align: left; margin-bottom: 14px;">Complete Studio Voice Directory: 10 American &amp; British Neural Voices</h2>
+      <p style="color: var(--text-muted); font-size: 0.96rem; margin-bottom: 18px;">Every voice in PureTTS is driven by a distinct acoustic style vector trained on studio recordings. Choosing the right vocal profile and speaking rate dramatically improves listener engagement across different formats:</p>
+
+      <div style="overflow-x: auto; margin-bottom: 20px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--card-border); text-align: left;">
+              <th style="padding: 12px; color: #fff;">Voice Character</th>
+              <th style="padding: 12px; color: #fff;">Accent</th>
+              <th style="padding: 12px; color: #fff;">Vocal Timbre &amp; Delivery Style</th>
+              <th style="padding: 12px; color: #fff;">Ideal Speed</th>
+              <th style="padding: 12px; color: #fff;">Recommended Applications</th>
+            </tr>
+          </thead>
+          <tbody style="color: var(--text-muted);">
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Heart (af_heart)</strong></td>
+              <td style="padding: 10px 12px;">🇺🇸 US Female</td>
+              <td style="padding: 10px 12px;">Warm, expressive, natural breath pacing &amp; emotional inflection</td>
+              <td style="padding: 10px 12px;"><code>0.95x – 1.05x</code></td>
+              <td style="padding: 10px 12px;">Audiobooks, storytelling, video essays, flagship narration</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Bella (af_bella)</strong></td>
+              <td style="padding: 10px 12px;">🇺🇸 US Female</td>
+              <td style="padding: 10px 12px;">Crisp, broadcast-grade clarity, polished interviewer tone</td>
+              <td style="padding: 10px 12px;"><code>1.00x – 1.10x</code></td>
+              <td style="padding: 10px 12px;">Product demos, SaaS walkthroughs, podcast intros, news</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Sky (af_sky)</strong></td>
+              <td style="padding: 10px 12px;">🇺🇸 US Female</td>
+              <td style="padding: 10px 12px;">Conversational, upbeat, modern creator energy</td>
+              <td style="padding: 10px 12px;"><code>1.05x – 1.15x</code></td>
+              <td style="padding: 10px 12px;">YouTube Shorts, TikTok/Reels voiceovers, social clips</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Sarah (af_sarah)</strong></td>
+              <td style="padding: 10px 12px;">🇺🇸 US Female</td>
+              <td style="padding: 10px 12px;">Calm, measured, soothing instructional cadence</td>
+              <td style="padding: 10px 12px;"><code>0.90x – 1.00x</code></td>
+              <td style="padding: 10px 12px;">E-learning modules, medical &amp; academic PDFs, mindfulness</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Adam (am_adam)</strong></td>
+              <td style="padding: 10px 12px;">🇺🇸 US Male</td>
+              <td style="padding: 10px 12px;">Deep baritone resonance, grounded &amp; cinematic authority</td>
+              <td style="padding: 10px 12px;"><code>0.95x – 1.05x</code></td>
+              <td style="padding: 10px 12px;">Documentaries, history essays, true crime, game trailers</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Michael (am_michael)</strong></td>
+              <td style="padding: 10px 12px;">🇺🇸 US Male</td>
+              <td style="padding: 10px 12px;">Clear, structured mid-range voice, technical precision</td>
+              <td style="padding: 10px 12px;"><code>1.00x – 1.15x</code></td>
+              <td style="padding: 10px 12px;">Coding tutorials, engineering docs, finance breakdowns</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Emma (bf_emma)</strong></td>
+              <td style="padding: 10px 12px;">🇬🇧 UK Female</td>
+              <td style="padding: 10px 12px;">Refined British Received Pronunciation, articulate &amp; poised</td>
+              <td style="padding: 10px 12px;"><code>0.95x – 1.05x</code></td>
+              <td style="padding: 10px 12px;">Classic literature, academic lectures, corporate training</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Isabella (bf_isabella)</strong></td>
+              <td style="padding: 10px 12px;">🇬🇧 UK Female</td>
+              <td style="padding: 10px 12px;">Warm contemporary British voice, intimate storytelling</td>
+              <td style="padding: 10px 12px;"><code>1.00x</code></td>
+              <td style="padding: 10px 12px;">Narrative podcasts, character dialogue, fiction chapters</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">George (bm_george)</strong></td>
+              <td style="padding: 10px 12px;">🇬🇧 UK Male</td>
+              <td style="padding: 10px 12px;">Distinguished senior narrator, rich chest resonance</td>
+              <td style="padding: 10px 12px;"><code>0.90x – 1.00x</code></td>
+              <td style="padding: 10px 12px;">Nature documentaries, historical archives, book narration</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Lewis (bm_lewis)</strong></td>
+              <td style="padding: 10px 12px;">🇬🇧 UK Male</td>
+              <td style="padding: 10px 12px;">Crisp, articulate British presenter, brisk pacing</td>
+              <td style="padding: 10px 12px;"><code>1.00x – 1.10x</code></td>
+              <td style="padding: 10px 12px;">Journalistic articles, research papers, tech briefings</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="color: #fff; font-size: 1.15rem; margin: 22px 0 10px;">Pro Tips for Directing Natural Pacing &amp; Inflection</h3>
+      <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 12px;">Because Kokoro-82M predicts prosody from syntax and punctuation, small edits to your script give you fine-grained control over emphasis and pauses:</p>
+      <ul style="color: var(--text-muted); font-size: 0.94rem; padding-left: 22px; margin-bottom: 14px;">
+        <li style="margin-bottom: 8px;"><strong style="color: #e2e8f0;">Use Em-Dashes (—) for Conversational Beats:</strong> Placing an em-dash or semicolon mid-sentence creates a natural 250ms breath pause without dropping the speaker's vocal pitch the way a full period does.</li>
+        <li style="margin-bottom: 8px;"><strong style="color: #e2e8f0;">Spell Out Ambiguous Abbreviations:</strong> Write technical units or initialisms phonetically (for example, <code>twenty-four kilohertz</code> instead of <code>24kHz</code>, or <code>A.I.</code> with periods) when you want deliberate word stress.</li>
+        <li style="margin-bottom: 8px;"><strong style="color: #e2e8f0;">Keep Sentences Under 40 Words:</strong> Shorter, well-punctuated sentences allow the neural duration predictor to place natural breath intakes between clauses. See our <a href="guides.html" style="color: #c084fc; text-decoration: underline;">Voice Directing &amp; WAV Mastering Handbook</a> for complete examples.</li>
+      </ul>
+    </section>
+
     <!-- Creator Toolkit & Official Partner Section -->
     <section class="toolkit-section">
       <div class="toolkit-header">
-        <span class="toolkit-badge">✨ Creator Extensions</span>
-        <h2>Need Custom Voice Cloning or 29+ Languages?</h2>
-        <p>PureTTS gives you unlimited free English narration. When your production requires custom voice cloning or international dubbing, use our official partner below.</p>
+        <span class="toolkit-badge">✨ Creator Extensions &amp; Guides</span>
+        <h2>Production Resources &amp; Multilingual Extensions</h2>
+        <p>PureTTS gives you unlimited free English narration. Explore our production mastering guide or use our official partner when your project requires custom voice cloning or 29+ languages.</p>
       </div>
 
       <div class="toolkit-grid">
+        <a href="guides.html" class="toolkit-card">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="toolkit-icon" style="background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.3);">🎚️</div>
+            <div>
+              <div class="toolkit-tag">Free Production Guide</div>
+              <h3 style="font-size: 1.05rem; color: #fff; margin: 0;">AI Voice Directing &amp; WAV Mastering</h3>
+            </div>
+          </div>
+          <div class="toolkit-info">
+            <p style="margin-bottom: 8px;">Learn punctuation prosody engineering, vocal timbre selection, and how to master 24kHz WAV exports to -14 LUFS in Audacity, Premiere Pro, and DaVinci Resolve.</p>
+            <span class="toolkit-cta">Read the Production Guide <span>→</span></span>
+          </div>
+        </a>
+
         <a href="https://try.elevenlabs.io/hoa0azafx9oe" target="_blank" rel="noopener sponsored" class="toolkit-card">
           <div style="display: flex; align-items: center; gap: 12px;">
             <div class="toolkit-icon" style="background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.3);">🧬</div>
             <div>
-              <div class="toolkit-tag">Voice Cloning & 29+ Languages</div>
+              <div class="toolkit-tag">Voice Cloning &amp; 29+ Languages</div>
               <h3 style="font-size: 1.05rem; color: #fff; margin: 0;">ElevenLabs Studio</h3>
             </div>
           </div>
           <div class="toolkit-info">
             <p style="margin-bottom: 8px;">Clone your own voice from a 60-second audio sample, generate sound effects, or dub videos into Spanish, French, Hindi, Japanese, and 29+ languages.</p>
             <span class="toolkit-cta">Try ElevenLabs Studio <span>→</span></span>
-          </div>
-        </a>
-
-        <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="toolkit-card toolkit-card-sponsor">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <div class="toolkit-icon" style="background: rgba(250, 204, 21, 0.15); border: 1px solid rgba(250, 204, 21, 0.3);">🚀</div>
-            <div>
-              <div class="toolkit-tag" style="color: #fde047;">Sponsor PureTTS</div>
-              <h3 style="font-size: 1.05rem; color: #fff; margin: 0;">Feature Your Tool Here</h3>
-            </div>
-          </div>
-          <div class="toolkit-info">
-            <p style="margin-bottom: 8px;">Reach thousands of content creators, educators, and AI developers using PureTTS every day while supporting free open-weight AI.</p>
-            <span class="toolkit-cta" style="color: #fde047;">Become a Sponsor <span>→</span></span>
           </div>
         </a>
       </div>
@@ -1416,37 +1546,49 @@ Paste your script, article, or study notes here, choose your preferred voice, an
       <h2>Frequently Asked Questions</h2>
 
       <div class="faq-item">
-        <h4>Is this really 100% free with no limits?</h4>
-        <p>Yes! Traditional TTS websites pay expensive cloud server bills for every conversion, forcing them to charge you. Because PureTTS runs directly on your computer or phone's local processor, our hosting costs are zero, allowing us to keep this service completely free and unlimited forever.</p>
+        <h4>Is PureTTS really 100% free with no character limits?</h4>
+        <p>Yes! Traditional TTS websites pay expensive cloud GPU server bills for every conversion, forcing them to meter characters and charge subscriptions. Because PureTTS runs directly on your computer or phone's local processor via WebGPU and WebAssembly, our server compute costs are zero—allowing us to keep this service completely free and unlimited forever.</p>
       </div>
 
       <div class="faq-item">
-        <h4>Is my data private?</h4>
-        <p>Completely. Unlike cloud-based TTS services, we never transmit your text to any external server. Everything is synthesized locally in your browser memory.</p>
+        <h4>Is my text and audio data completely private?</h4>
+        <p>Completely. Unlike cloud-based TTS services, PureTTS never uploads or transmits your text or PDF files to any external server. Every stage of text normalization, phoneme tokenization, and WAV audio synthesis happens inside your local browser sandbox.</p>
       </div>
 
       <div class="faq-item">
-        <h4>Can I use the downloaded audio commercially?</h4>
-        <p>Yes. The underlying Kokoro model is licensed under Apache 2.0. You are free to use your generated audio in YouTube videos, podcasts, educational materials, and commercial projects.</p>
+        <h4>Can I use the downloaded WAV audio commercially on YouTube or in audiobooks?</h4>
+        <p>Yes. The underlying Kokoro-82M neural model is released under the permissive <strong>Apache 2.0 open-source license</strong>. You retain full commercial rights to use your generated audio in monetized YouTube videos, podcasts, audiobooks, indie video games, e-learning courses, and client projects without attribution requirements.</p>
       </div>
 
       <div class="faq-item">
-        <h4>Why does the first generation take a few seconds?</h4>
-        <p>On your very first use, your browser downloads the model weights (~45 MB to ~85 MB) and stores them in your browser's local cache. Subsequent generations load instantly and work even without an internet connection.</p>
+        <h4>Why does the very first generation take a few seconds to initialize?</h4>
+        <p>On your first run, your browser downloads the open-weight neural model files (~86 MB in CPU/Mobile mode or ~326 MB in full FP32 WebGPU Studio mode) and caches them locally in your browser's Cache Storage. Every subsequent visit loads the model directly from your local disk in milliseconds and even works offline.</p>
+      </div>
+
+      <div class="faq-item">
+        <h4>What is the difference between WebGPU Studio Mode and CPU Safe Mode (WASM)?</h4>
+        <p><strong>WebGPU Studio Mode (fp32)</strong> executes unquantized 32-bit floating-point tensors directly on your graphics card for maximum dynamic fidelity and up to 10x faster-than-real-time synthesis. <strong>CPU Safe Mode (WASM q8)</strong> uses an 8-bit quantized model (~86 MB) that runs smoothly on any multi-core CPU across Safari, Firefox, Chrome, iOS, and Android without requiring a dedicated GPU.</p>
+      </div>
+
+      <div class="faq-item">
+        <h4>Can I convert multi-page PDF textbooks and research papers to audio?</h4>
+        <p>Yes! You can drag and drop any searchable <code>.pdf</code>, <code>.txt</code>, or <code>.md</code> file directly into the text box above, or use our dedicated <a href="pdf-to-speech.html" style="color: #c084fc; text-decoration: underline;">PDF to Speech Converter</a> to extract specific page ranges and automatically clean up broken line hyphens and page headers.</p>
       </div>
     </section>
   </main>
 
   <!-- Footer -->
   <footer>
-    <div class="footer-links">
+    <div class="footer-links" style="flex-wrap: wrap;">
       <a href="index.html">TTS Studio</a>
       <a href="pdf-to-speech.html">PDF to Speech</a>
       <a href="elevenlabs-alternative.html">ElevenLabs Alternative</a>
+      <a href="guides.html">Voice Guide</a>
+      <a href="architecture.html">How It Works</a>
+      <a href="about.html">About</a>
       <a href="privacy.html">Privacy Policy</a>
       <a href="terms.html">Terms of Service</a>
-      <a href="https://github.com/bbompastor/free-ai-tts/issues" target="_blank" rel="noopener">Contact & Support</a>
-      <a href="https://github.com/hexgrad/kokoro" target="_blank" rel="noopener">Kokoro Model</a>
+      <a href="https://github.com/bbompastor/free-ai-tts/issues" target="_blank" rel="noopener">Contact &amp; Support</a>
       <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener">☕ Support This Project</a>
     </div>
     <p>© 2026 PureTTS. Free, 100% private in-browser text-to-speech for everyone.</p>
