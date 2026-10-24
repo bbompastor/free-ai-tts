@@ -30,8 +30,8 @@
   <link rel="canonical" href="https://puretts.com/pdf-to-speech.html" />
 
   <!-- Favicon & Brand Icons -->
-  <link rel="icon" type="image/jpeg" href="assets/avatar.jpg" />
-  <link rel="apple-touch-icon" href="assets/avatar.jpg" />
+  <link rel="icon" type="image/jpeg" href="assets/logo-72.jpg" />
+  <link rel="apple-touch-icon" href="assets/logo-72.jpg" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="article" />
@@ -47,7 +47,7 @@
   <meta property="twitter:image" content="https://puretts.com/assets/avatar.jpg" />
 
   <!-- PDF.js for 100% Client-Side PDF Text Extraction -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
   <!-- Structured Data: FAQPage & SoftwareApplication -->
   <script type="application/ld+json">
@@ -1190,7 +1190,7 @@
   <nav>
     <div class="nav-container">
       <a href="/" class="brand">
-        <img src="assets/avatar.jpg" alt="PureTTS Logo" class="brand-logo" />
+        <img src="assets/logo-72.jpg" width="34" height="34" alt="PureTTS Logo" class="brand-logo" />
         <span>PureTTS</span>
       </a>
       <div class="nav-links">
@@ -1240,9 +1240,9 @@
         </div>
         <div class="pdf-range-group">
           <span>Read Pages:</span>
-          <input type="number" id="pdfPageStart" min="1" value="1" class="pdf-input" />
+          <input type="number" id="pdfPageStart" aria-label="PDF start page" min="1" value="1" class="pdf-input" />
           <span>to</span>
-          <input type="number" id="pdfPageEnd" min="1" value="2" class="pdf-input" />
+          <input type="number" id="pdfPageEnd" aria-label="PDF end page" min="1" value="2" class="pdf-input" />
           <button type="button" id="applyPdfRangeBtn" class="btn-pdf-action">Extract Range</button>
           <button type="button" id="allPdfPagesBtn" class="btn-pdf-action btn-pdf-secondary">Extract All Pages</button>
         </div>
@@ -1255,7 +1255,7 @@
           <div class="drop-title">Drop your PDF file here</div>
           <div class="drop-subtitle">Instant client-side text extraction (zero server uploads)</div>
         </div>
-        <textarea id="textInput" placeholder="Drop your PDF here or paste text to read aloud... There are no page or character limits!">Welcome to the PureTTS Free PDF to Speech Converter!
+        <textarea id="textInput" aria-label="PDF text to convert to speech" placeholder="Drop your PDF here or paste text to read aloud... There are no page or character limits!">Welcome to the PureTTS Free PDF to Speech Converter!
 
 Drop any PDF document, research paper, textbook chapter, or report into this box to listen immediately. 
 
@@ -1358,7 +1358,7 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
           <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="btn-coffee-nav" style="background: rgba(255,255,255,0.05); color:#fde047; padding:8px 14px; border-radius:8px;">
             ☕ Buy me a coffee
           </a>
-          <a id="downloadBtn" class="btn-download" download="puretts_pdf_audio.wav">
+          <a id="downloadBtn" href="#" class="btn-download" download="puretts_pdf_audio.wav">
             ⬇ Download .WAV Audio
           </a>
         </div>

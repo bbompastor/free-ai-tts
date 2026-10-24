@@ -32,8 +32,8 @@
   <link rel="canonical" href="https://puretts.com/" />
 
   <!-- Favicon & Brand Icons -->
-  <link rel="icon" type="image/jpeg" href="assets/avatar.jpg" />
-  <link rel="apple-touch-icon" href="assets/avatar.jpg" />
+  <link rel="icon" type="image/jpeg" href="assets/logo-72.jpg" />
+  <link rel="apple-touch-icon" href="assets/logo-72.jpg" />
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
@@ -872,6 +872,7 @@
       margin-bottom: 10px;
     }
 
+    .feature-card h2,
     .feature-card h3 {
       font-size: 1.05rem;
       margin-bottom: 6px;
@@ -907,6 +908,7 @@
       border-bottom: none;
     }
 
+    .faq-item h3,
     .faq-item h4 {
       font-size: 1.05rem;
       color: var(--text);
@@ -1165,7 +1167,7 @@
   </style>
 
   <!-- PDF.js for 100% Client-Side PDF Text Extraction -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
 
@@ -1173,7 +1175,7 @@
   <nav>
     <div class="nav-container">
       <a href="/" class="brand">
-        <img src="assets/avatar.jpg" alt="PureTTS Logo" class="brand-logo" />
+        <img src="assets/logo-72.jpg" width="34" height="34" alt="PureTTS Logo" class="brand-logo" />
         <span>PureTTS</span>
       </a>
       <div class="nav-links">
@@ -1224,9 +1226,9 @@
         </div>
         <div class="pdf-range-group">
           <span>Pages:</span>
-          <input type="number" id="pdfPageStart" min="1" value="1" class="pdf-input" />
+          <input type="number" id="pdfPageStart" aria-label="PDF start page" min="1" value="1" class="pdf-input" />
           <span>to</span>
-          <input type="number" id="pdfPageEnd" min="1" value="2" class="pdf-input" />
+          <input type="number" id="pdfPageEnd" aria-label="PDF end page" min="1" value="2" class="pdf-input" />
           <button type="button" id="applyPdfRangeBtn" class="btn-pdf-action">Extract Range</button>
           <button type="button" id="allPdfPagesBtn" class="btn-pdf-action btn-pdf-secondary">All Pages</button>
         </div>
@@ -1238,7 +1240,7 @@
           <div class="drop-title">Drop your file here to convert</div>
           <div class="drop-subtitle">Supports .txt, .pdf, and .md files (100% private in-browser)</div>
         </div>
-        <textarea id="textInput" placeholder="Paste text here or drop a .txt, .pdf, or .md file... There are no character limits!">Welcome to PureTTS! This is a completely free, unlimited text-to-speech converter that runs 100% inside your browser.
+        <textarea id="textInput" aria-label="Text to convert to speech" placeholder="Paste text here or drop a .txt, .pdf, or .md file... There are no character limits!">Welcome to PureTTS! This is a completely free, unlimited text-to-speech converter that runs 100% inside your browser.
 
 Because all audio synthesis is powered directly by your device's processor using WebGPU and WebAssembly, your text and generated audio never leave your computer. There are no character limits, no daily credits, and no signups required.
 
@@ -1339,7 +1341,7 @@ Paste your script, article, or study notes here, choose your preferred voice, an
           <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="btn-tip" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #fde047; text-decoration: none; font-size: 0.9rem; font-weight: 600;">
             ☕ Buy me a coffee
           </a>
-          <a id="downloadBtn" class="btn-download" download="puretts_audio.wav">
+          <a id="downloadBtn" href="#" class="btn-download" download="puretts_audio.wav">
             ⬇ Download .WAV Audio
           </a>
         </div>
@@ -1358,19 +1360,19 @@ Paste your script, article, or study notes here, choose your preferred voice, an
     <section class="features-grid">
       <div class="feature-card">
         <div class="feature-icon">🔒</div>
-        <h3>100% Private & Client-Side</h3>
+        <h2>100% Private &amp; Client-Side</h2>
         <p>Your text and audio never leave your device. All neural AI inference is executed directly inside your browser via WebGPU/WASM.</p>
       </div>
 
       <div class="feature-card">
         <div class="feature-icon">⚡</div>
-        <h3>Zero Character Limits</h3>
+        <h2>Zero Character Limits</h2>
         <p>No 250-character paywalls or daily allowances. Synthesize entire articles, interview questions, and scripts seamlessly.</p>
       </div>
 
       <div class="feature-card">
         <div class="feature-icon">🎙️</div>
-        <h3>Studio Quality Audio</h3>
+        <h2>Studio Quality Audio</h2>
         <p>Powered by the open-weight Kokoro-82M neural model, delivering natural human inflection and expressive pauses.</p>
       </div>
     </section>
@@ -1547,32 +1549,32 @@ Paste your script, article, or study notes here, choose your preferred voice, an
       <h2>Frequently Asked Questions</h2>
 
       <div class="faq-item">
-        <h4>Is PureTTS really 100% free with no character limits?</h4>
+        <h3>Is PureTTS really 100% free with no character limits?</h3>
         <p>Yes! Traditional TTS websites pay expensive cloud GPU server bills for every conversion, forcing them to meter characters and charge subscriptions. Because PureTTS runs directly on your computer or phone's local processor via WebGPU and WebAssembly, our server compute costs are zero—allowing us to keep this service completely free and unlimited forever.</p>
       </div>
 
       <div class="faq-item">
-        <h4>Is my text and audio data completely private?</h4>
+        <h3>Is my text and audio data completely private?</h3>
         <p>Completely. Unlike cloud-based TTS services, PureTTS never uploads or transmits your text or PDF files to any external server. Every stage of text normalization, phoneme tokenization, and WAV audio synthesis happens inside your local browser sandbox.</p>
       </div>
 
       <div class="faq-item">
-        <h4>Can I use the downloaded WAV audio commercially on YouTube or in audiobooks?</h4>
+        <h3>Can I use the downloaded WAV audio commercially on YouTube or in audiobooks?</h3>
         <p>Yes. The underlying Kokoro-82M neural model is released under the permissive <strong>Apache 2.0 open-source license</strong>. You retain full commercial rights to use your generated audio in monetized YouTube videos, podcasts, audiobooks, indie video games, e-learning courses, and client projects without attribution requirements.</p>
       </div>
 
       <div class="faq-item">
-        <h4>Why does the very first generation take a few seconds to initialize?</h4>
+        <h3>Why does the very first generation take a few seconds to initialize?</h3>
         <p>On your first run, your browser downloads the open-weight neural model files (~86 MB in CPU/Mobile mode or ~326 MB in full FP32 WebGPU Studio mode) and caches them locally in your browser's Cache Storage. Every subsequent visit loads the model directly from your local disk in milliseconds and even works offline.</p>
       </div>
 
       <div class="faq-item">
-        <h4>What is the difference between WebGPU Studio Mode and CPU Safe Mode (WASM)?</h4>
+        <h3>What is the difference between WebGPU Studio Mode and CPU Safe Mode (WASM)?</h3>
         <p><strong>WebGPU Studio Mode (fp32)</strong> executes unquantized 32-bit floating-point tensors directly on your graphics card for maximum dynamic fidelity and up to 10x faster-than-real-time synthesis. <strong>CPU Safe Mode (WASM q8)</strong> uses an 8-bit quantized model (~86 MB) that runs smoothly on any multi-core CPU across Safari, Firefox, Chrome, iOS, and Android without requiring a dedicated GPU.</p>
       </div>
 
       <div class="faq-item">
-        <h4>Can I convert multi-page PDF textbooks and research papers to audio?</h4>
+        <h3>Can I convert multi-page PDF textbooks and research papers to audio?</h3>
         <p>Yes! You can drag and drop any searchable <code>.pdf</code>, <code>.txt</code>, or <code>.md</code> file directly into the text box above, or use our dedicated <a href="pdf-to-speech.html" style="color: #c084fc; text-decoration: underline;">PDF to Speech Converter</a> to extract specific page ranges and automatically clean up broken line hyphens and page headers.</p>
       </div>
     </section>
