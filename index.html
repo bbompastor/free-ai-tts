@@ -518,7 +518,7 @@
       gap: 4px;
       font-size: 0.85rem;
       font-weight: 600;
-      color: var(--primary);
+      color: #c4b5fd;
       transition: gap 0.15s ease;
     }
 
@@ -1165,9 +1165,6 @@
       display: none;
     }
   </style>
-
-  <!-- PDF.js for 100% Client-Side PDF Text Extraction -->
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
 
@@ -1281,7 +1278,7 @@ Paste your script, article, or study notes here, choose your preferred voice, an
         <div>
           <label for="speedRange">
             <span>Speaking Speed</span>
-            <span id="speedValue" style="color: var(--primary); font-weight: 700;">1.00x</span>
+            <span id="speedValue" style="color: #c4b5fd; font-weight: 700;">1.00x</span>
           </label>
           <div class="speed-slider-wrap">
             <input type="range" id="speedRange" min="0.5" max="2.0" step="0.05" value="1.0" class="speed-slider" />
@@ -1312,7 +1309,7 @@ Paste your script, article, or study notes here, choose your preferred voice, an
       <div id="progressBox" class="progress-box">
         <div class="progress-header">
           <span id="progressStatus">Downloading neural model weights...</span>
-          <span id="progressPct" style="color: var(--primary); font-family: monospace;">0%</span>
+          <span id="progressPct" style="color: #c4b5fd; font-family: monospace;">0%</span>
         </div>
         <div class="progress-bar-bg">
           <div id="progressBar" class="progress-bar-fill"></div>
@@ -1792,9 +1789,18 @@ Count every valid IP address across the extracted text and output the addresses 
       }
     }
 
-    // PDF.js worker setup
-    if (window.pdfjsLib) {
+    // Lazy-load PDF.js on demand so initial page load has zero unused PDF parser JS
+    async function ensurePdfJs() {
+      if (window.pdfjsLib) return window.pdfjsLib;
+      await new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+        script.onload = resolve;
+        script.onerror = () => reject(new Error("Failed to load PDF parser library."));
+        document.head.appendChild(script);
+      });
       pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      return window.pdfjsLib;
     }
 
     /**
@@ -1900,9 +1906,7 @@ Count every valid IP address across the extracted text and output the addresses 
         const reader = new FileReader();
         reader.onload = async (e) => {
           try {
-            if (!window.pdfjsLib) {
-              throw new Error("PDF parser is still loading. Please try again in a few moments.");
-            }
+            await ensurePdfJs();
             const loadingTask = pdfjsLib.getDocument({ data: e.target.result });
             currentPdfDoc = await loadingTask.promise;
             currentPdfName = name;
