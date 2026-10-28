@@ -9,6 +9,8 @@ PureTTS executes all Grapheme-to-Phoneme (G2P) tokenization, ONNX Runtime Web ne
 - [PureTTS Studio (Homepage)](https://puretts.com/): Free unlimited in-browser AI text-to-speech converter with 10 American and British studio voices, real-time audio streaming, speaking speed control (`0.5x` to `2.0x`), and lossless 24kHz WAV export.
 - [Free PDF to Speech Converter](https://puretts.com/pdf-to-speech.html): Client-side multi-page PDF audio reader powered by Mozilla PDF.js and Kokoro-82M with page-range extraction and automatic hyphenation/line-break cleanup.
 - [Free ElevenLabs Alternative](https://puretts.com/elevenlabs-alternative.html): Side-by-side comparison and unlimited browser-based voiceover studio for YouTube creators, audiobook narrators, and indie game developers.
+- [Free Speechify Alternative](https://puretts.com/speechify-alternative.html): 100% free, unlimited alternative to Speechify's $139/year paywall for students, ADHD & dyslexia readers, and academic researchers.
+- [Free YouTube & Shorts AI Voiceover Generator](https://puretts.com/youtube-voiceover-generator.html): Commercial-ready (Apache 2.0) 24kHz 16-bit WAV voiceover studio for faceless YouTube channels, documentaries, TikToks, and Instagram Reels.
 
 ## Documentation & Technical Guides
 
