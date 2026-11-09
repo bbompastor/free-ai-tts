@@ -1,10 +1,12 @@
 /**
  * PureTTS Client-Side Feedback Widget & Post-Generation Rating System
- * - 100% static & privacy-first (no third-party form tracking scripts)
+ * - Sends instant email notifications via Web3Forms (100% static-compatible)
  * - Logs structured feedback events to GA4 (gtag)
  * - Generates pre-filled GitHub Issue templates with optional WebGPU/WASM diagnostics
  */
 (function () {
+  const WEB3FORMS_ACCESS_KEY = "36059a8b-6049-435f-af9b-02b3ff68b67b";
+  const WEB3FORMS_ENDPOINT = "https://api.web3forms.com/submit";
   const GITHUB_REPO_ISSUES_URL = "https://github.com/bbompastor/free-ai-tts/issues/new";
 
   const CATEGORY_META = {
@@ -183,7 +185,7 @@
         border: 1px solid #1e293b;
         border-radius: 12px;
         padding: 12px 16px;
-        margin-bottom: 16px;
+        margin-bottom: 14px;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -260,7 +262,7 @@
       }
       .fb-textarea {
         width: 100%;
-        min-height: 105px;
+        min-height: 96px;
         padding: 12px;
         background: #090e1a;
         border: 1px solid #1e293b;
@@ -270,12 +272,25 @@
         line-height: 1.5;
         resize: vertical;
         outline: none;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         font-family: inherit;
       }
-      .fb-textarea:focus {
+      .fb-textarea:focus,
+      .fb-input:focus {
         border-color: #8b5cf6;
         box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.25);
+      }
+      .fb-input {
+        width: 100%;
+        padding: 10px 12px;
+        background: #090e1a;
+        border: 1px solid #1e293b;
+        border-radius: 10px;
+        color: #f8fafc;
+        font-size: 0.86rem;
+        outline: none;
+        margin-bottom: 12px;
+        font-family: inherit;
       }
 
       .fb-checkbox-row {
@@ -322,9 +337,13 @@
         transition: all 0.15s ease;
         font-family: inherit;
       }
-      .fb-btn-primary:hover {
+      .fb-btn-primary:hover:not(:disabled) {
         background: linear-gradient(135deg, #9333ea, #581c87);
         transform: translateY(-1px);
+      }
+      .fb-btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
       }
       .fb-btn-github {
         padding: 11px 14px;
@@ -348,20 +367,26 @@
         color: #ffffff;
       }
 
-      /* Success Message */
-      .fb-success-banner {
+      /* Status Banners */
+      .fb-status-banner {
         display: none;
         margin-top: 14px;
         padding: 12px 14px;
-        background: rgba(16, 185, 129, 0.14);
-        border: 1px solid rgba(16, 185, 129, 0.35);
         border-radius: 10px;
-        color: #6ee7b7;
         font-size: 0.84rem;
         line-height: 1.45;
       }
-      .fb-success-banner.show {
+      .fb-status-banner.success {
         display: block;
+        background: rgba(16, 185, 129, 0.14);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        color: #6ee7b7;
+      }
+      .fb-status-banner.error {
+        display: block;
+        background: rgba(239, 68, 68, 0.14);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        color: #fca5a5;
       }
 
       /* Inline Post-Generation Audio Rating Bar */
@@ -457,6 +482,22 @@
     return `${GITHUB_REPO_ISSUES_URL}?${params.toString()}`;
   }
 
+  async function sendToWeb3Forms(payload) {
+    const response = await fetch(WEB3FORMS_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json"
+      },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_ACCESS_KEY,
+        from_name: "PureTTS Feedback",
+        ...payload
+      })
+    });
+    return response.json();
+  }
+
   function createFeedbackModal() {
     if (modalBackdrop) return;
 
@@ -481,7 +522,7 @@
         <div class="fb-modal-header">
           <div>
             <div class="fb-modal-title" id="fbModalTitle">💬 Help Improve PureTTS</div>
-            <p class="fb-modal-subtitle">100% private &amp; open-source. Share a feature idea, voice rating, or bug report.</p>
+            <p class="fb-modal-subtitle">Share a feature request, voice rating, or bug report directly with the creator.</p>
           </div>
           <button type="button" class="fb-close-btn" id="fbCloseModalBtn" aria-label="Close feedback modal">✕</button>
         </div>
@@ -507,6 +548,9 @@
         <label class="fb-field-label" for="fbMessageInput">Your Feedback or Details</label>
         <textarea id="fbMessageInput" class="fb-textarea" placeholder="${CATEGORY_META.feature.placeholder}"></textarea>
 
+        <label class="fb-field-label" for="fbEmailInput">Email <span style="color:#64748b;font-weight:400;">(optional — only if you'd like a reply)</span></label>
+        <input type="email" id="fbEmailInput" class="fb-input" placeholder="you@example.com" />
+
         <div class="fb-checkbox-row">
           <input type="checkbox" id="fbDiagCheckbox" checked />
           <label for="fbDiagCheckbox">Include non-personal browser &amp; synthesis engine info (WebGPU/WASM, voice, speed)</label>
@@ -514,14 +558,14 @@
 
         <div class="fb-actions">
           <button type="button" class="fb-btn-primary" id="fbSubmitQuickBtn">
-            <span>⚡</span> <span>Send Quick Feedback</span>
+            <span id="fbSubmitIcon">⚡</span> <span id="fbSubmitText">Send Feedback</span>
           </button>
           <button type="button" class="fb-btn-github" id="fbOpenGithubBtn" title="Opens a pre-filled issue on GitHub">
-            <span>🐙</span> <span>Post on GitHub Issues ↗</span>
+            <span>🐙</span> <span>GitHub Issue ↗</span>
           </button>
         </div>
 
-        <div class="fb-success-banner" id="fbSuccessBanner"></div>
+        <div class="fb-status-banner" id="fbStatusBanner"></div>
       </div>
     `;
 
@@ -532,10 +576,13 @@
     const stars = modalBackdrop.querySelectorAll(".fb-star-btn");
     const catBtns = modalBackdrop.querySelectorAll(".fb-cat-btn");
     const msgInput = modalBackdrop.querySelector("#fbMessageInput");
+    const emailInput = modalBackdrop.querySelector("#fbEmailInput");
     const diagCheckbox = modalBackdrop.querySelector("#fbDiagCheckbox");
     const submitQuickBtn = modalBackdrop.querySelector("#fbSubmitQuickBtn");
+    const submitIcon = modalBackdrop.querySelector("#fbSubmitIcon");
+    const submitText = modalBackdrop.querySelector("#fbSubmitText");
     const openGithubBtn = modalBackdrop.querySelector("#fbOpenGithubBtn");
-    const successBanner = modalBackdrop.querySelector("#fbSuccessBanner");
+    const statusBanner = modalBackdrop.querySelector("#fbStatusBanner");
 
     closeBtn.addEventListener("click", closeFeedbackModal);
     modalBackdrop.addEventListener("click", (e) => {
@@ -569,9 +616,23 @@
       });
     });
 
-    submitQuickBtn.addEventListener("click", () => {
+    submitQuickBtn.addEventListener("click", async () => {
       const messageText = msgInput.value.trim();
+      const userEmail = emailInput.value.trim();
+      const meta = CATEGORY_META[selectedCategory] || CATEGORY_META.feature;
       const diag = getStudioDiagnostics();
+
+      if (!messageText) {
+        statusBanner.className = "fb-status-banner error";
+        statusBanner.textContent = "Please enter a short message before sending.";
+        msgInput.focus();
+        return;
+      }
+
+      submitQuickBtn.disabled = true;
+      submitIcon.textContent = "⏳";
+      submitText.textContent = "Sending...";
+      statusBanner.className = "fb-status-banner";
 
       trackGAEvent("feedback_submit", {
         category: selectedCategory,
@@ -579,34 +640,49 @@
         voice: diag.voice,
         engine: diag.engine,
         webgpu: diag.webgpuAvailable,
-        feedback_text: messageText.slice(0, 100) || "(rating_only)"
+        feedback_text: messageText.slice(0, 100)
       });
 
-      // Save locally in localStorage so user knows it was recorded
-      try {
-        const existing = JSON.parse(localStorage.getItem("puretts_feedback_log") || "[]");
-        existing.push({
-          ts: new Date().toISOString(),
-          rating: selectedRating,
-          category: selectedCategory,
-          message: messageText,
-          page: diag.page
-        });
-        localStorage.setItem("puretts_feedback_log", JSON.stringify(existing.slice(-20)));
-      } catch (e) {
-        // ignore storage errors
+      const payload = {
+        subject: `${meta.titlePrefix} PureTTS (${selectedRating}/5 ⭐) - ${messageText.slice(0, 50)}`,
+        category: meta.label,
+        rating: `${"⭐".repeat(selectedRating)} (${selectedRating}/5)`,
+        message: messageText
+      };
+
+      if (userEmail) {
+        payload.email = userEmail;
+        payload.replyto = userEmail;
       }
 
-      const ghUrl = buildGitHubIssueUrl(messageText, diagCheckbox.checked);
-      successBanner.innerHTML = `
-        <strong>✓ Thank you for your feedback!</strong> Your rating &amp; note have been recorded.
-        ${
-          messageText
-            ? `<div style="margin-top:6px;">Want a direct reply from the developer or public tracking? <a href="${ghUrl}" target="_blank" rel="noopener" style="color:#ffffff;text-decoration:underline;font-weight:700;">Submit this pre-filled report on GitHub Issues →</a></div>`
-            : ""
+      if (diagCheckbox.checked) {
+        payload.page = diag.page;
+        payload.voice = diag.voice;
+        payload.engine = diag.engine;
+        payload.speed = diag.speed;
+        payload.text_length = `${diag.charLength} chars`;
+        payload.webgpu_supported = diag.webgpuAvailable;
+        payload.user_agent = diag.userAgent;
+      }
+
+      try {
+        const result = await sendToWeb3Forms(payload);
+        if (result && result.success) {
+          statusBanner.className = "fb-status-banner success";
+          statusBanner.innerHTML = `<strong>✓ Feedback sent!</strong> Thank you for helping improve PureTTS.`;
+          msgInput.value = "";
+        } else {
+          throw new Error((result && result.message) || "Submission failed");
         }
-      `;
-      successBanner.classList.add("show");
+      } catch (err) {
+        const ghUrl = buildGitHubIssueUrl(messageText, diagCheckbox.checked);
+        statusBanner.className = "fb-status-banner error";
+        statusBanner.innerHTML = `Could not reach the feedback server (check ad-blocker). You can <a href="${ghUrl}" target="_blank" rel="noopener" style="color:#ffffff;text-decoration:underline;font-weight:700;">submit this pre-filled report on GitHub Issues →</a>`;
+      } finally {
+        submitQuickBtn.disabled = false;
+        submitIcon.textContent = "⚡";
+        submitText.textContent = "Send Feedback";
+      }
     });
 
     openGithubBtn.addEventListener("click", () => {
@@ -627,7 +703,7 @@
     createFeedbackModal();
     const catBtns = modalBackdrop.querySelectorAll(".fb-cat-btn");
     const msgInput = modalBackdrop.querySelector("#fbMessageInput");
-    const successBanner = modalBackdrop.querySelector("#fbSuccessBanner");
+    const statusBanner = modalBackdrop.querySelector("#fbStatusBanner");
 
     if (options.category && CATEGORY_META[options.category]) {
       selectedCategory = options.category;
@@ -644,7 +720,7 @@
       });
     }
 
-    successBanner.classList.remove("show");
+    statusBanner.className = "fb-status-banner";
     modalBackdrop.classList.add("open");
     trackGAEvent("feedback_modal_open", { trigger: options.trigger || "floating_button" });
     setTimeout(() => msgInput.focus(), 80);
@@ -708,7 +784,6 @@
   }
 
   function enhanceFooterAndTriggers() {
-    // Bind any explicit [data-feedback-trigger] elements on the page
     document.querySelectorAll("[data-feedback-trigger]").forEach((el) => {
       el.addEventListener("click", (e) => {
         e.preventDefault();
@@ -717,7 +792,6 @@
       });
     });
 
-    // Add a "💬 Send Feedback" link in .footer-links if not already present
     document.querySelectorAll(".footer-links").forEach((footerNav) => {
       if (footerNav.querySelector("[data-feedback-footer]")) return;
       const fbLink = document.createElement("a");
