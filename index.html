@@ -101,6 +101,7 @@
       <div class="presets-row">
         <span class="preset-label">Try an example:</span>
         <button class="chip-btn" data-preset="welcome">👋 Welcome</button>
+        <button class="chip-btn" data-preset="portuguese">🇵🇹 Português (PT)</button>
         <button class="chip-btn" data-preset="story">📖 Audiobook</button>
         <button class="chip-btn" data-preset="youtube">📱 Creator</button>
         <button class="chip-btn" data-preset="sre">🎧 Tech</button>
@@ -166,6 +167,11 @@ Paste your script, article, or study notes here, choose your preferred voice, an
               <option value="bf_isabella">🇬🇧 Isabella (Conversational)</option>
               <option value="bm_george">🇬🇧 George (Executive & Senior Narrator)</option>
               <option value="bm_lewis">🇬🇧 Lewis (Articulate Male)</option>
+            </optgroup>
+            <optgroup label="🇵🇹 Portuguese (Portugal — Português Europeu)">
+              <option value="pt_dora">🇵🇹 Dora (Feminino Natural &amp; Expressivo · PT-PT)</option>
+              <option value="pt_alex">🇵🇹 Alex (Masculino Claro &amp; Profissional · PT-PT)</option>
+              <option value="pt_santa">🇵🇹 Duarte (Masculino Narrador Profundo · PT-PT)</option>
             </optgroup>
           </select>
         </div>
@@ -377,12 +383,33 @@ Paste your script, article, or study notes here, choose your preferred voice, an
               <td style="padding: 10px 12px;"><code>0.90x – 1.00x</code></td>
               <td style="padding: 10px 12px;">Nature documentaries, historical archives, book narration</td>
             </tr>
-            <tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
               <td style="padding: 10px 12px;"><strong style="color: #fff;">Lewis (bm_lewis)</strong></td>
               <td style="padding: 10px 12px;">🇬🇧 UK Male</td>
               <td style="padding: 10px 12px;">Crisp, articulate British presenter, brisk pacing</td>
               <td style="padding: 10px 12px;"><code>1.00x – 1.10x</code></td>
               <td style="padding: 10px 12px;">Journalistic articles, research papers, tech briefings</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Dora (pt_dora)</strong></td>
+              <td style="padding: 10px 12px;">🇵🇹 PT-PT Female</td>
+              <td style="padding: 10px 12px;">Natural European Portuguese pronunciation &amp; warm inflection</td>
+              <td style="padding: 10px 12px;"><code>0.95x – 1.05x</code></td>
+              <td style="padding: 10px 12px;">Artigos, audiolivros, vídeos em Português de Portugal</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Alex (pt_alex)</strong></td>
+              <td style="padding: 10px 12px;">🇵🇹 PT-PT Male</td>
+              <td style="padding: 10px 12px;">Clear, articulate European Portuguese male presenter</td>
+              <td style="padding: 10px 12px;"><code>1.00x – 1.10x</code></td>
+              <td style="padding: 10px 12px;">Documentação técnica, notícias, formação e-learning</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Duarte (pt_santa)</strong></td>
+              <td style="padding: 10px 12px;">🇵🇹 PT-PT Male</td>
+              <td style="padding: 10px 12px;">Deep, resonant European Portuguese narrator</td>
+              <td style="padding: 10px 12px;"><code>0.95x – 1.00x</code></td>
+              <td style="padding: 10px 12px;">Documentários, história, narração literária</td>
             </tr>
           </tbody>
         </table>
@@ -625,13 +652,18 @@ From the extracted text, find all valid IP addresses.
 You are given a second URL. Extract the same field from its response.
 Count every valid IP address across the extracted text and output the addresses sorted by count.`,
 story: `The stars looked different from the edge of the crater. For the first time in ninety days, the transmission signal blinked green on the receiver console. Maya held her breath as the incoming audio stream decoded into a clear, steady human voice.`,
-youtube: `Hey everyone, and welcome back to the channel! In today's video, we're diving deep into high-performance distributed systems, breaking down how to scale services to handle millions of requests with zero downtime.`
+youtube: `Hey everyone, and welcome back to the channel! In today's video, we're diving deep into high-performance distributed systems, breaking down how to scale services to handle millions of requests with zero downtime.`,
+portuguese: `Bem-vindo ao PureTTS! Este é um conversor de texto para voz totalmente gratuito e ilimitado que funciona cem por cento dentro do seu navegador.
+Como toda a síntese de áudio é processada diretamente no seu dispositivo através de WebGPU e WebAssembly, os seus textos e documentos PDF nunca saem do seu computador. Escolha uma voz em Português de Portugal e clique em converter!`
 };
 document.querySelectorAll(".chip-btn").forEach(btn => {
 btn.addEventListener("click", () => {
 const key = btn.dataset.preset;
 if (PRESETS[key]) {
 textInput.value = PRESETS[key];
+if (key === "portuguese" && voiceSelect && !voiceSelect.value.startsWith("pt_")) {
+voiceSelect.value = "pt_dora";
+}
 updateTextStats();
 hideFileBadge();
 }

@@ -1,14 +1,132 @@
 /**
  * OpenVoice TTS Worker
  * Runs Kokoro-82M ONNX model client-side in an isolated Web Worker.
+ * Supports US/UK English + European Portuguese (Portugal, pt-PT) via eSpeak-NG WASM phonemization.
  * Handles automatic text chunking and seamless WAV concatenation.
  */
 import { KokoroTTS } from "https://esm.sh/kokoro-js";
+import { phonemize as espeakPhonemize } from "https://esm.sh/phonemizer";
 
 let ttsInstance = null;
 let currentDtype = null;
-
 let currentDevice = null;
+
+const STYLE_DIM = 256;
+const VOICE_URLS = [
+  "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX/resolve/main/voices",
+  "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX-timestamped/resolve/main/voices"
+];
+
+// Map European Portuguese (pt-PT) voice IDs to Kokoro v1.0 Portuguese voice embedding files
+const PORTUGUESE_VOICE_MAP = {
+  pt_dora: { bin: "pf_dora", lang: "pt" },
+  pt_alex: { bin: "pm_alex", lang: "pt" },
+  pt_santa: { bin: "pm_santa", lang: "pt" },
+  pf_dora: { bin: "pf_dora", lang: "pt" },
+  pm_alex: { bin: "pm_alex", lang: "pt" },
+  pm_santa: { bin: "pm_santa", lang: "pt" }
+};
+
+const customVoiceMemoryCache = new Map();
+
+/**
+ * Fetches and caches a 256-dim Kokoro voice style binary (.bin) for multilingual voices.
+ */
+async function getCustomVoiceData(binName) {
+  if (customVoiceMemoryCache.has(binName)) {
+    return customVoiceMemoryCache.get(binName);
+  }
+
+  let cache = null;
+  try {
+    if (typeof caches !== "undefined") {
+      cache = await caches.open("kokoro-voices-v1");
+    }
+  } catch (e) {
+    // Ignore Cache Storage errors in restricted contexts
+  }
+
+  for (const baseUrl of VOICE_URLS) {
+    const url = `${baseUrl}/${binName}.bin`;
+    try {
+      let response = cache ? await cache.match(url) : null;
+      if (!response) {
+        response = await fetch(url);
+        if (response.ok && cache) {
+          await cache.put(url, response.clone());
+        }
+      }
+      if (response && response.ok) {
+        const buffer = await response.arrayBuffer();
+        const floatArray = new Float32Array(buffer);
+        customVoiceMemoryCache.set(binName, floatArray);
+        return floatArray;
+      }
+    } catch (err) {
+      console.warn(`Voice fetch attempt failed for ${url}:`, err);
+    }
+  }
+
+  throw new Error(`Could not load Portuguese voice embedding (${binName}.bin).`);
+}
+
+/**
+ * Phonemizes text into European Portuguese (pt-PT) IPA phonemes while preserving punctuation
+ * so Kokoro-82M maintains natural prosody, question intonation, and clause pauses.
+ */
+async function phonemizePortugueseKeepPunctuation(text, lang = "pt") {
+  const parts = text.split(/([,;:.!?—…]+)/g);
+  const out = [];
+
+  for (const part of parts) {
+    if (!part || !part.trim()) continue;
+    if (/^[,;:.!?—…]+$/.test(part.trim())) {
+      if (out.length > 0) {
+        out[out.length - 1] += part.trim() + " ";
+      }
+    } else {
+      const phArr = await espeakPhonemize(part.trim(), lang);
+      const phStr = Array.isArray(phArr) ? phArr.join(" ").trim() : String(phArr || "").trim();
+      if (phStr) {
+        out.push(phStr);
+      }
+    }
+  }
+
+  return out.join(" ").replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Synthesizes a chunk of European Portuguese text using Kokoro-82M + eSpeak-NG pt-PT IPA phonemes.
+ */
+async function generatePortugueseChunk(tts, chunkTextStr, voiceId, speedValue) {
+  const voiceCfg = PORTUGUESE_VOICE_MAP[voiceId];
+  const phonemes = await phonemizePortugueseKeepPunctuation(chunkTextStr, voiceCfg.lang);
+  if (!phonemes) {
+    return { audio: new Float32Array(0), sampling_rate: 24000 };
+  }
+
+  const { input_ids } = tts.tokenizer(phonemes, { truncation: true });
+  const seqLen = input_ids.dims ? input_ids.dims.at(-1) : input_ids.size;
+  const numTokens = Math.min(Math.max(seqLen - 2, 0), 509);
+
+  const voiceData = await getCustomVoiceData(voiceCfg.bin);
+  const offset = numTokens * STYLE_DIM;
+  const styleSlice = voiceData.slice(offset, offset + STYLE_DIM);
+
+  const TensorCtor = input_ids.constructor;
+  const inputs = {
+    input_ids,
+    style: new TensorCtor("float32", styleSlice, [1, STYLE_DIM]),
+    speed: new TensorCtor("float32", [speedValue], [1])
+  };
+
+  const { waveform } = await tts.model(inputs);
+  return {
+    audio: waveform.data,
+    sampling_rate: 24000
+  };
+}
 
 /**
  * Initializes Kokoro TTS with the optimal precision for the target device:
@@ -242,6 +360,8 @@ self.onmessage = async (e) => {
 
       const audioSegments = [];
       let sampleRate = 24000;
+      const selectedVoice = voice || "af_heart";
+      const isPortugueseVoice = Boolean(PORTUGUESE_VOICE_MAP[selectedVoice]);
 
       for (let i = 0; i < chunks.length; i++) {
         // Check if user requested cancellation
@@ -296,16 +416,18 @@ self.onmessage = async (e) => {
           message: `Synthesizing part ${i + 1} of ${chunks.length}${estRemainingMsg}...`
         });
 
-        const res = await tts.generate(chunk, {
-          voice: voice || "af_heart",
-          speed: speedValue
-        });
+        const res = isPortugueseVoice
+          ? await generatePortugueseChunk(tts, chunk, selectedVoice, speedValue)
+          : await tts.generate(chunk, {
+              voice: selectedVoice,
+              speed: speedValue
+            });
 
         if (res.sampling_rate) {
           sampleRate = res.sampling_rate;
         }
 
-        if (res.audio) {
+        if (res.audio && res.audio.length > 0) {
           audioSegments.push(res.audio);
 
           // Dispatch individual chunk immediately for real-time progressive streaming
