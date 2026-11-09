@@ -1,5 +1,14 @@
 # robots.txt for PureTTS (https://puretts.com)
 
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: AdsBot-Google
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
 User-agent: *
 Allow: /
 

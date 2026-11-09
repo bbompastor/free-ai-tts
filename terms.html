@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google-adsense-account" content="ca-pub-4208863632802309" />
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-3T94467EX6"></script>
   <script>
@@ -15,89 +16,196 @@
   <title>Terms of Service - PureTTS | Free In-Browser AI Voice Generator</title>
   <meta name="description" content="Terms of Service and Apache 2.0 Commercial Audio Licensing terms for PureTTS, the free client-side neural text-to-speech studio." />
   <link rel="canonical" href="https://puretts.com/terms.html" />
+  <link rel="icon" type="image/jpeg" href="assets/logo-72.jpg" />
   <style>
-    body {
-      background: #070a13;
-      color: #f8fafc;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      line-height: 1.7;
-      max-width: 840px;
-      margin: 0 auto;
-      padding: 40px 20px 60px;
+    :root {
+      --bg: #070a13;
+      --card-bg: #0f172a;
+      --card-inner: #15203b;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #8b5cf6;
+      --accent: #06b6d4;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --radius: 16px;
     }
-    h1 { color: #fff; font-size: 2rem; margin-bottom: 8px; }
-    h2 { color: #f1f5f9; font-size: 1.25rem; margin-top: 32px; margin-bottom: 10px; border-bottom: 1px solid #1e293b; padding-bottom: 6px; }
-    p, li { color: #94a3b8; font-size: 0.96rem; margin-bottom: 12px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      background-image:
+        radial-gradient(at 0% 0%, rgba(139, 92, 246, 0.14) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      line-height: 1.7;
+    }
+    nav {
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(7, 10, 19, 0.85);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav-container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid rgba(139, 92, 246, 0.5);
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      flex-wrap: wrap;
+    }
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 7px;
+      transition: all 0.15s ease;
+    }
+    .nav-link:hover { color: var(--text); background: rgba(255, 255, 255, 0.05); }
+    main {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+    .content-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 36px;
+    }
+    h1 { color: #fff; font-size: 2.1rem; margin-bottom: 8px; }
+    h2 { color: #f1f5f9; font-size: 1.3rem; margin-top: 32px; margin-bottom: 10px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; }
+    p, li { color: var(--text-muted); font-size: 0.96rem; margin-bottom: 12px; }
     ul { padding-left: 22px; margin-bottom: 16px; }
+    strong { color: #f1f5f9; }
     a { color: #8b5cf6; text-decoration: none; }
     a:hover { text-decoration: underline; }
-    .back-btn {
-      display: inline-block;
-      margin-bottom: 24px;
-      padding: 8px 16px;
-      background: #1e293b;
-      color: #fff;
-      border-radius: 6px;
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
     .license-box {
-      background: #0f172a;
-      border: 1px solid #1e293b;
-      border-radius: 10px;
+      background: var(--card-inner);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 12px;
       padding: 18px 20px;
       margin: 20px 0;
     }
+    footer {
+      border-top: 1px solid var(--card-border);
+      background: var(--card-bg);
+      padding: 30px 20px;
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 12px;
+    }
+    .footer-links a { color: var(--text-muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--primary); }
   </style>
 </head>
 <body>
-  <a href="/" class="back-btn">← Back to PureTTS Studio</a>
-  <h1>Terms of Service</h1>
-  <p><strong>Effective Date &amp; Last Updated:</strong> October 23, 2026</p>
+  <nav>
+    <div class="nav-container">
+      <a href="/" class="brand">
+        <img src="assets/logo-72.jpg" width="34" height="34" alt="PureTTS Logo" class="brand-logo" />
+        <span>PureTTS</span>
+      </a>
+      <div class="nav-links">
+        <a href="/" class="nav-link">TTS Studio</a>
+        <a href="pdf-to-speech.html" class="nav-link">PDF to Speech</a>
+        <a href="guides.html" class="nav-link">Voice Guide</a>
+        <a href="architecture.html" class="nav-link">How It Works</a>
+        <a href="about.html" class="nav-link">About</a>
+      </div>
+    </div>
+  </nav>
 
-  <div class="license-box">
-    <p style="margin: 0; color: #e2e8f0;"><strong>Commercial Usage Summary:</strong> Audio generated through PureTTS is synthesized using the open-weight <strong>Kokoro-82M</strong> neural model, licensed under the permissive <strong>Apache License 2.0</strong>. You retain 100% ownership of your input text and your exported WAV audio files, including full commercial rights for monetized YouTube videos, podcasts, audiobooks, games, and e-learning courses.</p>
-  </div>
+  <main>
+    <article class="content-card">
+      <h1>Terms of Service</h1>
+      <p><strong>Effective Date &amp; Last Updated:</strong> November 9, 2026</p>
 
-  <h2>1. Acceptance of Terms &amp; Service Description</h2>
-  <p>By accessing and using PureTTS (<code>https://puretts.com</code>), you agree to comply with and be bound by these Terms of Service. PureTTS provides a browser-based neural text-to-speech synthesis and PDF reading application that executes locally on your device using WebGPU and WebAssembly technologies.</p>
+      <div class="license-box">
+        <p style="margin: 0; color: #e2e8f0;"><strong>Commercial Usage Summary:</strong> Audio generated through PureTTS is synthesized using the open-weight <strong>Kokoro-82M</strong> neural model, licensed under the permissive <strong>Apache License 2.0</strong>. You retain 100% ownership of your input text and your exported WAV audio files, including full commercial rights for monetized YouTube videos, podcasts, audiobooks, games, and e-learning courses.</p>
+      </div>
 
-  <h2>2. Intellectual Property, Ownership &amp; Commercial Rights</h2>
-  <ul>
-    <li><strong>Your Input Text &amp; Documents:</strong> You retain full copyright and ownership over all scripts, articles, and PDF documents you process inside PureTTS. Because processing is performed locally in your browser, PureTTS never claims any license over your content.</li>
-    <li><strong>Generated Audio Files:</strong> The underlying neural speech synthesis model (Kokoro-82M v1.0) is released under the open-source <strong>Apache 2.0 License</strong>. You are granted a worldwide, royalty-free, perpetual right to use, distribute, modify, and monetize the audio files you generate with PureTTS across personal, academic, and commercial projects without mandatory attribution.</li>
-    <li><strong>Site Code &amp; Documentation:</strong> The PureTTS web interface, original tutorials, guides, and documentation are protected by applicable copyright and open-source licensing terms as published in our repository.</li>
-  </ul>
+      <h2>1. Acceptance of Terms &amp; Service Description</h2>
+      <p>By accessing and using PureTTS (<code>https://puretts.com</code>), you agree to comply with and be bound by these Terms of Service. PureTTS provides a browser-based neural text-to-speech synthesis and PDF reading application that executes locally on your device using WebGPU and WebAssembly technologies.</p>
 
-  <h2>3. Acceptable Use &amp; Ethical AI Guidelines</h2>
-  <p>You agree to use PureTTS responsibly and in compliance with all applicable local, national, and international laws. Specifically, you agree <strong>not</strong> to use audio generated by this service to:</p>
-  <ul>
-    <li>Engage in financial fraud, phishing, social engineering, or deceptive impersonation of real individuals or institutions.</li>
-    <li>Generate unlawful, defamatory, harassing, or non-consensual deceptive media ("deepfakes" intended to mislead the public).</li>
-    <li>Violate the intellectual property rights or copyrights of third-party authors when distributing recorded audiobooks publicly.</li>
-  </ul>
+      <h2>2. Intellectual Property, Ownership &amp; Commercial Rights</h2>
+      <ul>
+        <li><strong>Your Input Text &amp; Documents:</strong> You retain full copyright and ownership over all scripts, articles, and PDF documents you process inside PureTTS. Because processing is performed locally in your browser, PureTTS never claims any license over your content.</li>
+        <li><strong>Generated Audio Files:</strong> The underlying neural speech synthesis model (Kokoro-82M v1.0) is released under the open-source <strong>Apache 2.0 License</strong>. You are granted a worldwide, royalty-free, perpetual right to use, distribute, modify, and monetize the audio files you generate with PureTTS across personal, academic, and commercial projects without mandatory attribution.</li>
+        <li><strong>Site Code &amp; Documentation:</strong> The PureTTS web interface, original tutorials, guides, and documentation are protected by applicable copyright and open-source licensing terms as published in our repository.</li>
+      </ul>
 
-  <h2>4. Client-Side Hardware &amp; Browser Requirements</h2>
-  <p>Because PureTTS performs neural network inference directly on your device's GPU (via WebGPU) or CPU (via WebAssembly), synthesis speed and maximum document length depend on your local hardware capabilities and available browser memory. PureTTS offers both a high-precision FP32 WebGPU mode and a memory-efficient 8-bit quantized mode to ensure stability across desktop and mobile devices.</p>
+      <h2>3. Acceptable Use &amp; Ethical AI Guidelines</h2>
+      <p>You agree to use PureTTS responsibly and in compliance with all applicable local, national, and international laws. Specifically, you agree <strong>not</strong> to use audio generated by this service to:</p>
+      <ul>
+        <li>Engage in financial fraud, phishing, social engineering, or deceptive impersonation of real individuals or institutions.</li>
+        <li>Generate unlawful, defamatory, harassing, or non-consensual deceptive media ("deepfakes" intended to mislead the public).</li>
+        <li>Violate the intellectual property rights or copyrights of third-party authors when distributing recorded audiobooks publicly.</li>
+      </ul>
 
-  <h2>5. Disclaimer of Warranties &amp; Limitation of Liability</h2>
-  <p>PureTTS is provided on an "AS IS" and "AS AVAILABLE" basis without warranties of any kind, either express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, or uninterrupted availability. Under no circumstances shall PureTTS or its contributors be liable for any indirect, incidental, consequential, or special damages arising out of your use of the application.</p>
+      <h2>4. Client-Side Hardware &amp; Browser Requirements</h2>
+      <p>Because PureTTS performs neural network inference directly on your device's GPU (via WebGPU) or CPU (via WebAssembly), synthesis speed and maximum document length depend on your local hardware capabilities and available browser memory. PureTTS offers both a high-precision FP32 WebGPU mode and a memory-efficient 8-bit quantized mode to ensure stability across desktop and mobile devices.</p>
 
-  <h2>6. Contact &amp; Technical Support</h2>
-  <p>For questions regarding these Terms of Service, commercial licensing verification, or bug reports, please contact us through our <a href="https://github.com/bbompastor/free-ai-tts/issues" target="_blank" rel="noopener">GitHub Issues &amp; Support Tracker</a> or review our <a href="about.html">About PureTTS</a> page.</p>
+      <h2>5. Disclaimer of Warranties &amp; Limitation of Liability</h2>
+      <p>PureTTS is provided on an "AS IS" and "AS AVAILABLE" basis without warranties of any kind, either express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, or uninterrupted availability. Under no circumstances shall PureTTS or its contributors be liable for any indirect, incidental, consequential, or special damages arising out of your use of the application.</p>
 
-  <hr style="border: none; border-top: 1px solid #1e293b; margin: 40px 0 20px;" />
-  <div style="display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.88rem;">
-    <a href="/">TTS Studio</a>
-    <a href="pdf-to-speech.html">PDF to Speech</a>
-    <a href="elevenlabs-alternative.html">ElevenLabs Alternative</a>
-    <a href="speechify-alternative.html">Speechify Alternative</a>
-    <a href="youtube-voiceover-generator.html">YouTube Voiceover</a>
-    <a href="guides.html">Voice &amp; Prompting Guide</a>
-    <a href="architecture.html">How WebGPU TTS Works</a>
-    <a href="about.html">About PureTTS</a>
-    <a href="privacy.html">Privacy Policy</a>
-  </div>
+      <h2>6. Contact &amp; Technical Support</h2>
+      <p>For questions regarding these Terms of Service, commercial licensing verification, or bug reports, please contact us directly via our <a href="#feedback" data-feedback-trigger>Feedback &amp; Contact Form</a>, our <a href="https://github.com/bbompastor/free-ai-tts/issues" target="_blank" rel="noopener">GitHub Issues &amp; Support Tracker</a>, or review our <a href="about.html">About PureTTS</a> page.</p>
+    </article>
+  </main>
+
+  <footer>
+    <div class="footer-links">
+      <a href="/">TTS Studio</a>
+      <a href="pdf-to-speech.html">PDF to Speech</a>
+      <a href="elevenlabs-alternative.html">ElevenLabs Comparison</a>
+      <a href="speechify-alternative.html">Speechify Comparison</a>
+      <a href="youtube-voiceover-generator.html">YouTube Voiceover Guide</a>
+      <a href="guides.html">Voice Guide</a>
+      <a href="architecture.html">How It Works</a>
+      <a href="about.html">About</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+    </div>
+    <p>© 2026 PureTTS. Free, 100% private in-browser text-to-speech for everyone.</p>
+  </footer>
   <script src="js/feedback.js" defer></script>
 </body>
 </html>
