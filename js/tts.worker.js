@@ -1,11 +1,10 @@
 /**
  * OpenVoice TTS Worker
  * Runs Kokoro-82M ONNX model client-side in an isolated Web Worker.
- * Supports US/UK English + European Portuguese (Portugal, pt-PT) via eSpeak-NG WASM phonemization.
+ * Supports US/UK English + European Portuguese (Portugal, pt-PT) with native client-side G2P IPA phonemization.
  * Handles automatic text chunking and seamless WAV concatenation.
  */
 import { KokoroTTS } from "https://esm.sh/kokoro-js";
-import { phonemize as espeakPhonemize } from "https://esm.sh/phonemizer";
 
 let ttsInstance = null;
 let currentDtype = null;
@@ -19,12 +18,12 @@ const VOICE_URLS = [
 
 // Map European Portuguese (pt-PT) voice IDs to Kokoro v1.0 Portuguese voice embedding files
 const PORTUGUESE_VOICE_MAP = {
-  pt_dora: { bin: "pf_dora", lang: "pt" },
-  pt_alex: { bin: "pm_alex", lang: "pt" },
-  pt_santa: { bin: "pm_santa", lang: "pt" },
-  pf_dora: { bin: "pf_dora", lang: "pt" },
-  pm_alex: { bin: "pm_alex", lang: "pt" },
-  pm_santa: { bin: "pm_santa", lang: "pt" }
+  pt_dora: { bin: "pf_dora", lang: "pt-PT" },
+  pt_alex: { bin: "pm_alex", lang: "pt-PT" },
+  pt_santa: { bin: "pm_santa", lang: "pt-PT" },
+  pf_dora: { bin: "pf_dora", lang: "pt-PT" },
+  pm_alex: { bin: "pm_alex", lang: "pt-PT" },
+  pm_santa: { bin: "pm_santa", lang: "pt-PT" }
 };
 
 const customVoiceMemoryCache = new Map();
@@ -71,29 +70,618 @@ async function getCustomVoiceData(binName) {
 }
 
 /**
- * Phonemizes text into European Portuguese (pt-PT) IPA phonemes while preserving punctuation
- * so Kokoro-82M maintains natural prosody, question intonation, and clause pauses.
+ * High-frequency European Portuguese (pt-PT, Lisbon/Coimbra standard) lexicon
+ * for function words, irregular open/closed mid-vowels, and common vocabulary.
  */
-async function phonemizePortugueseKeepPunctuation(text, lang = "pt") {
-  const parts = text.split(/([,;:.!?—…]+)/g);
-  const out = [];
+const PT_PT_LEXICON = {
+  // Function words & clitics (unstressed or lightly stressed in pt-PT)
+  "o": "u", "a": "ɐ", "os": "uʃ", "as": "ɐʃ",
+  "um": "ˈũ", "uma": "ˈumɐ", "uns": "ˈũʃ", "umas": "ˈumɐʃ",
+  "de": "dɨ", "do": "du", "da": "dɐ", "dos": "duʃ", "das": "dɐʃ",
+  "dum": "dˈũ", "duma": "dˈumɐ",
+  "em": "ɐ̃j̃", "no": "nu", "na": "nɐ", "nos": "nuʃ", "nas": "nɐʃ",
+  "num": "nˈũ", "numa": "nˈumɐ", "nuns": "nˈũʃ", "numas": "nˈumɐʃ",
+  "por": "puɾ", "pelo": "pɨlu", "pela": "pɨlɐ", "pelos": "pɨluʃ", "pelas": "pɨlɐʃ",
+  "para": "pˈɐɾɐ", "pra": "pɾɐ", "pro": "pɾu",
+  "com": "kˈõ", "sem": "sˈɐ̃j̃", "sob": "sˈɔb", "sobre": "sˈobɾɨ", "entre": "ˈẽtɾɨ",
+  "até": "ɐtˈɛ", "desde": "dˈeʒdɨ", "contra": "kˈõtɾɐ", "perante": "pɨɾˈɐ̃tɨ",
+  "e": "i", "ou": "o", "mas": "mɐʃ", "nem": "nˈɐ̃j̃", "que": "kɨ", "se": "sɨ",
+  "como": "kˈomu", "quando": "kwˈɐ̃du", "onde": "ˈõdɨ", "porque": "puɾkˈɨ", "porquê": "puɾkˈe",
+  "quem": "kˈɐ̃j̃", "qual": "kwˈal", "quais": "kwˈajʃ", "quanto": "kwˈɐ̃tu", "quantos": "kwˈɐ̃tuʃ",
+  "ao": "aw", "aos": "awʃ", "à": "a", "às": "aʃ",
+  // Pronouns & determiners
+  "eu": "ˈew", "tu": "tˈu", "ele": "ˈelɨ", "ela": "ˈɛlɐ", "eles": "ˈelɨʃ", "elas": "ˈɛlɐʃ",
+  "nós": "nˈɔʃ", "vós": "vˈɔʃ", "você": "vusˈe", "vocês": "vusˈeʃ",
+  "me": "mɨ", "te": "tɨ", "lhe": "ʎɨ", "lhes": "ʎɨʃ",
+  "mim": "mˈĩ", "ti": "tˈi", "si": "sˈi", "comigo": "kumˈiɡu", "contigo": "kõtˈiɡu", "consigo": "kõsˈiɡu",
+  "meu": "mˈew", "minha": "mˈiɲɐ", "meus": "mˈewʃ", "minhas": "mˈiɲɐʃ",
+  "teu": "tˈew", "tua": "tˈuɐ", "teus": "tˈewʃ", "tuas": "tˈuɐʃ",
+  "seu": "sˈew", "sua": "sˈuɐ", "seus": "sˈewʃ", "suas": "sˈuɐʃ",
+  "nosso": "nˈɔsu", "nossa": "nˈɔsɐ", "nossos": "nˈɔsuʃ", "nossas": "nˈɔsɐʃ",
+  "vosso": "vˈɔsu", "vossa": "vˈɔsɐ", "vossos": "vˈɔsuʃ", "vossas": "vˈɔsɐʃ",
+  "este": "ˈeʃtɨ", "esta": "ˈɛʃtɐ", "estes": "ˈeʃtɨʃ", "estas": "ˈɛʃtɐʃ", "isto": "ˈiʃtu",
+  "esse": "ˈesɨ", "essa": "ˈɛsɐ", "esses": "ˈesɨʃ", "essas": "ˈɛsɐʃ", "isso": "ˈisu",
+  "aquele": "ɐkˈelɨ", "aquela": "ɐkˈɛlɐ", "aqueles": "ɐkˈelɨʃ", "aquelas": "ɐkˈɛlɐʃ", "aquilo": "ɐkˈilu",
+  "todo": "tˈodu", "toda": "tˈodɐ", "todos": "tˈoduʃ", "todas": "tˈodɐʃ", "tudo": "tˈudu",
+  "outro": "ˈotɾu", "outra": "ˈotɾɐ", "outros": "ˈotɾuʃ", "outras": "ˈotɾɐʃ",
+  "mesmo": "mˈeʒmu", "mesma": "mˈeʒmɐ", "mesmos": "mˈeʒmuʃ", "mesmas": "mˈeʒmɐʃ",
+  "muito": "mˈũj̃tu", "muita": "mˈũj̃tɐ", "muitos": "mˈũj̃tuʃ", "muitas": "mˈũj̃tɐʃ",
+  "pouco": "pˈoku", "pouca": "pˈokɐ", "poucos": "pˈokuʃ", "poucas": "pˈokɐʃ",
+  "mais": "mˈajʃ", "menos": "mˈenuʃ", "tão": "tˈɐ̃w̃", "tanto": "tˈɐ̃tu", "tanta": "tˈɐ̃tɐ",
+  "algum": "aɫɡˈũ", "alguma": "aɫɡˈumɐ", "alguns": "aɫɡˈũʃ", "algumas": "aɫɡˈumɐʃ", "alguém": "aɫɡˈɐ̃j̃",
+  "nenhum": "nɨɲˈũ", "nenhuma": "nɨɲˈumɐ", "ninguém": "nĩɡˈɐ̃j̃", "nada": "nˈadɐ", "cada": "kˈadɐ",
+  // Common verbs & irregular vowel apertures
+  "ser": "sˈeɾ", "sou": "sˈo", "és": "ˈɛʃ", "é": "ˈɛ", "somos": "sˈomuʃ", "são": "sˈɐ̃w̃",
+  "era": "ˈɛɾɐ", "eram": "ˈɛɾɐ̃w̃", "foi": "fˈoj", "foram": "fˈoɾɐ̃w̃", "seja": "sˈɐjʒɐ",
+  "estar": "iʃtˈaɾ", "estou": "iʃtˈo", "estás": "iʃtˈaʃ", "está": "iʃtˈa", "estamos": "iʃtˈɐmuʃ", "estão": "iʃtˈɐ̃w̃",
+  "ter": "tˈeɾ", "tenho": "tˈɐɲu", "tens": "tˈɐ̃j̃ʃ", "tem": "tˈɐ̃j̃", "temos": "tˈemuʃ", "têm": "tˈɐ̃j̃ɐ̃j̃",
+  "tinha": "tˈiɲɐ", "teve": "tˈevɨ", "tiveram": "tivˈɛɾɐ̃w̃",
+  "haver": "ɐvˈeɾ", "há": "ˈa", "havia": "ɐvˈiɐ", "houve": "ˈovɨ",
+  "ir": "ˈiɾ", "vou": "vˈo", "vais": "vˈajʃ", "vai": "vˈaj", "vamos": "vˈɐmuʃ", "vão": "vˈɐ̃w̃",
+  "vir": "vˈiɾ", "venho": "vˈɐɲu", "vens": "vˈɐ̃j̃ʃ", "vem": "vˈɐ̃j̃", "vimos": "vˈimuʃ", "vêm": "vˈɐ̃j̃ɐ̃j̃",
+  "fazer": "fɐzˈeɾ", "faço": "fˈasu", "faz": "fˈaʃ", "fez": "fˈeʃ", "feito": "fˈɐjtu",
+  "dizer": "dizˈeɾ", "digo": "dˈiɡu", "diz": "dˈiʃ", "disse": "dˈisɨ", "dito": "dˈitu",
+  "poder": "pudˈeɾ", "posso": "pˈɔsu", "pode": "pˈɔdɨ", "podem": "pˈɔdɐ̃j̃", "pôde": "pˈodɨ",
+  "querer": "kɨɾˈeɾ", "quero": "kˈɛɾu", "quer": "kˈɛɾ", "querem": "kˈɛɾɐ̃j̃", "quis": "kˈiʃ",
+  "saber": "sɐbˈeɾ", "sei": "sˈɐj", "sabe": "sˈabɨ", "sabem": "sˈabɐ̃j̃", "soube": "sˈobɨ",
+  "ver": "vˈeɾ", "vejo": "vˈɐjʒu", "vê": "vˈe", "visto": "vˈiʃtu", "viu": "vˈiw",
+  "dar": "dˈaɾ", "dou": "dˈo", "dá": "dˈa", "dão": "dˈɐ̃w̃", "deu": "dˈew",
+  "pôr": "pˈoɾ", "ponho": "pˈoɲu", "põe": "pˈõj̃", "põem": "pˈõj̃ɐ̃j̃", "pôs": "pˈoʃ", "posto": "pˈoʃtu",
+  // Common nouns, adjectives & adverbs with specific PT-PT pronunciation
+  "não": "nˈɐ̃w̃", "sim": "sˈĩ", "bem": "bˈɐ̃j̃", "mal": "mˈal",
+  "bom": "bˈõ", "boa": "bˈoɐ", "bons": "bˈõʃ", "boas": "bˈoɐʃ",
+  "mau": "mˈaw", "má": "mˈa", "maus": "mˈawʃ", "más": "mˈaʃ",
+  "maior": "mɐjˈɔɾ", "menor": "mɨnˈɔɾ", "melhor": "mɨʎˈɔɾ", "pior": "piˈɔɾ",
+  "novo": "nˈovu", "nova": "nˈɔvɐ", "novos": "nˈɔvuʃ", "novas": "nˈɔvɐʃ",
+  "povo": "pˈovu", "povos": "pˈɔvuʃ", "fogo": "fˈoɡu", "jogo": "ʒˈoɡu", "jogos": "ʒˈɔɡuʃ",
+  "olho": "ˈoʎu", "olhos": "ˈɔʎuʃ", "ovo": "ˈovu", "ovos": "ˈɔvuʃ",
+  "hora": "ˈɔɾɐ", "horas": "ˈɔɾɐʃ", "agora": "ɐɡˈɔɾɐ", "fora": "fˈɔɾɐ", "embora": "ĩbˈɔɾɐ", "ocorre": "ɔkˈɔʁɨ",
+  "hoje": "ˈoʒɨ", "ontem": "ˈõtɐ̃j̃", "amanhã": "ɐmɐɲˈɐ̃", "sempre": "sˈẽpɾɨ", "nunca": "nˈũkɐ",
+  "já": "ʒˈa", "ainda": "ɐˈĩdɐ", "também": "tɐ̃bˈɐ̃j̃", "assim": "ɐsˈĩ", "aqui": "ɐkˈi", "ali": "ɐlˈi",
+  "portugal": "puɾtuɡˈal", "português": "puɾtuɡˈeʃ", "portuguesa": "puɾtuɡˈezɐ",
+  "portugueses": "puɾtuɡˈezɨʃ", "portuguesas": "puɾtuɡˈezɐʃ",
+  "lisboa": "liʒbˈoɐ", "porto": "pˈoɾtu", "coimbra": "kuˈĩbɾɐ",
+  "olá": "ɔlˈa", "adeus": "ɐdˈewʃ", "obrigado": "ɔbɾiɡˈadu", "obrigada": "ɔbɾiɡˈadɐ",
+  "voz": "vˈɔʃ", "vozes": "vˈɔzɨʃ", "vez": "vˈeʃ", "vezes": "vˈezɨʃ",
+  "luz": "lˈuʃ", "paz": "pˈaʃ", "cruz": "kɾˈuʃ", "raiz": "ʁɐˈiʃ",
+  "mês": "mˈeʃ", "meses": "mˈezɨʃ", "três": "tɾˈeʃ", "dez": "dˈɛʃ", "seis": "sˈɐjʃ", "dois": "dˈojʃ", "duas": "dˈuɐʃ",
+  "país": "pɐˈiʃ", "países": "pɐˈizɨʃ", "pessoas": "pɨsˈoɐʃ", "pessoa": "pɨsˈoɐ",
+  "tempo": "tˈẽpu", "mundo": "mˈũdu", "vida": "vˈidɐ", "dia": "dˈiɐ", "dias": "dˈiɐʃ",
+  "noite": "nˈojtɨ", "tarde": "tˈaɾdɨ", "manhã": "mɐɲˈɐ̃",
+  "texto": "tˈeʃtu", "textos": "tˈeʃtuʃ", "exemplo": "izˈẽplu", "exemplos": "izˈẽpluʃ",
+  "exame": "izˈɐmɨ", "exames": "izˈɐmɨʃ", "êxito": "ˈezitu",
+  "próximo": "pɾˈɔsimu", "próxima": "pɾˈɔsimɐ", "próximos": "pɾˈɔsimuʃ", "próximas": "pɾˈɔsimɐʃ",
+  "máximo": "mˈasimu", "máxima": "mˈasimɐ", "mínimo": "mˈinimu", "mínima": "mˈinimɐ",
+  "auxílio": "awsˈilju", "táxi": "tˈaksi", "fixo": "fˈiksu", "fixa": "fˈiksɐ",
+  "complexo": "kõplˈɛksu", "complexa": "kõplˈɛksɐ", "fluxo": "flˈuksu",
+  "puretts": "pˈuɾɨ tˈe tˈe ˈɛsɨ",
+  "tts": "tˈe tˈe ˈɛsɨ",
+  "ai": "ˈaj", "ia": "ˈi ˈa", "pdf": "pˈe dˈe ˈɛfɨ", "mp3": "ˈɛmɨ pˈe tɾˈeʃ", "wav": "wˈav",
+  "webgpu": "wˈɛb ʒˈe pˈe ˈu", "cpu": "sˈe pˈe ˈu", "gpu": "ʒˈe pˈe ˈu"
+};
 
-  for (const part of parts) {
-    if (!part || !part.trim()) continue;
-    if (/^[,;:.!?—…]+$/.test(part.trim())) {
-      if (out.length > 0) {
-        out[out.length - 1] += part.trim() + " ";
+const PT_UNITS = ["zˈɛɾu", "ˈũ", "dˈojʃ", "tɾˈeʃ", "kwˈatɾu", "sˈĩku", "sˈɐjʃ", "sˈɛtɨ", "ˈojtu", "nˈɔvɨ"];
+const PT_TEENS = ["dˈɛʃ", "ˈõzɨ", "dˈozɨ", "tɾˈezɨ", "kɐtˈoɾzɨ", "kˈĩzɨ", "dɨzɐsˈɐjʃ", "dɨzɐsˈɛtɨ", "dɨzˈojtu", "dɨzɐnˈɔvɨ"];
+const PT_TENS = ["", "", "vˈĩtɨ", "tɾˈĩtɐ", "kwɐɾˈẽtɐ", "sĩkwˈẽtɐ", "sɨsˈẽtɐ", "sɨtˈẽtɐ", "ojtˈẽtɐ", "nuvˈẽtɐ"];
+const PT_HUNDREDS = ["", "sˈẽtu", "duzˈẽtuʃ", "tɾɨzˈẽtuʃ", "kwatɾusˈẽtuʃ", "kiɲˈẽtuʃ", "sɐjʃsˈẽtuʃ", "sɛtɨsˈẽtuʃ", "ojtusˈẽtuʃ", "nɔvɨsˈẽtuʃ"];
+
+/**
+ * Converts an integer (0 - 999999) into European Portuguese IPA phonemes.
+ */
+function numberToPortugueseIPA(n) {
+  if (!Number.isFinite(n) || n < 0) return "";
+  if (n < 10) return PT_UNITS[n];
+  if (n < 20) return PT_TEENS[n - 10];
+  if (n < 100) {
+    const t = Math.floor(n / 10);
+    const u = n % 10;
+    return u === 0 ? PT_TENS[t] : `${PT_TENS[t]} i ${PT_UNITS[u]}`;
+  }
+  if (n === 100) return "sˈɐ̃j̃";
+  if (n < 1000) {
+    const h = Math.floor(n / 100);
+    const rem = n % 100;
+    return rem === 0 ? PT_HUNDREDS[h] : `${PT_HUNDREDS[h]} i ${numberToPortugueseIPA(rem)}`;
+  }
+  if (n < 1000000) {
+    const th = Math.floor(n / 1000);
+    const rem = n % 1000;
+    const thStr = th === 1 ? "mˈil" : `${numberToPortugueseIPA(th)} mˈil`;
+    if (rem === 0) return thStr;
+    const conj = rem < 100 || rem % 100 === 0 ? " i " : " ";
+    return `${thStr}${conj}${numberToPortugueseIPA(rem)}`;
+  }
+  return String(n);
+}
+
+/**
+ * Rule-based European Portuguese (pt-PT) word-to-IPA converter.
+ * Implements standard Portugal phonology:
+ * - Unstressed vowel reduction (a -> ɐ, e -> ɨ / initial i, o -> u)
+ * - Syllable-final sibilant palatalization ("chiado": coda s/z -> ʃ)
+ * - Non-palatalized dental stops (/t/ and /d/ before /i/ and /ɨ/)
+ * - European Portuguese -ei- -> ɐj and -em/-ens -> ɐ̃j̃ / ɐ̃j̃ʃ
+ */
+function phonemizePortugueseWord(rawWord) {
+  const w = rawWord.toLowerCase().trim();
+  if (!w) return "";
+  if (PT_PT_LEXICON[w]) return PT_PT_LEXICON[w];
+
+  // Numeric strings
+  if (/^\d+$/.test(w)) {
+    return numberToPortugueseIPA(parseInt(w, 10));
+  }
+
+  // Handle hyphenated compounds recursively (e.g. "bem-vindo")
+  if (w.includes("-")) {
+    return w
+      .split("-")
+      .filter(Boolean)
+      .map(part => phonemizePortugueseWord(part))
+      .join(" ");
+  }
+
+  const chars = Array.from(w);
+  const len = chars.length;
+  const isVowelChar = (c) => Boolean(c) && "aáàâãeéêiíoóôõuú".includes(c);
+  const hasAccent = (c) => Boolean(c) && "áàâãéêíóôõú".includes(c);
+
+  // 1. Identify vowel nuclei indices to determine primary stress position in Portuguese
+  const vowelIndices = [];
+  for (let i = 0; i < len; i++) {
+    const c = chars[i];
+    const prev = i > 0 ? chars[i - 1] : "";
+    const next = i + 1 < len ? chars[i + 1] : "";
+    // Skip silent 'u' in qu/gu before e/i
+    if (c === "u" && (prev === "q" || prev === "g") && (next === "e" || next === "é" || next === "ê" || next === "i" || next === "í")) {
+      continue;
+    }
+    if (isVowelChar(c)) {
+      vowelIndices.push(i);
+    }
+  }
+
+  if (vowelIndices.length === 0) {
+    return w;
+  }
+
+  // Group adjacent vowels into syllable nuclei (diphthongs vs hiatus)
+  const nuclei = [];
+  let idx = 0;
+  while (idx < vowelIndices.length) {
+    const vIdx = vowelIndices[idx];
+    const c = chars[vIdx];
+    const nextVIdx = idx + 1 < vowelIndices.length ? vowelIndices[idx + 1] : -1;
+    if (nextVIdx === vIdx + 1) {
+      const nextC = chars[nextVIdx];
+      // Falling diphthongs or nasal diphthongs stay in one syllable nucleus unless second vowel has an acute/circumflex accent
+      const formsDiphthong =
+        !hasAccent(nextC) &&
+        (("aáâãeéêoóôõu".includes(c) && (nextC === "i" || nextC === "u")) ||
+          (c === "ã" && (nextC === "e" || nextC === "o")) ||
+          (c === "õ" && nextC === "e") ||
+          (c === "i" && nextC === "u") ||
+          (c === "u" && nextC === "i"));
+      if (formsDiphthong) {
+        nuclei.push({ start: vIdx, end: nextVIdx });
+        idx += 2;
+        continue;
       }
+    }
+    nuclei.push({ start: vIdx, end: vIdx });
+    idx++;
+  }
+
+  // Determine which nucleus carries primary stress
+  let stressedNucleusIdx = -1;
+  for (let n = nuclei.length - 1; n >= 0; n--) {
+    const nuc = nuclei[n];
+    if (hasAccent(chars[nuc.start]) || hasAccent(chars[nuc.end])) {
+      stressedNucleusIdx = n;
+      break;
+    }
+  }
+
+  if (stressedNucleusIdx === -1) {
+    if (nuclei.length === 1) {
+      stressedNucleusIdx = 0;
     } else {
-      const phArr = await espeakPhonemize(part.trim(), lang);
-      const phStr = Array.isArray(phArr) ? phArr.join(" ").trim() : String(phArr || "").trim();
-      if (phStr) {
-        out.push(phStr);
+      // Portuguese default stress rule:
+      // Paroxytone (penultimate) if ending in -a(s), -e(s), -o(s), -am, -em, -ens
+      // Oxytone (final) if ending in -i(s), -u(s), -r, -l, -z, -x, -im, -ins, -um, -uns, -om, -ons, or diphthong
+      const lastNuc = nuclei[nuclei.length - 1];
+      const endsInDiphthong = lastNuc.end > lastNuc.start;
+      if (!endsInDiphthong && /(?:[aeo]s?|am|em|ens)$/.test(w)) {
+        stressedNucleusIdx = nuclei.length - 2;
+      } else {
+        stressedNucleusIdx = nuclei.length - 1;
       }
     }
   }
 
-  return out.join(" ").replace(/\s+/g, " ").trim();
+  const stressedVowelPos = nuclei[stressedNucleusIdx].start;
+
+  // 2. Scan graphemes left-to-right and emit European Portuguese IPA
+  let ipa = "";
+  let i = 0;
+  while (i < len) {
+    const c = chars[i];
+    const prev = i > 0 ? chars[i - 1] : "";
+    const next = i + 1 < len ? chars[i + 1] : "";
+    const next2 = i + 2 < len ? chars[i + 2] : "";
+    const isStressed = i === stressedVowelPos;
+    const stressMark = isStressed ? "ˈ" : "";
+
+    // Multi-character consonant digraphs
+    if (c === "l" && next === "h") {
+      ipa += "ʎ";
+      i += 2;
+      continue;
+    }
+    if (c === "n" && next === "h") {
+      ipa += "ɲ";
+      i += 2;
+      continue;
+    }
+    if (c === "c" && next === "h") {
+      ipa += "ʃ";
+      i += 2;
+      continue;
+    }
+    if (c === "r" && next === "r") {
+      ipa += "ʁ";
+      i += 2;
+      continue;
+    }
+    if (c === "s" && next === "s") {
+      ipa += "s";
+      i += 2;
+      continue;
+    }
+    if (c === "s" && next === "c" && (next2 === "e" || next2 === "é" || next2 === "ê" || next2 === "i" || next2 === "í")) {
+      ipa += "ʃs";
+      i += 2;
+      continue;
+    }
+    if (c === "q" && next === "u") {
+      if (next2 === "e" || next2 === "é" || next2 === "ê" || next2 === "i" || next2 === "í") {
+        ipa += "k";
+        i += 2;
+      } else {
+        ipa += "kw";
+        i += 2;
+      }
+      continue;
+    }
+    if (c === "g" && next === "u") {
+      if (next2 === "e" || next2 === "é" || next2 === "ê" || next2 === "i" || next2 === "í") {
+        ipa += "ɡ";
+        i += 2;
+      } else {
+        ipa += "ɡw";
+        i += 2;
+      }
+      continue;
+    }
+
+    // Nasal diphthongs with tilde (ão, ãos, ãe, ães, õe, ões)
+    if (c === "ã" && next === "o") {
+      ipa += `${stressMark}ɐ̃w̃`;
+      i += 2;
+      continue;
+    }
+    if (c === "ã" && next === "e") {
+      ipa += `${stressMark}ɐ̃j̃`;
+      i += 2;
+      continue;
+    }
+    if (c === "õ" && next === "e") {
+      ipa += `${stressMark}õj̃`;
+      i += 2;
+      continue;
+    }
+
+    // Word-final -em / -ens in European Portuguese -> ɐ̃j̃ / ɐ̃j̃ʃ (e.g. "viagem", "homens", "também")
+    if ((c === "e" || c === "é" || c === "ê") && ((next === "m" && i + 2 === len) || (next === "n" && next2 === "s" && i + 3 === len))) {
+      ipa += `${stressMark}ɐ̃j̃`;
+      if (next === "n") {
+        ipa += "ʃ";
+        i += 3;
+      } else {
+        i += 2;
+      }
+      continue;
+    }
+
+    // Word-final -am (3rd person plural verbs like "falam", "ocorre" vs "ocorrem") -> ɐ̃w̃
+    if (c === "a" && next === "m" && i + 2 === len) {
+      ipa += `${stressMark}ɐ̃w̃`;
+      i += 2;
+      continue;
+    }
+
+    // Pre-consonantal nasal vowels (vowel + m/n before another consonant or word-end)
+    if (isVowelChar(c) && (next === "m" || next === "n") && !isVowelChar(next2) && !(next === "n" && next2 === "h")) {
+      if ("aáâã".includes(c)) ipa += `${stressMark}ɐ̃`;
+      else if ("eéê".includes(c)) ipa += `${stressMark}ẽ`;
+      else if ("ií".includes(c)) ipa += `${stressMark}ĩ`;
+      else if ("oóôõ".includes(c)) ipa += `${stressMark}õ`;
+      else if ("uú".includes(c)) ipa += `${stressMark}ũ`;
+      i += 2;
+      continue;
+    }
+
+    // Oral diphthongs (vowel + i/u in same nucleus)
+    if (isVowelChar(c) && (next === "i" || next === "u") && !hasAccent(next)) {
+      // European Portuguese "-ei-" centralized diphthong -> ɐj (e.g. "inteiramente", "primeiro", "leite")
+      if ((c === "e" || c === "ê") && next === "i") {
+        ipa += `${stressMark}ɐj`;
+        i += 2;
+        continue;
+      }
+      if ((c === "a" || c === "á") && next === "i") {
+        ipa += `${stressMark}aj`;
+        i += 2;
+        continue;
+      }
+      if (c === "é" && next === "i") {
+        ipa += `${stressMark}ɛj`;
+        i += 2;
+        continue;
+      }
+      if ((c === "o" || c === "ô") && next === "i") {
+        ipa += `${stressMark}oj`;
+        i += 2;
+        continue;
+      }
+      if (c === "ó" && next === "i") {
+        ipa += `${stressMark}ɔj`;
+        i += 2;
+        continue;
+      }
+      if ((c === "u" || c === "ú") && next === "i") {
+        ipa += `${stressMark}uj`;
+        i += 2;
+        continue;
+      }
+      if ((c === "a" || c === "á") && next === "u") {
+        ipa += `${stressMark}aw`;
+        i += 2;
+        continue;
+      }
+      if ((c === "e" || c === "ê") && next === "u") {
+        ipa += `${stressMark}ew`;
+        i += 2;
+        continue;
+      }
+      if (c === "é" && next === "u") {
+        ipa += `${stressMark}ɛw`;
+        i += 2;
+        continue;
+      }
+      if ((c === "o" || c === "ô") && next === "u") {
+        // In European Portuguese, "ou" monophthongizes to /o/
+        ipa += `${stressMark}o`;
+        i += 2;
+        continue;
+      }
+      if ((c === "i" || c === "í") && next === "u") {
+        ipa += `${stressMark}iw`;
+        i += 2;
+        continue;
+      }
+    }
+
+    // Rising diphthongs (unstressed i/u before a vowel in hiatus, e.g. "estúdio", "inteligência", "artificial")
+    if ((c === "i" || c === "u") && !isStressed && isVowelChar(next)) {
+      ipa += c === "i" ? "j" : "w";
+      i++;
+      continue;
+    }
+
+    // Single vowels (with European Portuguese vowel reduction when unstressed)
+    if (isVowelChar(c)) {
+      if (c === "á" || c === "à") {
+        ipa += `${stressMark}a`;
+      } else if (c === "â") {
+        ipa += `${stressMark}ɐ`;
+      } else if (c === "ã") {
+        ipa += `${stressMark}ɐ̃`;
+      } else if (c === "a") {
+        if (isStressed) {
+          // Stressed 'a' before intervocalic nasal m/n/nh is central /ɐ/ in PT-PT (e.g. "cama", "ano", "banho")
+          const beforeNasal = (next === "m" || next === "n") && isVowelChar(next2);
+          ipa += `${stressMark}${beforeNasal ? "ɐ" : "a"}`;
+        } else {
+          ipa += "ɐ";
+        }
+      } else if (c === "é") {
+        ipa += `${stressMark}ɛ`;
+      } else if (c === "ê") {
+        ipa += `${stressMark}e`;
+      } else if (c === "e") {
+        if (isStressed) {
+          // Stressed 'e' before palatal lh/nh/ch/j is centralized /ɐ/ in Lisbon PT-PT
+          const beforePalatal = (next === "l" && next2 === "h") || (next === "n" && next2 === "h") || next === "j" || (next === "c" && next2 === "h");
+          ipa += `${stressMark}${beforePalatal ? "ɐ" : "e"}`;
+        } else if (i === 0 && (next === "s" || next === "z" || next === "x")) {
+          // Initial "es-", "ex-" in PT-PT is /iʃ/, /iz/ (e.g. "estúdio" -> iʃtˈudju)
+          ipa += "i";
+        } else if (isVowelChar(next)) {
+          ipa += "i";
+        } else {
+          // Signature European Portuguese unstressed 'e' -> /ɨ/
+          ipa += "ɨ";
+        }
+      } else if (c === "í" || c === "i") {
+        ipa += `${stressMark}i`;
+      } else if (c === "ó") {
+        ipa += `${stressMark}ɔ`;
+      } else if (c === "ô") {
+        ipa += `${stressMark}o`;
+      } else if (c === "õ") {
+        ipa += `${stressMark}õ`;
+      } else if (c === "o") {
+        if (isStressed) {
+          ipa += `${stressMark}o`;
+        } else if (i === 0 && next === "c" && next2 === "o") {
+          ipa += "ɔ";
+        } else {
+          // Signature European Portuguese unstressed 'o' -> /u/
+          ipa += "u";
+        }
+      } else if (c === "ú" || c === "u") {
+        ipa += `${stressMark}u`;
+      }
+      i++;
+      continue;
+    }
+
+    // Single consonants
+    switch (c) {
+      case "b":
+      case "d":
+      case "f":
+      case "k":
+      case "m":
+      case "n":
+      case "p":
+      case "t":
+      case "v":
+        ipa += c;
+        break;
+      case "c":
+        if (next === "e" || next === "é" || next === "ê" || next === "i" || next === "í") {
+          ipa += "s";
+        } else {
+          ipa += "k";
+        }
+        break;
+      case "ç":
+        ipa += "s";
+        break;
+      case "g":
+        if (next === "e" || next === "é" || next === "ê" || next === "i" || next === "í") {
+          ipa += "ʒ";
+        } else {
+          ipa += "ɡ";
+        }
+        break;
+      case "h":
+        // Silent in Portuguese
+        break;
+      case "j":
+        ipa += "ʒ";
+        break;
+      case "l":
+        ipa += "l";
+        break;
+      case "q":
+        ipa += "k";
+        break;
+      case "r":
+        // Word-initial 'r' or 'r' after n/l/s is uvular /ʁ/; single intervocalic/coda 'r' is tap /ɾ/
+        if (i === 0 || prev === "n" || prev === "l" || prev === "s") {
+          ipa += "ʁ";
+        } else {
+          ipa += "ɾ";
+        }
+        break;
+      case "s":
+        if (i === 0) {
+          ipa += "s";
+        } else if (isVowelChar(prev) && isVowelChar(next)) {
+          // Intervocalic 's' is voiced /z/
+          ipa += "z";
+        } else if (!isVowelChar(next)) {
+          // European Portuguese coda 's' ("chiado"):
+          // Voiced /ʒ/ before voiced consonants (b, d, g, v, m, n, l, r), voiceless /ʃ/ at word end or before voiceless consonants
+          if (next && "bdgvmnlr".includes(next)) {
+            ipa += "ʒ";
+          } else {
+            ipa += "ʃ";
+          }
+        } else {
+          ipa += "s";
+        }
+        break;
+      case "w":
+        ipa += "w";
+        break;
+      case "x":
+        if (i === 0) {
+          ipa += "ʃ";
+        } else if (i === 1 && prev === "e" && isVowelChar(next)) {
+          // "ex-" + vowel -> /iz/ (e.g. "exato", "exame", "existir")
+          ipa += "z";
+        } else if (!isVowelChar(next)) {
+          ipa += "ʃ";
+        } else {
+          ipa += "ʃ";
+        }
+        break;
+      case "y":
+        ipa += `${stressMark}i`;
+        break;
+      case "z":
+        if (i === len - 1 || !isVowelChar(next)) {
+          // Word-final or coda 'z' in PT-PT is /ʃ/ (e.g. "voz" -> vˈɔʃ, "luz" -> lˈuʃ)
+          ipa += "ʃ";
+        } else {
+          ipa += "z";
+        }
+        break;
+      default:
+        break;
+    }
+    i++;
+  }
+
+  return ipa;
+}
+
+/**
+ * Phonemizes text into European Portuguese (pt-PT) IPA phonemes while preserving punctuation
+ * so Kokoro-82M maintains natural prosody, question intonation, and clause pauses.
+ */
+function phonemizePortugueseKeepPunctuation(text) {
+  // Normalize percentage and currency symbols into spoken Portuguese words
+  const normalized = text
+    .replace(/(\d+)\s*%/g, "$1 por cento")
+    .replace(/%/g, " por cento ")
+    .replace(/€\s*(\d+)/g, "$1 euros")
+    .replace(/(\d+)\s*€/g, "$1 euros");
+
+  // Tokenize into words and punctuation clusters
+  const tokens = normalized.match(/[A-Za-zÀ-ÖØ-öø-ÿ0-9-]+|[,;:.!?—…"«»“”]+/g) || [];
+  const out = [];
+
+  for (let t = 0; t < tokens.length; t++) {
+    const tok = tokens[t];
+    if (/^[,;:.!?—…"«»“”]+$/.test(tok)) {
+      if (out.length > 0) {
+        out[out.length - 1] += tok;
+      }
+    } else {
+      const ph = phonemizePortugueseWord(tok);
+      if (ph) {
+        // Apply European Portuguese cross-word sibilant sandhi (liaison):
+        // Word-final /ʃ/ (without intervening punctuation) becomes /z/ before a vowel-initial word
+        // and /ʒ/ before a voiced consonant.
+        if (out.length > 0 && out[out.length - 1].endsWith("ʃ")) {
+          const nextFirst = ph.startsWith("ˈ") ? ph.slice(1, 2) : ph.slice(0, 1);
+          if ("aɐeɛɨioɔujw".includes(nextFirst)) {
+            out[out.length - 1] = out[out.length - 1].slice(0, -1) + "z";
+          } else if ("bdɡvzʒmnɲlʎɾʁ".includes(nextFirst)) {
+            out[out.length - 1] = out[out.length - 1].slice(0, -1) + "ʒ";
+          }
+        }
+        out.push(ph);
+      }
+    }
+  }
+
+  return out.join(" ").replace(/\s+/g, " ").trim().normalize("NFD");
 }
 
 /**

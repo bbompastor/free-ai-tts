@@ -892,7 +892,7 @@ audioDuration.textContent = `Buffering Part ${nextIndex + 1}...`;
 });
 function getWorker() {
 if (worker) return worker;
-worker = new Worker("./js/tts.worker.js", { type: "module" });
+worker = new Worker("./js/tts.worker.js?v=2", { type: "module" });
 worker.onmessage = (e) => {
 if (isStopping) return;
 const { status, data, blob, partialBlob, partialDuration, elapsed, totalDuration, chunksProcessed, totalChunks, message, percent, current, total, chunkIndex, chunkBlob, chunkDuration } = e.data;

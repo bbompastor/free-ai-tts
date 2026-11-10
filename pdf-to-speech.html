@@ -1833,7 +1833,7 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
 
     function getWorker() {
       if (worker) return worker;
-      worker = new Worker("./js/tts.worker.js", { type: "module" });
+      worker = new Worker("./js/tts.worker.js?v=2", { type: "module" });
 
       worker.onmessage = (e) => {
         if (isStopping) return;
