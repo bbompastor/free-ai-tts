@@ -106,8 +106,10 @@
         <button class="chip-btn" data-preset="spanish">🇪🇸 Español</button>
         <button class="chip-btn" data-preset="french">🇫🇷 Français</button>
         <button class="chip-btn" data-preset="italian">🇮🇹 Italiano</button>
+        <button class="chip-btn" data-preset="hindi">🇮🇳 हिन्दी</button>
+        <button class="chip-btn" data-preset="japanese">🇯🇵 日本語</button>
+        <button class="chip-btn" data-preset="chinese">🇨🇳 中文</button>
         <button class="chip-btn" data-preset="story">📖 Audiobook</button>
-        <button class="chip-btn" data-preset="youtube">📱 Creator</button>
 
         <label for="fileUploadInput" class="upload-chip-btn" title="Import a .txt, .pdf, or .md file">
           📁 <span>Import .txt / .pdf</span>
@@ -197,6 +199,29 @@ Paste your script, article, or study notes here, choose your preferred voice, an
             <optgroup label="🇮🇹 Italian (Italy — Italiano)">
               <option value="if_sara">🇮🇹 Sara (Femminile Naturale &amp; Espressiva · IT-IT)</option>
               <option value="im_nicola">🇮🇹 Nicola (Maschile Chiaro &amp; Professionale · IT-IT)</option>
+            </optgroup>
+            <optgroup label="🇮🇳 Hindi (India — हिन्दी)">
+              <option value="hf_alpha">🇮🇳 Alpha (Female Natural &amp; Expressive · HI-IN)</option>
+              <option value="hf_beta">🇮🇳 Beta (Female Warm &amp; Clear · HI-IN)</option>
+              <option value="hm_omega">🇮🇳 Omega (Male Deep Narrator · HI-IN)</option>
+              <option value="hm_psi">🇮🇳 Psi (Male Articulate Presenter · HI-IN)</option>
+            </optgroup>
+            <optgroup label="🇯🇵 Japanese (Japan — 日本語)">
+              <option value="jf_alpha">🇯🇵 Alpha (Female Studio Narrator · JA-JP)</option>
+              <option value="jf_gongitsune">🇯🇵 Gongitsune (Female Expressive Storyteller · JA-JP)</option>
+              <option value="jf_nezumi">🇯🇵 Nezumi (Female Soft &amp; Natural · JA-JP)</option>
+              <option value="jf_tebukuro">🇯🇵 Tebukuro (Female Warm Literary · JA-JP)</option>
+              <option value="jm_kumo">🇯🇵 Kumo (Male Clear &amp; Calm · JA-JP)</option>
+            </optgroup>
+            <optgroup label="🇨🇳 Mandarin Chinese (China — 中文普通话)">
+              <option value="zf_xiaobei">🇨🇳 Xiaobei (Female Natural &amp; Warm · ZH-CN)</option>
+              <option value="zf_xiaoni">🇨🇳 Xiaoni (Female Bright &amp; Expressive · ZH-CN)</option>
+              <option value="zf_xiaoxiao">🇨🇳 Xiaoxiao (Female Studio Presenter · ZH-CN)</option>
+              <option value="zf_xiaoyi">🇨🇳 Xiaoyi (Female Soft Conversational · ZH-CN)</option>
+              <option value="zm_yunjian">🇨🇳 Yunjian (Male Deep Documentary · ZH-CN)</option>
+              <option value="zm_yunxi">🇨🇳 Yunxi (Male Clear Narrator · ZH-CN)</option>
+              <option value="zm_yunxia">🇨🇳 Yunxia (Male Energetic · ZH-CN)</option>
+              <option value="zm_yunyang">🇨🇳 Yunyang (Male Professional Anchor · ZH-CN)</option>
             </optgroup>
           </select>
         </div>
@@ -457,12 +482,33 @@ Paste your script, article, or study notes here, choose your preferred voice, an
               <td style="padding: 10px 12px;"><code>0.95x – 1.05x</code></td>
               <td style="padding: 10px 12px;">Livres audio, articles en français, voix-off documentaire</td>
             </tr>
-            <tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
               <td style="padding: 10px 12px;"><strong style="color: #fff;">Sara / Nicola (if_sara, im_nicola)</strong></td>
               <td style="padding: 10px 12px;">🇮🇹 IT-IT</td>
               <td style="padding: 10px 12px;">Expressive Italian female &amp; male studio voices</td>
               <td style="padding: 10px 12px;"><code>0.95x – 1.05x</code></td>
               <td style="padding: 10px 12px;">Narrazione in italiano, podcast, presentazioni</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Alpha / Beta / Omega / Psi (hf_*, hm_*)</strong></td>
+              <td style="padding: 10px 12px;">🇮🇳 HI-IN</td>
+              <td style="padding: 10px 12px;">Natural Hindi Devanagari &amp; Hinglish voices</td>
+              <td style="padding: 10px 12px;"><code>0.95x – 1.05x</code></td>
+              <td style="padding: 10px 12px;">हिन्दी ऑडियोबुक, समाचार, शैक्षिक वीडियो</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Alpha / Gongitsune / Kumo (jf_*, jm_*)</strong></td>
+              <td style="padding: 10px 12px;">🇯🇵 JA-JP</td>
+              <td style="padding: 10px 12px;">Japanese studio narrators &amp; expressive storytelling voices</td>
+              <td style="padding: 10px 12px;"><code>0.95x – 1.05x</code></td>
+              <td style="padding: 10px 12px;">日本語ナレーション、オーディオブック、解説動画</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Xiaobei / Xiaoxiao / Yunjian / Yunxi (zf_*, zm_*)</strong></td>
+              <td style="padding: 10px 12px;">🇨🇳 ZH-CN</td>
+              <td style="padding: 10px 12px;">Mandarin Chinese female &amp; male broadcast narrators</td>
+              <td style="padding: 10px 12px;"><code>0.95x – 1.05x</code></td>
+              <td style="padding: 10px 12px;">中文配音、有声书、视频旁白</td>
             </tr>
           </tbody>
         </table>
@@ -710,7 +756,10 @@ portuguese: `Olá! Bem-vindo ao PureTTS, o seu estúdio de voz com inteligência
 portuguese_br: `Olá! Bem-vindo ao PureTTS, o seu estúdio de voz com inteligência artificial inteiramente no navegador no Brasil. Todo o processamento ocorre localmente no seu dispositivo — rápido, privado e 100% gratuito.`,
 spanish: `¡Hola! Bienvenido a PureTTS, tu estudio de voz con inteligencia artificial directamente en el navegador. Todo el procesamiento ocurre localmente en tu dispositivo — rápido, privado y 100% gratis.`,
 french: `Bonjour ! Bienvenue sur PureTTS, votre studio de voix avec intelligence artificielle entièrement dans le navigateur. Tout le traitement s'effectue localement sur votre appareil — rapide, privé et 100% gratuit.`,
-italian: `Ciao! Benvenuto su PureTTS, il tuo studio di voce con intelligenza artificiale direttamente nel browser. Tutto avviene localmente sul tuo dispositivo — veloce, privato e 100% gratuito.`
+italian: `Ciao! Benvenuto su PureTTS, il tuo studio di voce con intelligenza artificiale direttamente nel browser. Tutto avviene localmente sul tuo dispositivo — veloce, privato e 100% gratuito.`,
+hindi: `नमस्ते! PureTTS में आपका स्वागत है। यह पूरी तरह से मुफ़्त और असीमित टेक्स्ट टू स्पीच स्टूडियो है जो आपके ब्राउज़र में काम करता है।`,
+japanese: `こんにちは！PureTTSへようこそ。これは人工知能による完全無料の音声合成スタジオです。すべての処理はお使いのデバイス上で直接動作し、高速で安全です。`,
+chinese: `你好！欢迎使用 PureTTS，这是一个完全免费的人工智能语音合成工具。所有处理都在您的浏览器中本地运行，快速、私密且100%免费。`
 };
 document.querySelectorAll(".chip-btn").forEach(btn => {
 btn.addEventListener("click", () => {
@@ -728,6 +777,12 @@ voiceSelect.value = "es_dora";
 voiceSelect.value = "ff_siwis";
 } else if (key === "italian" && !voiceSelect.value.startsWith("i")) {
 voiceSelect.value = "if_sara";
+} else if (key === "hindi" && !voiceSelect.value.startsWith("h")) {
+voiceSelect.value = "hf_alpha";
+} else if (key === "japanese" && !voiceSelect.value.startsWith("j")) {
+voiceSelect.value = "jf_alpha";
+} else if (key === "chinese" && !voiceSelect.value.startsWith("z")) {
+voiceSelect.value = "zf_xiaobei";
 } else if ((key === "welcome" || key === "story" || key === "youtube" || key === "sre") && !voiceSelect.value.startsWith("a") && !voiceSelect.value.startsWith("b")) {
 voiceSelect.value = "af_heart";
 }
@@ -960,7 +1015,7 @@ audioDuration.textContent = `Buffering Part ${nextIndex + 1}...`;
 });
 function getWorker() {
 if (worker) return worker;
-worker = new Worker("./js/tts.worker.js?v=3", { type: "module" });
+worker = new Worker("./js/tts.worker.js?v=4", { type: "module" });
 worker.onmessage = (e) => {
 if (isStopping) return;
 const { status, data, blob, partialBlob, partialDuration, elapsed, totalDuration, chunksProcessed, totalChunks, message, percent, current, total, chunkIndex, chunkBlob, chunkDuration } = e.data;

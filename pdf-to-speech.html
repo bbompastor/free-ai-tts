@@ -1313,6 +1313,29 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
               <option value="if_sara">🇮🇹 Sara (Femminile Naturale &amp; Espressiva · IT-IT)</option>
               <option value="im_nicola">🇮🇹 Nicola (Maschile Chiaro &amp; Professionale · IT-IT)</option>
             </optgroup>
+            <optgroup label="🇮🇳 Hindi (India — हिन्दी)">
+              <option value="hf_alpha">🇮🇳 Alpha (Female Natural &amp; Expressive · HI-IN)</option>
+              <option value="hf_beta">🇮🇳 Beta (Female Warm &amp; Clear · HI-IN)</option>
+              <option value="hm_omega">🇮🇳 Omega (Male Deep Narrator · HI-IN)</option>
+              <option value="hm_psi">🇮🇳 Psi (Male Articulate Presenter · HI-IN)</option>
+            </optgroup>
+            <optgroup label="🇯🇵 Japanese (Japan — 日本語)">
+              <option value="jf_alpha">🇯🇵 Alpha (Female Studio Narrator · JA-JP)</option>
+              <option value="jf_gongitsune">🇯🇵 Gongitsune (Female Expressive Storyteller · JA-JP)</option>
+              <option value="jf_nezumi">🇯🇵 Nezumi (Female Soft &amp; Natural · JA-JP)</option>
+              <option value="jf_tebukuro">🇯🇵 Tebukuro (Female Warm Literary · JA-JP)</option>
+              <option value="jm_kumo">🇯🇵 Kumo (Male Clear &amp; Calm · JA-JP)</option>
+            </optgroup>
+            <optgroup label="🇨🇳 Mandarin Chinese (China — 中文普通话)">
+              <option value="zf_xiaobei">🇨🇳 Xiaobei (Female Natural &amp; Warm · ZH-CN)</option>
+              <option value="zf_xiaoni">🇨🇳 Xiaoni (Female Bright &amp; Expressive · ZH-CN)</option>
+              <option value="zf_xiaoxiao">🇨🇳 Xiaoxiao (Female Studio Presenter · ZH-CN)</option>
+              <option value="zf_xiaoyi">🇨🇳 Xiaoyi (Female Soft Conversational · ZH-CN)</option>
+              <option value="zm_yunjian">🇨🇳 Yunjian (Male Deep Documentary · ZH-CN)</option>
+              <option value="zm_yunxi">🇨🇳 Yunxi (Male Clear Narrator · ZH-CN)</option>
+              <option value="zm_yunxia">🇨🇳 Yunxia (Male Energetic · ZH-CN)</option>
+              <option value="zm_yunyang">🇨🇳 Yunyang (Male Professional Anchor · ZH-CN)</option>
+            </optgroup>
           </select>
         </div>
 
@@ -1855,7 +1878,7 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
 
     function getWorker() {
       if (worker) return worker;
-      worker = new Worker("./js/tts.worker.js?v=3", { type: "module" });
+      worker = new Worker("./js/tts.worker.js?v=4", { type: "module" });
 
       worker.onmessage = (e) => {
         if (isStopping) return;

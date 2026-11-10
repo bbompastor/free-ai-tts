@@ -16,7 +16,7 @@ const VOICE_URLS = [
   "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX-timestamped/resolve/main/voices"
 ];
 
-// Map multilingual voice IDs (pt-PT, pt-BR, es-ES, es-419, fr-FR, it-IT) to Kokoro v1.0 voice embedding files
+// Map multilingual voice IDs (pt-PT, pt-BR, es-ES, es-419, fr-FR, it-IT, hi-IN, ja-JP, zh-CN) to Kokoro v1.0 voice embedding files
 const PORTUGUESE_VOICE_MAP = {
   // 🇵🇹 European Portuguese (Portugal)
   pt_dora: { bin: "pf_dora", lang: "pt-PT" },
@@ -44,7 +44,27 @@ const PORTUGUESE_VOICE_MAP = {
   ff_siwis: { bin: "ff_siwis", lang: "fr-FR" },
   // 🇮🇹 Italian (Italy)
   if_sara: { bin: "if_sara", lang: "it-IT" },
-  im_nicola: { bin: "im_nicola", lang: "it-IT" }
+  im_nicola: { bin: "im_nicola", lang: "it-IT" },
+  // 🇮🇳 Hindi (India)
+  hf_alpha: { bin: "hf_alpha", lang: "hi-IN" },
+  hf_beta: { bin: "hf_beta", lang: "hi-IN" },
+  hm_omega: { bin: "hm_omega", lang: "hi-IN" },
+  hm_psi: { bin: "hm_psi", lang: "hi-IN" },
+  // 🇯🇵 Japanese (Japan)
+  jf_alpha: { bin: "jf_alpha", lang: "ja-JP" },
+  jf_gongitsune: { bin: "jf_gongitsune", lang: "ja-JP" },
+  jf_nezumi: { bin: "jf_nezumi", lang: "ja-JP" },
+  jf_tebukuro: { bin: "jf_tebukuro", lang: "ja-JP" },
+  jm_kumo: { bin: "jm_kumo", lang: "ja-JP" },
+  // 🇨🇳 Mandarin Chinese (China)
+  zf_xiaobei: { bin: "zf_xiaobei", lang: "zh-CN" },
+  zf_xiaoni: { bin: "zf_xiaoni", lang: "zh-CN" },
+  zf_xiaoxiao: { bin: "zf_xiaoxiao", lang: "zh-CN" },
+  zf_xiaoyi: { bin: "zf_xiaoyi", lang: "zh-CN" },
+  zm_yunjian: { bin: "zm_yunjian", lang: "zh-CN" },
+  zm_yunxi: { bin: "zm_yunxi", lang: "zh-CN" },
+  zm_yunxia: { bin: "zm_yunxia", lang: "zh-CN" },
+  zm_yunyang: { bin: "zm_yunyang", lang: "zh-CN" }
 };
 
 const customVoiceMemoryCache = new Map();
@@ -1124,10 +1144,408 @@ function phonemizeFrenchWord(rawWord) {
 }
 
 /**
- * Phonemizes text into target language IPA phonemes (pt-PT, pt-BR, es-ES, es-419, fr-FR, it-IT)
+ * Hindi (hi-IN) Devanagari & Hinglish to IPA G2P engine.
+ * Implements Devanagari abugida consonant + matra + virama + nukta rules and word-final schwa deletion.
+ */
+function phonemizeHindiWord(rawWord) {
+  const w = rawWord.trim();
+  if (!w) return "";
+  const lower = w.toLowerCase();
+  const hiLexicon = {
+    "puretts": "pjˈʊəɾ tˈiː tˈiː ˈɛs", "tts": "tˈiː tˈiː ˈɛs", "ai": "ˈeː ˈaːiː",
+    "100": "sˈɔː", "१००": "sˈɔː", "namaste": "nəmˈəsteː", "bharat": "bʱˈaːɾət", "hindi": "ɦˈɪndiː"
+  };
+  if (hiLexicon[lower]) return hiLexicon[lower];
+
+  // If word is Latin/Romanized Hinglish, apply simple Roman-to-Hindi IPA
+  if (/^[a-z0-9-]+$/i.test(lower)) {
+    return lower
+      .replace(/sh/g, "ʃ").replace(/ch/g, "ʧ").replace(/kh/g, "kʰ").replace(/gh/g, "ɡʱ")
+      .replace(/th/g, "tʰ").replace(/dh/g, "dʱ").replace(/ph/g, "pʰ").replace(/bh/g, "bʱ")
+      .replace(/aa/g, "aː").replace(/ee/g, "iː").replace(/oo/g, "uː")
+      .replace(/j/g, "ʤ").replace(/v|w/g, "ʋ").replace(/r/g, "ɾ").replace(/h/g, "ɦ").replace(/g/g, "ɡ");
+  }
+
+  // Devanagari abugida parser
+  const indepVowels = {
+    "अ": "ə", "आ": "aː", "इ": "ɪ", "ई": "iː", "उ": "ʊ", "ऊ": "uː",
+    "ऋ": "ɾɪ", "ए": "eː", "ऐ": "ɛː", "ओ": "oː", "औ": "ɔː", "ऑ": "ɔ"
+  };
+  const matras = {
+    "ा": "aː", "ि": "ɪ", "ी": "iː", "ु": "ʊ", "ू": "uː",
+    "ृ": "ɾɪ", "े": "eː", "ै": "ɛː", "ो": "oː", "ौ": "ɔː", "ॉ": "ɔ"
+  };
+  const consonants = {
+    "क": "k", "ख": "kʰ", "ग": "ɡ", "घ": "ɡʱ", "ङ": "ŋ",
+    "च": "ʧ", "छ": "ʧʰ", "ज": "ʤ", "झ": "ʤʱ", "ञ": "ɲ",
+    "ट": "ʈ", "ठ": "ʈʰ", "ड": "ɖ", "ढ": "ɖʱ", "ण": "ɳ",
+    "त": "t", "थ": "tʰ", "द": "d", "ध": "dʱ", "न": "n",
+    "प": "p", "फ": "pʰ", "ब": "b", "भ": "bʱ", "म": "m",
+    "य": "j", "र": "ɾ", "ल": "l", "व": "ʋ",
+    "श": "ʃ", "ष": "ʂ", "स": "s", "ह": "ɦ",
+    "क़": "k", "ख़": "x", "ग़": "ɣ", "ज़": "z", "ड़": "ɽ", "ढ़": "ɽʱ", "फ़": "f"
+  };
+  const nuktaMap = {
+    "क": "k", "ख": "x", "ग": "ɣ", "ज": "z", "ड": "ɽ", "ढ": "ɽʱ", "फ": "f"
+  };
+
+  const chars = Array.from(w);
+  const len = chars.length;
+  let ipa = "";
+  let i = 0;
+
+  while (i < len) {
+    const c = chars[i];
+    const next = i + 1 < len ? chars[i + 1] : "";
+
+    if (indepVowels[c]) {
+      ipa += indepVowels[c];
+      i++;
+      continue;
+    }
+
+    if (consonants[c]) {
+      let consIpa = consonants[c];
+      if (next === "़" && nuktaMap[c]) {
+        consIpa = nuktaMap[c];
+        i++;
+      }
+      const afterCons = i + 1 < len ? chars[i + 1] : "";
+      if (afterCons === "्") {
+        // Virama suppresses inherent schwa
+        ipa += consIpa;
+        i += 2;
+        continue;
+      } else if (matras[afterCons]) {
+        ipa += consIpa + matras[afterCons];
+        i += 2;
+        continue;
+      } else {
+        // Inherent schwa (ə), deleted at word-end in spoken Hindi unless monosyllabic
+        const isWordFinal = (i === len - 1) || (i === len - 2 && (afterCons === "ं" || afterCons === "ँ"));
+        if (isWordFinal && len > 1) {
+          ipa += consIpa;
+        } else {
+          ipa += consIpa + "ə";
+        }
+        i++;
+        continue;
+      }
+    }
+
+    if (matras[c]) {
+      ipa += matras[c];
+    } else if (c === "ं" || c === "ँ") {
+      // Anusvara before stop or word-end -> nasalization tilde or nasal consonant
+      if (next && "कखगघ".includes(next)) ipa += "ŋ";
+      else if (next && "चछजझ".includes(next)) ipa += "ɲ";
+      else if (next && "टठडढण".includes(next)) ipa += "ɳ";
+      else if (next && "तथदधन".includes(next)) ipa += "n";
+      else if (next && "पफबभम".includes(next)) ipa += "m";
+      else ipa += "\u0303";
+    } else if (c === "ः") {
+      ipa += "ɦ";
+    }
+    i++;
+  }
+
+  // Place primary stress on the first long vowel or first vowel
+  if (ipa && !ipa.includes("ˈ")) {
+    if (/[aɪiʊueɛoɔ]ː/.test(ipa)) {
+      ipa = ipa.replace(/([aɪiʊueɛoɔ]ː)/, "ˈ$1");
+    } else {
+      ipa = ipa.replace(/([əaɪiʊueɛoɔ])/, "ˈ$1");
+    }
+  }
+  return ipa;
+}
+
+/**
+ * Japanese (ja-JP) Kanji/Hiragana/Katakana/Romaji to IPA G2P engine for Kokoro-82M.
+ */
+const JA_KANJI_MAP = [
+  ["こんにちは", "こんにちわ"], ["こんばんは", "こんばんわ"], ["これは", "これわ"], ["へようこそ", "えよーこそ"],
+  ["人工知能", "じんこーちのー"], ["音声合成", "おんせいごーせい"], ["音声", "おんせい"],
+  ["変換", "へんかん"], ["処理", "しょり"], ["完全", "かんぜん"], ["無料", "むりょー"],
+  ["高速", "こーそく"], ["安全", "あんぜん"], ["直接", "ちょくせつ"], ["動作", "どーさ"],
+  ["無制限", "むせいげん"], ["登録", "とーろく"], ["不要", "ふよー"], ["日本語", "にほんご"],
+  ["日本", "にほん"], ["東京", "とーきょー"], ["世界", "せかい"], ["今日", "きょー"],
+  ["明日", "あした"], ["昨日", "きのー"], ["私", "わたし"], ["僕", "ぼく"],
+  ["彼", "かれ"], ["彼女", "かのじょ"], ["先生", "せんせい"], ["学生", "がくせい"],
+  ["言葉", "ことば"], ["文章", "ぶんしょー"], ["文字", "もじ"], ["読", "よ"],
+  ["聞", "き"], ["話", "はな"], ["声", "こえ"], ["音", "おと"], ["新", "あたら"],
+  ["時間", "じかん"], ["今", "いま"], ["人", "ひと"], ["方", "かた"], ["本", "ほん"],
+  ["一", "いち"], ["二", "に"], ["三", "さん"], ["四", "よん"], ["五", "ご"],
+  ["六", "ろく"], ["七", "なな"], ["八", "はち"], ["九", "きゅー"], ["十", "じゅー"],
+  ["百", "ひゃく"], ["千", "せん"], ["万", "まん"], ["100%", "ひゃくパーセント"],
+  ["PureTTS", "ピュアティーティーエス"], ["TTS", "ティーティーエス"], ["AI", "エーアイ"]
+];
+
+const JA_DIGRAPHS = {
+  "きゃ": "kʲa", "きゅ": "kʲɯ", "きょ": "kʲo",
+  "しゃ": "ɕa", "しゅ": "ɕɯ", "しょ": "ɕo",
+  "ちゃ": "ʧa", "ちゅ": "ʧɯ", "ちょ": "ʧo",
+  "にゃ": "ɲa", "にゅ": "ɲɯ", "にょ": "ɲo",
+  "ひゃ": "ça", "ひゅ": "çɯ", "ひょ": "ço",
+  "みゃ": "mʲa", "みゅ": "mʲɯ", "みょ": "mʲo",
+  "りゃ": "ɾʲa", "りゅ": "ɾʲɯ", "りょ": "ɾʲo",
+  "ぎゃ": "ɡʲa", "ぎゅ": "ɡʲɯ", "ぎょ": "ɡʲo",
+  "じゃ": "ʤa", "じゅ": "ʤɯ", "じょ": "ʤo",
+  "びゃ": "bʲa", "びゅ": "bʲɯ", "びょ": "bʲo",
+  "ぴゃ": "pʲa", "ぴゅ": "pʲɯ", "ぴょ": "pʲo",
+  "ふぁ": "ɸa", "ふぃ": "ɸi", "ふぇ": "ɸe", "ふぉ": "ɸo",
+  "てぃ": "ti", "でぃ": "di", "うぃ": "wi", "うぇ": "we", "うぉ": "wo"
+};
+
+const JA_MONOGRAPHS = {
+  "あ": "a", "い": "i", "う": "ɯ", "え": "e", "お": "o",
+  "ぁ": "a", "ぃ": "i", "ぅ": "ɯ", "ぇ": "e", "ぉ": "o",
+  "か": "ka", "き": "kʲi", "く": "kɯ", "け": "ke", "こ": "ko",
+  "さ": "sa", "し": "ɕi", "す": "sɯ", "せ": "se", "そ": "so",
+  "た": "ta", "ち": "ʧi", "つ": "tsɯ", "て": "te", "と": "to",
+  "な": "na", "に": "ɲi", "ぬ": "nɯ", "ね": "ne", "の": "no",
+  "は": "ha", "ひ": "çi", "ふ": "ɸɯ", "へ": "he", "ほ": "ho",
+  "ま": "ma", "み": "mʲi", "む": "mɯ", "め": "me", "も": "mo",
+  "や": "ja", "ゆ": "jɯ", "よ": "jo", "ゃ": "ja", "ゅ": "jɯ", "ょ": "jo",
+  "ら": "ɾa", "り": "ɾʲi", "る": "ɾɯ", "れ": "ɾe", "ろ": "ɾo",
+  "わ": "wa", "を": "o", "ん": "ɴ",
+  "が": "ɡa", "ぎ": "ɡʲi", "ぐ": "ɡɯ", "げ": "ɡe", "ご": "ɡo",
+  "ざ": "dza", "じ": "ʤi", "ず": "dzɯ", "ぜ": "dze", "ぞ": "dzo",
+  "だ": "da", "ぢ": "ʤi", "づ": "dzɯ", "で": "de", "ど": "do",
+  "ば": "ba", "び": "bʲi", "ぶ": "bɯ", "べ": "be", "ぼ": "bo",
+  "ぱ": "pa", "ぴ": "pʲi", "ぷ": "pɯ", "ぺ": "pe", "ぽ": "po",
+  "ゔ": "vɯ", "ー": "ː"
+};
+
+function phonemizeJapaneseText(text) {
+  let s = text
+    .replace(/。/g, ". ")
+    .replace(/、/g, ", ")
+    .replace(/！/g, "! ")
+    .replace(/？/g, "? ")
+    .replace(/「|」|『|』/g, " ");
+
+  for (const [kanji, reading] of JA_KANJI_MAP) {
+    s = s.split(kanji).join(reading);
+  }
+
+  // Convert Katakana (ァ-ヶ) to Hiragana (ぁ-ゖ)
+  let hira = "";
+  for (const ch of s) {
+    const code = ch.charCodeAt(0);
+    if (code >= 0x30A1 && code <= 0x30F6) {
+      hira += String.fromCharCode(code - 0x60);
+    } else {
+      hira += ch;
+    }
+  }
+
+  const chars = Array.from(hira);
+  let out = "";
+  let i = 0;
+  while (i < chars.length) {
+    const c = chars[i];
+    const next = i + 1 < chars.length ? chars[i + 1] : "";
+    const pair = c + next;
+
+    if (JA_DIGRAPHS[pair]) {
+      out += JA_DIGRAPHS[pair];
+      i += 2;
+      continue;
+    }
+    if (c === "っ") {
+      // Geminate next consonant
+      const nextPh = JA_DIGRAPHS[next + (chars[i + 2] || "")] || JA_MONOGRAPHS[next] || "";
+      if (nextPh) {
+        out += nextPh[0];
+      }
+      i++;
+      continue;
+    }
+    if (JA_MONOGRAPHS[c]) {
+      // Particle は before space/punctuation or after noun phrases is often /wa/, keep natural
+      out += JA_MONOGRAPHS[c];
+      i++;
+      continue;
+    }
+    if (/[,;:.!?—…\s]/.test(c)) {
+      out += c;
+      i++;
+      continue;
+    }
+    if (/[A-Za-z]/.test(c)) {
+      out += c.toLowerCase();
+      i++;
+      continue;
+    }
+    i++;
+  }
+
+  return out.replace(/\s+/g, " ").trim().normalize("NFD");
+}
+
+/**
+ * Mandarin Chinese (zh-CN) Hanzi & Pinyin to IPA G2P engine for Kokoro-82M.
+ * Lazily imports `pinyin-pro` in the worker when a Chinese voice is selected, with built-in fallback.
+ */
+let pinyinProModule = null;
+async function getPinyinArray(text) {
+  if (!pinyinProModule) {
+    try {
+      pinyinProModule = await import("https://esm.sh/pinyin-pro@3.18.2");
+    } catch (e) {
+      console.warn("Could not load pinyin-pro from CDN, using fallback dictionary:", e);
+    }
+  }
+  if (pinyinProModule && typeof pinyinProModule.pinyin === "function") {
+    return pinyinProModule.pinyin(text, { toneType: "num", type: "array", nonZh: "consecutive" });
+  }
+  return [text];
+}
+
+const ZH_FALLBACK_CHAR_MAP = {
+  "你": "ni3", "好": "hao3", "欢": "huan1", "迎": "ying2", "使": "shi3", "用": "yong4",
+  "这": "zhe4", "是": "shi4", "一": "yi1", "个": "ge4", "完": "wan2", "全": "quan2",
+  "免": "mian3", "费": "fei4", "的": "de5", "人": "ren2", "工": "gong1", "智": "zhi4",
+  "能": "neng2", "语": "yu3", "音": "yin1", "合": "he2", "成": "cheng2", "工": "gong1",
+  "具": "ju4", "所": "suo3", "有": "you3", "处": "chu3", "理": "li3", "都": "dou1",
+  "在": "zai4", "您": "nin2", "浏": "liu2", "览": "lan3", "器": "qi4", "中": "zhong1",
+  "本": "ben3", "地": "di4", "运": "yun4", "行": "xing2", "快": "kuai4", "速": "su4",
+  "私": "si1", "密": "mi4", "且": "qie3", "百": "bai3", "分": "fen1", "之": "zhi1"
+};
+
+const ZH_TONE_ARROWS = { "1": "→", "2": "↗", "3": "↓", "4": "↘", "5": "", "0": "" };
+
+function pinyinSyllableToIPA(rawSyl) {
+  const s = rawSyl.toLowerCase().trim();
+  if (!s) return "";
+  const m = s.match(/^([a-züv]+)([1-5])?$/);
+  if (!m) return s;
+
+  let base = m[1].replace(/v/g, "ü");
+  const tone = m[2] || "5";
+  const arrow = ZH_TONE_ARROWS[tone] || "";
+
+  // Handle zero-initial w- and y- spellings in Pinyin
+  if (base.startsWith("yu")) base = "ü" + base.slice(2);
+  else if (base.startsWith("yi")) base = "i" + base.slice(2);
+  else if (base.startsWith("y")) base = "i" + base.slice(1);
+  else if (base.startsWith("wu")) base = "u" + base.slice(2);
+  else if (base.startsWith("w")) base = "u" + base.slice(1);
+
+  const initials = [
+    ["zh", "ʈʂ"], ["ch", "ʈʂʰ"], ["sh", "ʂ"],
+    ["b", "p"], ["p", "pʰ"], ["m", "m"], ["f", "f"],
+    ["d", "t"], ["t", "tʰ"], ["n", "n"], ["l", "l"],
+    ["g", "k"], ["k", "kʰ"], ["h", "x"],
+    ["j", "tɕ"], ["q", "tɕʰ"], ["x", "ɕ"],
+    ["r", "ɻ"], ["z", "ts"], ["c", "tsʰ"], ["s", "s"]
+  ];
+
+  let initIpa = "";
+  let initRaw = "";
+  for (const [k, v] of initials) {
+    if (base.startsWith(k)) {
+      initIpa = v;
+      initRaw = k;
+      base = base.slice(k.length);
+      break;
+    }
+  }
+
+  // After j, q, x, 'u' is always /y/ (ü)
+  if ((initRaw === "j" || initRaw === "q" || initRaw === "x") && base.startsWith("u")) {
+    base = "ü" + base.slice(1);
+  }
+
+  const finals = {
+    "i": ["zh", "ch", "sh", "r", "z", "c", "s"].includes(initRaw) ? "ɨ" : "i",
+    "u": "u", "ü": "y",
+    "a": "a", "ia": "ja", "ua": "wa",
+    "o": "wo", "uo": "wo",
+    "e": "ɤ", "ie": "jɛ", "üe": "ɥɛ", "ue": "ɥɛ",
+    "er": "ɚ",
+    "ai": "aj", "uai": "waj",
+    "ei": "ej", "ui": "wej", "uei": "wej",
+    "ao": "aw", "iao": "jaw",
+    "ou": "ow", "iu": "jow", "iou": "jow",
+    "an": "an", "ian": "jɛn", "uan": "wan", "üan": "ɥɛn",
+    "en": "ən", "in": "in", "un": "wən", "uen": "wən", "ün": "yn",
+    "ang": "ɑŋ", "iang": "jɑŋ", "uang": "wɑŋ",
+    "eng": "əŋ", "ing": "iŋ", "ueng": "wəŋ", "ong": "ʊŋ", "iong": "jʊŋ"
+  };
+
+  const finalIpa = finals[base] || base;
+  return `${initIpa}${finalIpa}${arrow}`;
+}
+
+async function phonemizeChineseText(text) {
+  const normalized = text
+    .replace(/100%/g, "百分之百")
+    .replace(/PureTTS/gi, " pˈjʊɹ tˈiː tˈiː ˈɛs ")
+    .replace(/。/g, ". ")
+    .replace(/，|、/g, ", ")
+    .replace(/！/g, "! ")
+    .replace(/？/g, "? ")
+    .replace(/；/g, "; ")
+    .replace(/：/g, ": ")
+    .replace(/——/g, "— ");
+
+  // Replace known characters if pinyin-pro fails to load offline
+  const arr = await getPinyinArray(normalized);
+  const out = [];
+
+  for (const item of arr) {
+    const trimmed = item.trim();
+    if (!trimmed) continue;
+    if (/^[,;:.!?—…"«»“”]+$/.test(trimmed)) {
+      if (out.length > 0) out[out.length - 1] += trimmed;
+      continue;
+    }
+    if (/^[a-züv]+[1-5]$/i.test(trimmed)) {
+      out.push(pinyinSyllableToIPA(trimmed));
+    } else if (/[\u4e00-\u9fff]/.test(trimmed)) {
+      for (const ch of trimmed) {
+        if (ZH_FALLBACK_CHAR_MAP[ch]) {
+          out.push(pinyinSyllableToIPA(ZH_FALLBACK_CHAR_MAP[ch]));
+        }
+      }
+    } else {
+      out.push(trimmed);
+    }
+  }
+  return out.join(" ").replace(/\s+/g, " ").trim().normalize("NFD");
+}
+
+/**
+ * Phonemizes text into target language IPA phonemes (pt-PT, pt-BR, es-ES, es-419, fr-FR, it-IT, hi-IN, ja-JP, zh-CN)
  * while preserving punctuation so Kokoro-82M maintains natural prosody and clause pauses.
  */
-function phonemizePortugueseKeepPunctuation(text, lang = "pt-PT") {
+async function phonemizePortugueseKeepPunctuation(text, lang = "pt-PT") {
+  if (lang === "ja-JP") {
+    return phonemizeJapaneseText(text);
+  }
+  if (lang === "zh-CN") {
+    return await phonemizeChineseText(text);
+  }
+  if (lang === "hi-IN") {
+    const hiNorm = text
+      .replace(/।/g, ".")
+      .replace(/(\d+)\s*%/g, "$1 प्रतिशत")
+      .replace(/[०-९]/g, d => String("०१२३४५६७८९".indexOf(d)));
+    const hiTokens = hiNorm.match(/[\u0900-\u097FA-Za-z0-9-]+|[,;:.!?—…"«»“”]+/g) || [];
+    const hiOut = [];
+    for (const tok of hiTokens) {
+      if (/^[,;:.!?—…"«»“”]+$/.test(tok)) {
+        if (hiOut.length > 0) hiOut[hiOut.length - 1] += tok;
+      } else {
+        const ph = phonemizeHindiWord(tok);
+        if (ph) hiOut.push(ph);
+      }
+    }
+    return hiOut.join(" ").replace(/\s+/g, " ").trim().normalize("NFD");
+  }
+
   let normalized = text;
   if (lang.startsWith("es")) {
     normalized = normalized
@@ -1343,7 +1761,7 @@ function chunkText(text, maxChars = 240) {
   const chunks = [];
 
   for (const para of rawParagraphs) {
-    const sentences = para.match(/[^.!?]+[.!?]+(\s|$)|[^.!?]+$/g) || [para];
+    const sentences = para.match(/[^.!?।。！？]+[.!?।。！？]+(\s|$)|[^.!?।。！？]+$/g) || [para];
     let current = "";
 
     for (let sentence of sentences) {
@@ -1355,7 +1773,7 @@ function chunkText(text, maxChars = 240) {
       } else {
         if (current) chunks.push(current);
         if (sentence.length > maxChars) {
-          const clauses = sentence.match(/[^,;:—]+[,;:—]+(\s|$)|[^,;:—]+$/g) || [sentence];
+          const clauses = sentence.match(/[^,;:—、，；：]+[,;:—、，；：]+(\s|$)|[^,;:—、，；：]+$/g) || [sentence];
           let sub = "";
           for (let clause of clauses) {
             clause = clause.trim();
