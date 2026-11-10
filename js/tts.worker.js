@@ -16,14 +16,35 @@ const VOICE_URLS = [
   "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX-timestamped/resolve/main/voices"
 ];
 
-// Map European Portuguese (pt-PT) voice IDs to Kokoro v1.0 Portuguese voice embedding files
+// Map multilingual voice IDs (pt-PT, pt-BR, es-ES, es-419, fr-FR, it-IT) to Kokoro v1.0 voice embedding files
 const PORTUGUESE_VOICE_MAP = {
+  // 🇵🇹 European Portuguese (Portugal)
   pt_dora: { bin: "pf_dora", lang: "pt-PT" },
   pt_alex: { bin: "pm_alex", lang: "pt-PT" },
   pt_santa: { bin: "pm_santa", lang: "pt-PT" },
-  pf_dora: { bin: "pf_dora", lang: "pt-PT" },
-  pm_alex: { bin: "pm_alex", lang: "pt-PT" },
-  pm_santa: { bin: "pm_santa", lang: "pt-PT" }
+  // 🇧🇷 Brazilian Portuguese (Brasil)
+  ptbr_dora: { bin: "pf_dora", lang: "pt-BR" },
+  ptbr_alex: { bin: "pm_alex", lang: "pt-BR" },
+  ptbr_santa: { bin: "pm_santa", lang: "pt-BR" },
+  pf_dora: { bin: "pf_dora", lang: "pt-BR" },
+  pm_alex: { bin: "pm_alex", lang: "pt-BR" },
+  pm_santa: { bin: "pm_santa", lang: "pt-BR" },
+  // 🇪🇸 Spanish (Spain — Castilian)
+  es_dora: { bin: "ef_dora", lang: "es-ES" },
+  es_alex: { bin: "em_alex", lang: "es-ES" },
+  es_santa: { bin: "em_santa", lang: "es-ES" },
+  // 🇲🇽 Spanish (Latin America)
+  esla_dora: { bin: "ef_dora", lang: "es-419" },
+  esla_alex: { bin: "em_alex", lang: "es-419" },
+  esla_santa: { bin: "em_santa", lang: "es-419" },
+  ef_dora: { bin: "ef_dora", lang: "es-419" },
+  em_alex: { bin: "em_alex", lang: "es-419" },
+  em_santa: { bin: "em_santa", lang: "es-419" },
+  // 🇫🇷 French (France)
+  ff_siwis: { bin: "ff_siwis", lang: "fr-FR" },
+  // 🇮🇹 Italian (Italy)
+  if_sara: { bin: "if_sara", lang: "it-IT" },
+  im_nicola: { bin: "im_nicola", lang: "it-IT" }
 };
 
 const customVoiceMemoryCache = new Map();
@@ -641,34 +662,528 @@ function phonemizePortugueseWord(rawWord) {
 }
 
 /**
- * Phonemizes text into European Portuguese (pt-PT) IPA phonemes while preserving punctuation
- * so Kokoro-82M maintains natural prosody, question intonation, and clause pauses.
+ * Converts a Portuguese word into Brazilian Portuguese (pt-BR) IPA phonemes.
+ * Implements standard Brazilian phonology:
+ * - Affrication/palatalization of /t/ and /d/ before /i/ -> /ʧ/ and /ʤ/
+ * - L-vocalization in syllable coda -> /w/ (e.g. "Brasil" -> bɾazˈiw, "artificial" -> aɾʧifisjˈaw)
+ * - Alveolar coda sibilants (/s/, /z/ instead of European /ʃ/, /ʒ/)
+ * - Unstressed final -e(s) raised to /i(s)/, internal unstressed 'e' kept as /e/
  */
-function phonemizePortugueseKeepPunctuation(text) {
-  // Normalize percentage and currency symbols into spoken Portuguese words
-  const normalized = text
-    .replace(/(\d+)\s*%/g, "$1 por cento")
-    .replace(/%/g, " por cento ")
-    .replace(/€\s*(\d+)/g, "$1 euros")
-    .replace(/(\d+)\s*€/g, "$1 euros");
+function phonemizePortugueseBrazilWord(rawWord) {
+  const w = rawWord.toLowerCase().trim();
+  if (!w) return "";
+  const brLexicon = {
+    "de": "ʤi", "do": "du", "da": "dɐ", "dos": "dus", "das": "dɐs",
+    "te": "ʧi", "ti": "ʧˈi", "me": "mi", "se": "si", "lhe": "ʎi", "lhes": "ʎis",
+    "o": "u", "a": "a", "os": "us", "as": "as", "e": "i", "mas": "mas", "mais": "mˈajs",
+    "em": "ẽj̃", "no": "nu", "na": "nɐ", "nos": "nus", "nas": "nɐs",
+    "com": "kˈõ", "sem": "sˈẽj̃", "bem": "bˈẽj̃", "tem": "tˈẽj̃", "também": "tɐ̃bˈẽj̃",
+    "você": "vosˈe", "vocês": "vosˈes", "ele": "ˈeli", "ela": "ˈɛlɐ", "eles": "ˈelis", "elas": "ˈɛlɐs",
+    "este": "ˈesʧi", "esta": "ˈɛstɐ", "isto": "ˈistu", "esse": "ˈesi", "essa": "ˈɛsɐ", "isso": "ˈisu",
+    "noite": "nˈojʧi", "tarde": "tˈaɾʤi", "hoje": "ˈoʒi", "onde": "ˈõʤi", "pode": "pˈɔʤi",
+    "brasil": "bɾazˈiw", "português": "poɾtuɡˈes", "voz": "vˈɔs", "luz": "lˈus", "paz": "pˈas", "vez": "vˈes"
+  };
+  if (brLexicon[w]) return brLexicon[w];
+
+  let ptIpa = phonemizePortugueseWord(w);
+  // Convert European Portuguese IPA features into Brazilian Portuguese IPA:
+  // 1. Word-final unstressed ɨ or ɨʃ -> i / is
+  ptIpa = ptIpa.replace(/ɨʃ$/g, "is").replace(/ɨ$/g, "i");
+  // 2. Internal unstressed ɨ -> e
+  ptIpa = ptIpa.replace(/ɨ/g, "e");
+  // 3. European -ɐj- diphthong -> -ej- and -ɐ̃j̃ -> -ẽj̃
+  ptIpa = ptIpa.replace(/ɐj/g, "ej").replace(/ɐ̃j̃/g, "ẽj̃");
+  // 4. Coda 'l' (at word end or before consonant) -> 'w'
+  ptIpa = ptIpa.replace(/l(?=$|[pbtdkɡfvszʃʒmnɲʎɾʁ])/g, "w");
+  // 5. Coda 'ʃ' (where source word had 's' or 'z', not 'ch'/'x') -> 's'
+  if (!w.includes("ch") && !w.includes("x")) {
+    ptIpa = ptIpa.replace(/ʃ$/g, "s").replace(/ʃ(?=[ptkf])/g, "s").replace(/ʒ(?=[bdɡvmnlr])/g, "z");
+  }
+  // 6. Palatalize /t/ and /d/ before /i/, /ˈi/, /ĩ/, /ˈĩ/, /j/ -> /ʧ/ and /ʤ/
+  ptIpa = ptIpa
+    .replace(/t(?=ˈ?[iĩj])/g, "ʧ")
+    .replace(/d(?=ˈ?[iĩj])/g, "ʤ");
+
+  return ptIpa;
+}
+
+const ES_UNITS = ["θˈeɾo", "ˈuno", "dˈos", "tɾˈes", "kwˈatɾo", "θˈinko", "sˈejs", "sjˈete", "ˈoʧo", "nwˈeβe"];
+const ES_TEENS = ["djˈeθ", "ˈonθe", "dˈoθe", "tɾˈeθe", "katˈoɾθe", "kˈinθe", "djeθisˈejs", "djeθisjˈete", "djeθjˈoʧo", "djeθinwˈeβe"];
+const ES_TENS = ["", "", "bˈejnte", "tɾˈejnta", "kwaɾˈenta", "θinkwˈenta", "sesˈenta", "setˈenta", "oʧˈenta", "nobˈenta"];
+
+function numberToSpanishIPA(n, isSpain = true) {
+  const fixSeseo = (s) => (isSpain ? s : s.replace(/θ/g, "s"));
+  if (!Number.isFinite(n) || n < 0) return "";
+  if (n < 10) return fixSeseo(ES_UNITS[n]);
+  if (n < 20) return fixSeseo(ES_TEENS[n - 10]);
+  if (n === 20) return fixSeseo("bˈejnte");
+  if (n < 30) return fixSeseo(`bejnti${ES_UNITS[n - 20]}`);
+  if (n < 100) {
+    const t = Math.floor(n / 10);
+    const u = n % 10;
+    return fixSeseo(u === 0 ? ES_TENS[t] : `${ES_TENS[t]} i ${ES_UNITS[u]}`);
+  }
+  if (n === 100) return fixSeseo("θjˈen");
+  if (n < 1000) {
+    const h = Math.floor(n / 100);
+    const rem = n % 100;
+    const hMap = ["", "θjˈento", "dosθjˈentos", "tɾesθjˈentos", "kwatɾoθjˈentos", "kinjˈentos", "sejsθjˈentos", "seteθjˈentos", "oʧoθjˈentos", "nwebeθjˈentos"];
+    return fixSeseo(rem === 0 ? hMap[h] : `${hMap[h]} ${numberToSpanishIPA(rem, true)}`);
+  }
+  return String(n);
+}
+
+/**
+ * Rule-based Spanish (es-ES Castilian & es-419 Latin America) word-to-IPA converter.
+ */
+function phonemizeSpanishWord(rawWord, isSpain = true) {
+  const w = rawWord.toLowerCase().trim();
+  if (!w) return "";
+  if (/^\d+$/.test(w)) return numberToSpanishIPA(parseInt(w, 10), isSpain);
+  if (w.includes("-")) {
+    return w.split("-").filter(Boolean).map(p => phonemizeSpanishWord(p, isSpain)).join(" ");
+  }
+
+  const esLexicon = {
+    "y": "i", "o": "o", "u": "u", "el": "el", "la": "la", "los": "los", "las": "las",
+    "un": "ˈun", "una": "ˈuna", "de": "de", "del": "del", "al": "al", "en": "en",
+    "con": "kon", "por": "poɾ", "para": "pˈaɾa", "sin": "sin", "que": "ke", "se": "se",
+    "no": "nˈo", "sí": "sˈi", "más": "mˈas", "muy": "mˈuj", "todo": "tˈoðo", "todos": "tˈoðos",
+    "puretts": "pˈuɾe tˈe tˈe ˈese", "tts": "tˈe tˈe ˈese", "ia": "ˈi ˈa", "ai": "ˈaj"
+  };
+  if (esLexicon[w]) return esLexicon[w];
+
+  const chars = Array.from(w);
+  const len = chars.length;
+  const isVowel = (c) => Boolean(c) && "aáeéiíoóuúü".includes(c);
+  const hasAccent = (c) => Boolean(c) && "áéíóú".includes(c);
+  const isStrongVowel = (c) => Boolean(c) && "aáeéoóíú".includes(c);
+  const sibilantC = isSpain ? "θ" : "s";
+
+  // Find syllable nuclei for Spanish stress placement
+  const vowelIndices = [];
+  for (let i = 0; i < len; i++) {
+    const c = chars[i];
+    const prev = i > 0 ? chars[i - 1] : "";
+    const next = i + 1 < len ? chars[i + 1] : "";
+    if (c === "u" && (prev === "q" || prev === "g") && (next === "e" || next === "é" || next === "i" || next === "í")) {
+      continue;
+    }
+    if (isVowel(c) || (c === "y" && i === len - 1)) {
+      vowelIndices.push(i);
+    }
+  }
+
+  if (vowelIndices.length === 0) return w;
+
+  const nuclei = [];
+  let idx = 0;
+  while (idx < vowelIndices.length) {
+    const vIdx = vowelIndices[idx];
+    const c = chars[vIdx];
+    const nextVIdx = idx + 1 < vowelIndices.length ? vowelIndices[idx + 1] : -1;
+    if (nextVIdx === vIdx + 1) {
+      const nextC = chars[nextVIdx];
+      // Two weak vowels (i/u) or one strong + one unaccented weak form a single syllable diphthong
+      if (!(isStrongVowel(c) && isStrongVowel(nextC))) {
+        nuclei.push({ start: vIdx, end: nextVIdx });
+        idx += 2;
+        continue;
+      }
+    }
+    nuclei.push({ start: vIdx, end: vIdx });
+    idx++;
+  }
+
+  let stressedNucleusIdx = -1;
+  for (let n = 0; n < nuclei.length; n++) {
+    const nuc = nuclei[n];
+    if (hasAccent(chars[nuc.start]) || hasAccent(chars[nuc.end])) {
+      stressedNucleusIdx = n;
+      break;
+    }
+  }
+  if (stressedNucleusIdx === -1) {
+    if (nuclei.length === 1) {
+      stressedNucleusIdx = 0;
+    } else {
+      const lastChar = chars[len - 1];
+      if ("aeiouns".includes(lastChar)) {
+        stressedNucleusIdx = nuclei.length - 2;
+      } else {
+        stressedNucleusIdx = nuclei.length - 1;
+      }
+    }
+  }
+
+  const stressedPos = nuclei[stressedNucleusIdx].start;
+  let ipa = "";
+  let i = 0;
+
+  while (i < len) {
+    const c = chars[i];
+    const prev = i > 0 ? chars[i - 1] : "";
+    const next = i + 1 < len ? chars[i + 1] : "";
+    const next2 = i + 2 < len ? chars[i + 2] : "";
+    const stress = i === stressedPos ? "ˈ" : "";
+
+    if (c === "c" && next === "h") { ipa += "ʧ"; i += 2; continue; }
+    if (c === "l" && next === "l") { ipa += "ʎ"; i += 2; continue; }
+    if (c === "r" && next === "r") { ipa += "r"; i += 2; continue; }
+    if (c === "q" && next === "u" && "eéíi".includes(next2)) { ipa += "k"; i += 2; continue; }
+    if (c === "g" && next === "u" && "eéíi".includes(next2)) { ipa += "ɡ"; i += 2; continue; }
+    if (c === "g" && next === "ü") { ipa += "ɡw"; i += 2; continue; }
+
+    // Diphthongs with weak i/u + vowel
+    if ((c === "i" || c === "u" || c === "ü") && !hasAccent(c) && isVowel(next)) {
+      const glide = c === "i" ? "j" : "w";
+      const nextStress = (i === stressedPos || i + 1 === stressedPos) ? "ˈ" : "";
+      const vMap = { "a": "a", "á": "a", "e": "e", "é": "e", "i": "i", "í": "i", "o": "o", "ó": "o", "u": "u", "ú": "u" };
+      ipa += `${nextStress}${glide}${vMap[next] || next}`;
+      i += 2;
+      continue;
+    }
+
+    // Falling diphthongs (strong vowel + unaccented i/u/y)
+    if ("aáeéoó".includes(c) && (next === "i" || next === "u" || (next === "y" && i + 1 === len - 1))) {
+      const vMap = { "a": "a", "á": "a", "e": "e", "é": "e", "o": "o", "ó": "o" };
+      const glide = next === "u" ? "w" : "j";
+      ipa += `${stress}${vMap[c]}${glide}`;
+      i += 2;
+      continue;
+    }
+
+    if (isVowel(c)) {
+      const vMap = { "a": "a", "á": "a", "e": "e", "é": "e", "i": "i", "í": "i", "o": "o", "ó": "o", "u": "u", "ú": "u", "ü": "w" };
+      ipa += `${stress}${vMap[c]}`;
+      i++;
+      continue;
+    }
+
+    switch (c) {
+      case "b":
+      case "v":
+        ipa += (i === 0 || prev === "m" || prev === "n") ? "b" : "β";
+        break;
+      case "c":
+        ipa += "eéíi".includes(next) ? sibilantC : "k";
+        break;
+      case "d":
+        ipa += (i === 0 || prev === "n" || prev === "l") ? "d" : "ð";
+        break;
+      case "f":
+      case "k":
+      case "l":
+      case "m":
+      case "p":
+      case "s":
+      case "t":
+      case "w":
+        ipa += c;
+        break;
+      case "g":
+        ipa += "eéíi".includes(next) ? "x" : "ɡ";
+        break;
+      case "h":
+        break;
+      case "j":
+        ipa += "x";
+        break;
+      case "n":
+        ipa += (next && "kgx".includes(next)) ? "ŋ" : "n";
+        break;
+      case "ñ":
+        ipa += "ɲ";
+        break;
+      case "r":
+        ipa += (i === 0 || prev === "n" || prev === "l" || prev === "s") ? "r" : "ɾ";
+        break;
+      case "x":
+        ipa += "ks";
+        break;
+      case "y":
+        ipa += (i === len - 1) ? `${stress}i` : "ʝ";
+        break;
+      case "z":
+        ipa += sibilantC;
+        break;
+      default:
+        break;
+    }
+    i++;
+  }
+  return ipa;
+}
+
+/**
+ * Rule-based Italian (it-IT) word-to-IPA converter.
+ */
+function phonemizeItalianWord(rawWord) {
+  const w = rawWord.toLowerCase().trim();
+  if (!w) return "";
+  if (w.includes("-")) {
+    return w.split("-").filter(Boolean).map(p => phonemizeItalianWord(p)).join(" ");
+  }
+
+  const itLexicon = {
+    "il": "il", "lo": "lo", "la": "la", "i": "i", "gli": "ʎi", "le": "le",
+    "un": "un", "uno": "ˈuno", "una": "ˈuna", "di": "di", "a": "a", "da": "da",
+    "in": "in", "con": "kon", "su": "su", "per": "peɾ", "tra": "tɾa", "fra": "fɾa",
+    "e": "e", "ed": "ed", "o": "o", "ma": "ma", "che": "ke", "chi": "ki", "non": "non",
+    "è": "ˈɛ", "sono": "sˈono", "ha": "ˈa", "hanno": "ˈanno", "più": "pjˈu", "già": "ʤˈa",
+    "può": "pwˈɔ", "ciò": "ʧˈɔ", "perché": "peɾkˈe", "così": "kozˈi", "città": "ʧittˈa",
+    "tutto": "tˈutto", "tutti": "tˈutti", "nel": "nel", "nella": "nˈella", "sul": "sul", "del": "del",
+    "suo": "sˈuo", "sua": "sˈua", "suoi": "swˈɔj", "mio": "mˈio", "mia": "mˈia",
+    "studio": "stˈudjo", "voce": "vˈoʧe", "intelligenza": "intelliʤˈɛntsa", "artificiale": "aɾtifiʧˈale",
+    "direttamente": "diɾettamˈente", "browser": "bɾˈawzeɾ", "elaborazione": "elaboɾatsjˈone",
+    "avviene": "avvjˈɛne", "localmente": "lokalmˈente", "dispositivo": "dispozitˈivo",
+    "veloce": "velˈoʧe", "privato": "pɾivˈato", "gratuito": "ɡɾatˈuito", "cento": "ʧˈɛnto",
+    "puretts": "pˈuɾe tˈi tˈi ˈɛsse", "tts": "tˈi tˈi ˈɛsse", "ia": "ˈi ˈa", "ai": "ˈaj"
+  };
+  if (itLexicon[w]) return itLexicon[w];
+  if (w === "100") return "ʧˈɛnto";
+
+  const chars = Array.from(w);
+  const len = chars.length;
+  const isVowel = (c) => Boolean(c) && "aàeèéiìoòóuù".includes(c);
+  const hasAccent = (c) => Boolean(c) && "àèéìòóù".includes(c);
+
+  const vowelPositions = [];
+  for (let i = 0; i < len; i++) {
+    const c = chars[i];
+    const prev = i > 0 ? chars[i - 1] : "";
+    const next = i + 1 < len ? chars[i + 1] : "";
+    // Skip orthographic 'i' in ci/gi/sci + a/o/u/e
+    if (c === "i" && (prev === "c" || prev === "g" || prev === "l") && isVowel(next)) {
+      continue;
+    }
+    if (isVowel(c)) vowelPositions.push(i);
+  }
+  if (vowelPositions.length === 0) return w;
+
+  let stressedPos = vowelPositions[Math.max(0, vowelPositions.length - 2)];
+  for (const pos of vowelPositions) {
+    if (hasAccent(chars[pos])) {
+      stressedPos = pos;
+      break;
+    }
+  }
+
+  let ipa = "";
+  let i = 0;
+  while (i < len) {
+    const c = chars[i];
+    const prev = i > 0 ? chars[i - 1] : "";
+    const next = i + 1 < len ? chars[i + 1] : "";
+    const next2 = i + 2 < len ? chars[i + 2] : "";
+    const stress = i === stressedPos ? "ˈ" : "";
+
+    if (c === "g" && next === "l" && next2 === "i") {
+      if (i + 3 < len && isVowel(chars[i + 3])) {
+        ipa += "ʎ";
+        i += 3;
+      } else {
+        ipa += `ʎ${i + 2 === stressedPos ? "ˈ" : ""}i`;
+        i += 3;
+      }
+      continue;
+    }
+    if (c === "g" && next === "n") { ipa += "ɲ"; i += 2; continue; }
+    if (c === "s" && next === "c" && "eèéiì".includes(next2)) {
+      if (next2 === "i" && i + 3 < len && isVowel(chars[i + 3])) {
+        ipa += "ʃ";
+        i += 3;
+      } else {
+        ipa += "ʃ";
+        i += 2;
+      }
+      continue;
+    }
+    if (c === "c" && next === "h") { ipa += "k"; i += 2; continue; }
+    if (c === "g" && next === "h") { ipa += "ɡ"; i += 2; continue; }
+    if (c === "q" && next === "u") { ipa += "kw"; i += 2; continue; }
+    if (c === "c" && next === "i" && isVowel(next2)) { ipa += "ʧ"; i += 2; continue; }
+    if (c === "g" && next === "i" && isVowel(next2)) { ipa += "ʤ"; i += 2; continue; }
+
+    if ((c === "i" || c === "u") && !hasAccent(c) && isVowel(next) && i !== stressedPos) {
+      ipa += c === "i" ? "j" : "w";
+      i++;
+      continue;
+    }
+
+    if (isVowel(c)) {
+      const vMap = { "a": "a", "à": "a", "e": "e", "é": "e", "è": "ɛ", "i": "i", "ì": "i", "o": "o", "ó": "o", "ò": "ɔ", "u": "u", "ù": "u" };
+      ipa += `${stress}${vMap[c]}`;
+      i++;
+      continue;
+    }
+
+    switch (c) {
+      case "c":
+        ipa += "eèéiì".includes(next) ? "ʧ" : "k";
+        break;
+      case "g":
+        ipa += "eèéiì".includes(next) ? "ʤ" : "ɡ";
+        break;
+      case "h":
+        break;
+      case "r":
+        ipa += "ɾ";
+        break;
+      case "s":
+        ipa += (isVowel(prev) && isVowel(next)) ? "z" : "s";
+        break;
+      case "z":
+        ipa += "ts";
+        break;
+      default:
+        ipa += c;
+        break;
+    }
+    i++;
+  }
+  return ipa;
+}
+
+/**
+ * Rule-based & lexicon French (fr-FR) word-to-IPA converter.
+ */
+function phonemizeFrenchWord(rawWord) {
+  const w = rawWord.toLowerCase().trim().replace(/’/g, "'");
+  if (!w) return "";
+  if (w.includes("'")) {
+    const parts = w.split("'");
+    const prefixMap = { "l": "l", "d": "d", "j": "ʒ", "m": "m", "t": "t", "s": "s", "c": "s", "n": "n", "qu": "k" };
+    const pref = prefixMap[parts[0]] || phonemizeFrenchWord(parts[0]);
+    const rest = phonemizeFrenchWord(parts.slice(1).join(""));
+    return `${pref}${rest}`;
+  }
+  if (w.includes("-")) {
+    return w.split("-").filter(Boolean).map(p => phonemizeFrenchWord(p)).join(" ");
+  }
+
+  const frLexicon = {
+    "bonjour": "bɔ̃ʒˈuʁ", "bienvenue": "bjɛ̃vənˈy", "sur": "syʁ", "votre": "vˈɔtʁ",
+    "studio": "stydjˈo", "de": "də", "voix": "vwˈa", "avec": "avˈɛk",
+    "intelligence": "ɛ̃tɛliʒˈɑ̃s", "artificielle": "aʁtifisjˈɛl", "entièrement": "ɑ̃tjɛʁmˈɑ̃",
+    "dans": "dɑ̃", "le": "lə", "la": "la", "les": "le", "un": "ɛ̃", "une": "ˈyn", "des": "de",
+    "du": "dy", "au": "o", "aux": "o", "en": "ɑ̃", "et": "e", "ou": "u", "où": "u",
+    "est": "ˈɛ", "sont": "sˈɔ̃", "a": "a", "ont": "ˈɔ̃", "pour": "puʁ", "par": "paʁ",
+    "sans": "sɑ̃", "plus": "ply", "tout": "tˈu", "tous": "tˈus", "toute": "tˈut",
+    "navigateur": "naviɡatˈœʁ", "traitement": "tʁɛtmˈɑ̃", "s'effectue": "sefɛktˈy",
+    "effectue": "efɛktˈy", "localement": "lokalmˈɑ̃", "appareil": "apaʁˈɛj",
+    "rapide": "ʁapˈid", "privé": "pʁivˈe", "gratuit": "ɡʁatɥˈi", "cent": "sˈɑ̃", "100": "sˈɑ̃",
+    "puretts": "pˈyʁ tˈe tˈe ˈɛs", "tts": "tˈe tˈe ˈɛs", "ia": "ˈi ˈa", "ai": "ˈɛj"
+  };
+  if (frLexicon[w]) return frLexicon[w];
+
+  let s = w;
+  // Strip silent final consonants (-e, -es, -s, -t, -d, -p, -x, -z) in polysyllabic words
+  s = s
+    .replace(/tion$/g, "sjˈɔ̃")
+    .replace(/ment$/g, "mˈɑ̃")
+    .replace(/eux$/g, "ˈø")
+    .replace(/euse$/g, "ˈøz")
+    .replace(/eur$/g, "ˈœʁ")
+    .replace(/er$/g, "ˈe")
+    .replace(/ez$/g, "ˈe")
+    .replace(/es?$/g, "")
+    .replace(/[stdpxz]$/g, "");
+
+  s = s
+    .replace(/eau/g, "o")
+    .replace(/au/g, "o")
+    .replace(/ou|où|oû/g, "u")
+    .replace(/oi/g, "wa")
+    .replace(/eu|œu/g, "ø")
+    .replace(/ai|ei|è|ê|ë/g, "ɛ")
+    .replace(/é/g, "e")
+    .replace(/(?:an|am|en|em)(?![aàâeéèêiîoôuûy]|n|m)/g, "ɑ̃")
+    .replace(/(?:in|im|ain|aim|ein)(?![aàâeéèêiîoôuûy]|n|m)/g, "ɛ̃")
+    .replace(/(?:on|om)(?![aàâeéèêiîoôuûy]|n|m)/g, "ɔ̃")
+    .replace(/ch/g, "ʃ")
+    .replace(/gn/g, "ɲ")
+    .replace(/ph/g, "f")
+    .replace(/qu/g, "k")
+    .replace(/gu(?=[eéèêiîy])/g, "ɡ")
+    .replace(/c(?=[eéèêiîy])/g, "s")
+    .replace(/ç/g, "s")
+    .replace(/c/g, "k")
+    .replace(/g(?=[eéèêiîy])/g, "ʒ")
+    .replace(/g/g, "ɡ")
+    .replace(/j/g, "ʒ")
+    .replace(/r+/g, "ʁ")
+    .replace(/u/g, "y")
+    .replace(/h/g, "");
+
+  if (!s.includes("ˈ")) {
+    // Place French primary stress on final vowel
+    s = s.replace(/([aɑeɛøœioɔuy])([^aɑeɛøœioɔuy]*)$/, "ˈ$1$2");
+  }
+  return s;
+}
+
+/**
+ * Phonemizes text into target language IPA phonemes (pt-PT, pt-BR, es-ES, es-419, fr-FR, it-IT)
+ * while preserving punctuation so Kokoro-82M maintains natural prosody and clause pauses.
+ */
+function phonemizePortugueseKeepPunctuation(text, lang = "pt-PT") {
+  let normalized = text;
+  if (lang.startsWith("es")) {
+    normalized = normalized
+      .replace(/(\d+)\s*%/g, "$1 por ciento")
+      .replace(/%/g, " por ciento ")
+      .replace(/€\s*(\d+)/g, "$1 euros")
+      .replace(/(\d+)\s*€/g, "$1 euros");
+  } else if (lang.startsWith("fr")) {
+    normalized = normalized
+      .replace(/(\d+)\s*%/g, "$1 pour cent")
+      .replace(/%/g, " pour cent ")
+      .replace(/€\s*(\d+)/g, "$1 euros")
+      .replace(/(\d+)\s*€/g, "$1 euros");
+  } else if (lang.startsWith("it")) {
+    normalized = normalized
+      .replace(/(\d+)\s*%/g, "$1 per cento")
+      .replace(/%/g, " per cento ")
+      .replace(/€\s*(\d+)/g, "$1 euro")
+      .replace(/(\d+)\s*€/g, "$1 euro");
+  } else {
+    normalized = normalized
+      .replace(/(\d+)\s*%/g, "$1 por cento")
+      .replace(/%/g, " por cento ")
+      .replace(/€\s*(\d+)/g, "$1 euros")
+      .replace(/(\d+)\s*€/g, "$1 euros");
+  }
 
   // Tokenize into words and punctuation clusters
-  const tokens = normalized.match(/[A-Za-zÀ-ÖØ-öø-ÿ0-9-]+|[,;:.!?—…"«»“”]+/g) || [];
+  const tokens = normalized.match(/[A-Za-zÀ-ÖØ-öø-ÿŒœ0-9'-]+|[,;:.!?¡¿—…"«»“”]+/g) || [];
   const out = [];
 
   for (let t = 0; t < tokens.length; t++) {
     const tok = tokens[t];
-    if (/^[,;:.!?—…"«»“”]+$/.test(tok)) {
+    if (/^[,;:.!?¡¿—…"«»“”]+$/.test(tok)) {
       if (out.length > 0) {
         out[out.length - 1] += tok;
       }
     } else {
-      const ph = phonemizePortugueseWord(tok);
+      let ph = "";
+      if (lang === "pt-BR") {
+        ph = phonemizePortugueseBrazilWord(tok);
+      } else if (lang === "es-ES") {
+        ph = phonemizeSpanishWord(tok, true);
+      } else if (lang === "es-419") {
+        ph = phonemizeSpanishWord(tok, false);
+      } else if (lang === "fr-FR") {
+        ph = phonemizeFrenchWord(tok);
+      } else if (lang === "it-IT") {
+        ph = phonemizeItalianWord(tok);
+      } else {
+        ph = phonemizePortugueseWord(tok);
+      }
+
       if (ph) {
-        // Apply European Portuguese cross-word sibilant sandhi (liaison):
-        // Word-final /ʃ/ (without intervening punctuation) becomes /z/ before a vowel-initial word
-        // and /ʒ/ before a voiced consonant.
-        if (out.length > 0 && out[out.length - 1].endsWith("ʃ")) {
+        // Apply European Portuguese cross-word sibilant sandhi (liaison) when lang === "pt-PT"
+        if (lang === "pt-PT" && out.length > 0 && out[out.length - 1].endsWith("ʃ")) {
           const nextFirst = ph.startsWith("ˈ") ? ph.slice(1, 2) : ph.slice(0, 1);
           if ("aɐeɛɨioɔujw".includes(nextFirst)) {
             out[out.length - 1] = out[out.length - 1].slice(0, -1) + "z";

@@ -102,9 +102,12 @@
         <span class="preset-label">Try an example:</span>
         <button class="chip-btn" data-preset="welcome">👋 Welcome</button>
         <button class="chip-btn" data-preset="portuguese">🇵🇹 Português (PT)</button>
+        <button class="chip-btn" data-preset="portuguese_br">🇧🇷 Português (BR)</button>
+        <button class="chip-btn" data-preset="spanish">🇪🇸 Español</button>
+        <button class="chip-btn" data-preset="french">🇫🇷 Français</button>
+        <button class="chip-btn" data-preset="italian">🇮🇹 Italiano</button>
         <button class="chip-btn" data-preset="story">📖 Audiobook</button>
         <button class="chip-btn" data-preset="youtube">📱 Creator</button>
-        <button class="chip-btn" data-preset="sre">🎧 Tech</button>
 
         <label for="fileUploadInput" class="upload-chip-btn" title="Import a .txt, .pdf, or .md file">
           📁 <span>Import .txt / .pdf</span>
@@ -172,6 +175,28 @@ Paste your script, article, or study notes here, choose your preferred voice, an
               <option value="pt_dora">🇵🇹 Dora (Feminino Natural &amp; Expressivo · PT-PT)</option>
               <option value="pt_alex">🇵🇹 Alex (Masculino Claro &amp; Profissional · PT-PT)</option>
               <option value="pt_santa">🇵🇹 Duarte (Masculino Narrador Profundo · PT-PT)</option>
+            </optgroup>
+            <optgroup label="🇧🇷 Portuguese (Brazil — Português Brasileiro)">
+              <option value="ptbr_dora">🇧🇷 Dora (Feminino Natural &amp; Expressivo · PT-BR)</option>
+              <option value="ptbr_alex">🇧🇷 Alex (Masculino Claro &amp; Profissional · PT-BR)</option>
+              <option value="ptbr_santa">🇧🇷 Mateus (Masculino Narrador Profundo · PT-BR)</option>
+            </optgroup>
+            <optgroup label="🇪🇸 Spanish (Spain — Español de España)">
+              <option value="es_dora">🇪🇸 Dora (Femenino Cálido &amp; Natural · ES-ES)</option>
+              <option value="es_alex">🇪🇸 Alex (Masculino Claro &amp; Profesional · ES-ES)</option>
+              <option value="es_santa">🇪🇸 Mateo (Masculino Narrador Profundo · ES-ES)</option>
+            </optgroup>
+            <optgroup label="🇲🇽 Spanish (Latin America — Español Neutro)">
+              <option value="esla_dora">🇲🇽 Dora (Femenino Expresivo · ES-LatAm)</option>
+              <option value="esla_alex">🇲🇽 Alex (Masculino Presentador · ES-LatAm)</option>
+              <option value="esla_santa">🇲🇽 Mateo (Masculino Documental · ES-LatAm)</option>
+            </optgroup>
+            <optgroup label="🇫🇷 French (France — Français)">
+              <option value="ff_siwis">🇫🇷 Siwis (Féminin Studio &amp; Narratrice · FR-FR)</option>
+            </optgroup>
+            <optgroup label="🇮🇹 Italian (Italy — Italiano)">
+              <option value="if_sara">🇮🇹 Sara (Femminile Naturale &amp; Espressiva · IT-IT)</option>
+              <option value="im_nicola">🇮🇹 Nicola (Maschile Chiaro &amp; Professionale · IT-IT)</option>
             </optgroup>
           </select>
         </div>
@@ -404,12 +429,40 @@ Paste your script, article, or study notes here, choose your preferred voice, an
               <td style="padding: 10px 12px;"><code>1.00x – 1.10x</code></td>
               <td style="padding: 10px 12px;">Documentação técnica, notícias, formação e-learning</td>
             </tr>
-            <tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
               <td style="padding: 10px 12px;"><strong style="color: #fff;">Duarte (pt_santa)</strong></td>
               <td style="padding: 10px 12px;">🇵🇹 PT-PT Male</td>
               <td style="padding: 10px 12px;">Deep, resonant European Portuguese narrator</td>
               <td style="padding: 10px 12px;"><code>0.95x – 1.00x</code></td>
               <td style="padding: 10px 12px;">Documentários, história, narração literária</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Dora / Alex / Mateus (ptbr_*)</strong></td>
+              <td style="padding: 10px 12px;">🇧🇷 PT-BR</td>
+              <td style="padding: 10px 12px;">Brazilian Portuguese cadence, palatalized /tʃ/ &amp; /dʒ/, vocalized -l</td>
+              <td style="padding: 10px 12px;"><code>0.95x – 1.05x</code></td>
+              <td style="padding: 10px 12px;">Vídeos para YouTube Brasil, cursos, audiolivros em PT-BR</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Dora / Alex / Mateo (es_* &amp; esla_*)</strong></td>
+              <td style="padding: 10px 12px;">🇪🇸 / 🇲🇽 Spanish</td>
+              <td style="padding: 10px 12px;">Castilian Spain (distinción /θ/) &amp; Latin American (seseo /s/)</td>
+              <td style="padding: 10px 12px;"><code>0.95x – 1.05x</code></td>
+              <td style="padding: 10px 12px;">Locuciones en español, audiolibros, vídeos educativos</td>
+            </tr>
+            <tr style="border-bottom: 1px solid var(--card-border);">
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Siwis (ff_siwis)</strong></td>
+              <td style="padding: 10px 12px;">🇫🇷 FR-FR Female</td>
+              <td style="padding: 10px 12px;">Poised French studio narrator, smooth nasal vowel prosody</td>
+              <td style="padding: 10px 12px;"><code>0.95x – 1.05x</code></td>
+              <td style="padding: 10px 12px;">Livres audio, articles en français, voix-off documentaire</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 12px;"><strong style="color: #fff;">Sara / Nicola (if_sara, im_nicola)</strong></td>
+              <td style="padding: 10px 12px;">🇮🇹 IT-IT</td>
+              <td style="padding: 10px 12px;">Expressive Italian female &amp; male studio voices</td>
+              <td style="padding: 10px 12px;"><code>0.95x – 1.05x</code></td>
+              <td style="padding: 10px 12px;">Narrazione in italiano, podcast, presentazioni</td>
             </tr>
           </tbody>
         </table>
@@ -653,16 +706,31 @@ You are given a second URL. Extract the same field from its response.
 Count every valid IP address across the extracted text and output the addresses sorted by count.`,
 story: `The stars looked different from the edge of the crater. For the first time in ninety days, the transmission signal blinked green on the receiver console. Maya held her breath as the incoming audio stream decoded into a clear, steady human voice.`,
 youtube: `Hey everyone, and welcome back to the channel! In today's video, we're diving deep into high-performance distributed systems, breaking down how to scale services to handle millions of requests with zero downtime.`,
-portuguese: `Bem-vindo ao PureTTS! Este é um conversor de texto para voz totalmente gratuito e ilimitado que funciona cem por cento dentro do seu navegador.
-Como toda a síntese de áudio é processada diretamente no seu dispositivo através de WebGPU e WebAssembly, os seus textos e documentos PDF nunca saem do seu computador. Escolha uma voz em Português de Portugal e clique em converter!`
+portuguese: `Olá! Bem-vindo ao PureTTS, o seu estúdio de voz com inteligência artificial inteiramente no navegador. Todo o processamento ocorre localmente no seu dispositivo — rápido, privado e 100% gratuito.`,
+portuguese_br: `Olá! Bem-vindo ao PureTTS, o seu estúdio de voz com inteligência artificial inteiramente no navegador no Brasil. Todo o processamento ocorre localmente no seu dispositivo — rápido, privado e 100% gratuito.`,
+spanish: `¡Hola! Bienvenido a PureTTS, tu estudio de voz con inteligencia artificial directamente en el navegador. Todo el procesamiento ocurre localmente en tu dispositivo — rápido, privado y 100% gratis.`,
+french: `Bonjour ! Bienvenue sur PureTTS, votre studio de voix avec intelligence artificielle entièrement dans le navigateur. Tout le traitement s'effectue localement sur votre appareil — rapide, privé et 100% gratuit.`,
+italian: `Ciao! Benvenuto su PureTTS, il tuo studio di voce con intelligenza artificiale direttamente nel browser. Tutto avviene localmente sul tuo dispositivo — veloce, privato e 100% gratuito.`
 };
 document.querySelectorAll(".chip-btn").forEach(btn => {
 btn.addEventListener("click", () => {
 const key = btn.dataset.preset;
 if (PRESETS[key]) {
 textInput.value = PRESETS[key];
-if (key === "portuguese" && voiceSelect && !voiceSelect.value.startsWith("pt_")) {
+if (voiceSelect) {
+if (key === "portuguese" && !voiceSelect.value.startsWith("pt_")) {
 voiceSelect.value = "pt_dora";
+} else if (key === "portuguese_br" && !voiceSelect.value.startsWith("ptbr_")) {
+voiceSelect.value = "ptbr_dora";
+} else if (key === "spanish" && !voiceSelect.value.startsWith("es")) {
+voiceSelect.value = "es_dora";
+} else if (key === "french" && voiceSelect.value !== "ff_siwis") {
+voiceSelect.value = "ff_siwis";
+} else if (key === "italian" && !voiceSelect.value.startsWith("i")) {
+voiceSelect.value = "if_sara";
+} else if ((key === "welcome" || key === "story" || key === "youtube" || key === "sre") && !voiceSelect.value.startsWith("a") && !voiceSelect.value.startsWith("b")) {
+voiceSelect.value = "af_heart";
+}
 }
 updateTextStats();
 hideFileBadge();
@@ -892,7 +960,7 @@ audioDuration.textContent = `Buffering Part ${nextIndex + 1}...`;
 });
 function getWorker() {
 if (worker) return worker;
-worker = new Worker("./js/tts.worker.js?v=2", { type: "module" });
+worker = new Worker("./js/tts.worker.js?v=3", { type: "module" });
 worker.onmessage = (e) => {
 if (isStopping) return;
 const { status, data, blob, partialBlob, partialDuration, elapsed, totalDuration, chunksProcessed, totalChunks, message, percent, current, total, chunkIndex, chunkBlob, chunkDuration } = e.data;

@@ -1291,6 +1291,28 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
               <option value="pt_alex">🇵🇹 Alex (Masculino Claro &amp; Profissional · PT-PT)</option>
               <option value="pt_santa">🇵🇹 Duarte (Masculino Narrador Profundo · PT-PT)</option>
             </optgroup>
+            <optgroup label="🇧🇷 Portuguese (Brazil — Português Brasileiro)">
+              <option value="ptbr_dora">🇧🇷 Dora (Feminino Natural &amp; Expressivo · PT-BR)</option>
+              <option value="ptbr_alex">🇧🇷 Alex (Masculino Claro &amp; Profissional · PT-BR)</option>
+              <option value="ptbr_santa">🇧🇷 Mateus (Masculino Narrador Profundo · PT-BR)</option>
+            </optgroup>
+            <optgroup label="🇪🇸 Spanish (Spain — Español de España)">
+              <option value="es_dora">🇪🇸 Dora (Femenino Cálido &amp; Natural · ES-ES)</option>
+              <option value="es_alex">🇪🇸 Alex (Masculino Claro &amp; Profesional · ES-ES)</option>
+              <option value="es_santa">🇪🇸 Mateo (Masculino Narrador Profundo · ES-ES)</option>
+            </optgroup>
+            <optgroup label="🇲🇽 Spanish (Latin America — Español Neutro)">
+              <option value="esla_dora">🇲🇽 Dora (Femenino Expresivo · ES-LatAm)</option>
+              <option value="esla_alex">🇲🇽 Alex (Masculino Presentador · ES-LatAm)</option>
+              <option value="esla_santa">🇲🇽 Mateo (Masculino Documental · ES-LatAm)</option>
+            </optgroup>
+            <optgroup label="🇫🇷 French (France — Français)">
+              <option value="ff_siwis">🇫🇷 Siwis (Féminin Studio &amp; Narratrice · FR-FR)</option>
+            </optgroup>
+            <optgroup label="🇮🇹 Italian (Italy — Italiano)">
+              <option value="if_sara">🇮🇹 Sara (Femminile Naturale &amp; Espressiva · IT-IT)</option>
+              <option value="im_nicola">🇮🇹 Nicola (Maschile Chiaro &amp; Professionale · IT-IT)</option>
+            </optgroup>
           </select>
         </div>
 
@@ -1833,7 +1855,7 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
 
     function getWorker() {
       if (worker) return worker;
-      worker = new Worker("./js/tts.worker.js?v=2", { type: "module" });
+      worker = new Worker("./js/tts.worker.js?v=3", { type: "module" });
 
       worker.onmessage = (e) => {
         if (isStopping) return;
