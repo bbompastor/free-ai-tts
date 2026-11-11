@@ -245,12 +245,13 @@ Paste your script, article, or study notes here, choose your preferred voice, an
         <div>
           <label for="quantSelect">Synthesis Engine & Audio Fidelity</label>
           <select id="quantSelect">
-            <option value="webgpu" selected>🚀 WebGPU Studio (fp32 · Crystal-Clear & Hardware Accelerated)</option>
-            <option value="wasm">💻 CPU Safe Mode (WASM q8 · 100% Fluid & Stable ~85 MB)</option>
+            <option value="wasm" selected>⚡ Fast Mode (WASM q8 · Instant Start &amp; 4× Faster Load ~85 MB)</option>
+            <option value="wasm-q4">⚡⚡ Turbo Mode (WASM q4 · Ultra-Light &amp; Fastest Download ~45 MB)</option>
+            <option value="webgpu">🚀 WebGPU Studio (fp32 · Dedicated GPU Hardware Acceleration ~326 MB)</option>
           </select>
-          <div id="longTextTip" class="speed-tip" style="display:block;">⚡ WebGPU Studio Mode: 100% crystal-clear fp32 audio, hardware-accelerated</div>
+          <div id="longTextTip" class="speed-tip" style="display:block;">⚡ Fast Mode: 4× faster download (~85 MB) with instant multi-core SIMD synthesis</div>
           <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted);">
-            <input type="checkbox" id="streamToggle" style="accent-color: var(--primary); cursor: pointer;" />
+            <input type="checkbox" id="streamToggle" checked style="accent-color: var(--primary); cursor: pointer;" />
             <label for="streamToggle" style="cursor: pointer; margin: 0; font-weight: normal; color: #cbd5e1;">Play audio in real-time while buffering (Instant Preview)</label>
           </div>
         </div>
@@ -662,6 +663,10 @@ mobileWasmOpt.value = "wasm-mobile";
 mobileWasmOpt.textContent = "📱 Mobile Fast Mode (WASM q8 · 100% Compatible ~85 MB)";
 mobileWasmOpt.selected = true;
 quantSelect.appendChild(mobileWasmOpt);
+const mobileQ4Opt = document.createElement("option");
+mobileQ4Opt.value = "wasm-q4";
+mobileQ4Opt.textContent = "⚡⚡ Mobile Turbo Mode (WASM q4 · Ultra-Light ~45 MB)";
+quantSelect.appendChild(mobileQ4Opt);
 if (hasWebGPU) {
 const mobileGpuOpt = document.createElement("option");
 mobileGpuOpt.value = "webgpu-mobile";
@@ -670,21 +675,22 @@ quantSelect.appendChild(mobileGpuOpt);
 }
 deviceEngine.textContent = "Engine: Mobile Neural Engine 📱";
 } else {
+const desktopWasmOpt = document.createElement("option");
+desktopWasmOpt.value = "wasm";
+desktopWasmOpt.textContent = "⚡ Fast Mode (WASM q8 · Instant Start & 4× Faster Load ~85 MB)";
+desktopWasmOpt.selected = true;
+quantSelect.appendChild(desktopWasmOpt);
+const desktopQ4Opt = document.createElement("option");
+desktopQ4Opt.value = "wasm-q4";
+desktopQ4Opt.textContent = "⚡⚡ Turbo Mode (WASM q4 · Ultra-Light & Fastest Download ~45 MB)";
+quantSelect.appendChild(desktopQ4Opt);
 if (hasWebGPU) {
 const desktopGpuOpt = document.createElement("option");
 desktopGpuOpt.value = "webgpu";
-desktopGpuOpt.textContent = "🚀 WebGPU Studio (fp32 · Crystal-Clear & Hardware Accelerated)";
-desktopGpuOpt.selected = true;
+desktopGpuOpt.textContent = "🚀 WebGPU Studio (fp32 · Dedicated GPU Hardware Acceleration ~326 MB)";
 quantSelect.appendChild(desktopGpuOpt);
-deviceEngine.textContent = "Engine: WebGPU (Hardware Accelerated) 🚀";
-} else {
-deviceEngine.textContent = "Engine: WebAssembly Multi-Core CPU";
 }
-const desktopWasmOpt = document.createElement("option");
-desktopWasmOpt.value = "wasm";
-desktopWasmOpt.textContent = "💻 CPU Safe Mode (WASM q8 · 100% Fluid & Stable ~85 MB)";
-if (!hasWebGPU) desktopWasmOpt.selected = true;
-quantSelect.appendChild(desktopWasmOpt);
+deviceEngine.textContent = "Engine: Fast Mode (Multi-Core SIMD) ⚡";
 }
 }
 configureEngineOptions();
@@ -696,22 +702,24 @@ const currentSpeed = speedRange ? parseFloat(speedRange.value) || 1.0 : 1.0;
 const readMin = ((words / 150) / currentSpeed).toFixed(1);
 const selectedMode = quantSelect ? quantSelect.value : "wasm";
 const isGpuSelected = selectedMode === "webgpu" || selectedMode === "webgpu-mobile";
-const genSec = words > 0 ? Math.max(1, Math.round(words / (isGpuSelected ? 10 : 3))) : 0;
+const genSec = words > 0 ? Math.max(1, Math.round(words / (isGpuSelected ? 10 : 8))) : 0;
 charCount.textContent = `${chars.toLocaleString()} characters`;
 wordCount.textContent = `${words.toLocaleString()} words`;
 estTime.textContent = `~${readMin} min audio`;
 if (estGenTime) {
-estGenTime.textContent = `~${genSec}s conversion (${isGpuSelected ? "WebGPU" : "CPU"})`;
+estGenTime.textContent = `~${genSec}s conversion (${isGpuSelected ? "WebGPU" : "Fast SIMD"})`;
 }
 if (longTextTip && quantSelect) {
 if (selectedMode === "wasm-mobile") {
 longTextTip.textContent = "📱 Mobile Fast Mode: Lightweight ~85 MB neural engine optimized for iOS & Android";
+} else if (selectedMode === "wasm-q4") {
+longTextTip.textContent = "⚡⚡ Turbo Mode: Ultra-compact ~45 MB weights for the fastest initial download and low-RAM devices";
 } else if (selectedMode === "webgpu-mobile") {
 longTextTip.textContent = "⚡ Mobile WebGPU Mode: Low-VRAM micro-chunking for hardware-accelerated mobile GPUs";
 } else if (selectedMode === "wasm") {
-longTextTip.textContent = "💡 CPU Safe Mode: Recommended for laptops & Macs. Zero UI freeze, rock-solid stability.";
+longTextTip.textContent = "⚡ Fast Mode (Recommended): 4× faster download (~85 MB) with instant multi-core synthesis & zero GPU shader stalls";
 } else {
-longTextTip.textContent = "⚡ WebGPU Studio Mode: 100% crystal-clear fp32 audio, hardware-accelerated";
+longTextTip.textContent = "🚀 WebGPU Studio Mode: Uses ~326 MB FP32 weights (recommended only for dedicated desktop GPUs)";
 }
 longTextTip.style.display = "block";
 }
@@ -1015,7 +1023,7 @@ audioDuration.textContent = `Buffering Part ${nextIndex + 1}...`;
 });
 function getWorker() {
 if (worker) return worker;
-worker = new Worker("./js/tts.worker.js?v=4", { type: "module" });
+worker = new Worker("./js/tts.worker.js?v=5", { type: "module" });
 worker.onmessage = (e) => {
 if (isStopping) return;
 const { status, data, blob, partialBlob, partialDuration, elapsed, totalDuration, chunksProcessed, totalChunks, message, percent, current, total, chunkIndex, chunkBlob, chunkDuration } = e.data;
@@ -1025,8 +1033,10 @@ const dt = e.data.dtype ? e.data.dtype.toUpperCase() : "";
 if (dev === "webgpu") {
 deviceEngine.textContent = `Engine: WebGPU (${dt} Hardware Accelerated 🚀)`;
 } else {
-deviceEngine.textContent = `Engine: WebAssembly CPU (${dt})`;
+deviceEngine.textContent = `Engine: Fast Mode SIMD (${dt} ⚡)`;
 }
+} else if (status === "ready") {
+progressBox.style.display = "none";
 } else if (status === "progress") {
 progressBox.style.display = "block";
 progressBar.style.width = `${data.percent}%`;
@@ -1041,10 +1051,10 @@ setBusy(true, message);
 } else if (status === "chunk_ready") {
 const chunkUrl = URL.createObjectURL(chunkBlob);
 streamPlaylist[chunkIndex] = { url: chunkUrl, duration: chunkDuration };
-const shouldStream = streamToggle ? streamToggle.checked : false;
+const shouldStream = streamToggle ? streamToggle.checked : true;
 if (shouldStream) {
 const bufferedCount = streamPlaylist.filter(Boolean).length;
-const bufferReady = totalChunks === 1 || bufferedCount >= 2;
+const bufferReady = Boolean(streamPlaylist[0]);
 if (bufferReady && !isStreamingMode && currentPlayingChunk === -1) {
 isStreamingMode = true;
 currentPlayingChunk = 0;
@@ -1153,10 +1163,30 @@ isStopping = false;
 }, 150);
 });
 }
+let hasPreloaded = false;
+function triggerBackgroundPreload() {
+if (hasPreloaded || isMobileDevice) return;
+hasPreloaded = true;
+try {
+const ttsWorker = getWorker();
+ttsWorker.postMessage({
+type: "preload",
+dtype: quantSelect ? quantSelect.value : "wasm",
+id: Date.now()
+});
+} catch (e) {
+console.warn("Preload skipped:", e);
+}
+}
+if (textInput) {
+textInput.addEventListener("focus", triggerBackgroundPreload, { once: true });
+textInput.addEventListener("input", triggerBackgroundPreload, { once: true });
+}
 let lastFreeVoice = "af_heart";
 const partnerVoiceCallout = document.getElementById("partnerVoiceCallout");
 if (voiceSelect) {
 voiceSelect.addEventListener("change", () => {
+triggerBackgroundPreload();
 if (voiceSelect.value === "partner_clone" || voiceSelect.value === "partner_multilingual") {
 const triggerType = voiceSelect.value;
 voiceSelect.value = lastFreeVoice;

@@ -1657,19 +1657,30 @@ async function generatePortugueseChunk(tts, chunkTextStr, voiceId, speedValue) {
  *   Float32 runs natively on GPU tensor cores with 100% mathematical fidelity and crystal-clear human sound.
  * - WASM CPU: Uses "q8" (or "q4") which runs smoothly via CPU SIMD instructions with zero GPU driver bugs.
  */
-async function getOrInitTTS(requestedMode = "webgpu") {
-  const wantsWasm = requestedMode === "wasm" || requestedMode === "wasm-mobile" || requestedMode === "q8";
+let initPromise = null;
+let initPromiseKey = null;
+
+async function getOrInitTTS(requestedMode = "wasm") {
+  const wantsWasmQ4 = requestedMode === "wasm-q4" || requestedMode === "q4";
+  const wantsWasm = wantsWasmQ4 || requestedMode === "wasm" || requestedMode === "wasm-mobile" || requestedMode === "q8";
   const isMobileWebGPU = requestedMode === "webgpu-mobile";
 
-  // Check if WebGPU is available in this worker environment
+  // Check if WebGPU is available and backed by real hardware (not a Windows WARP/SwiftShader software fallback)
   let canUseWebGPU = false;
   if (!wantsWasm && typeof navigator !== "undefined" && navigator.gpu) {
     try {
       const adapter = await navigator.gpu.requestAdapter({
         powerPreference: isMobileWebGPU ? "low-power" : "high-performance"
       });
-      if (adapter) {
-        canUseWebGPU = true;
+      if (adapter && !adapter.isFallbackAdapter) {
+        const info = adapter.info || (typeof adapter.requestAdapterInfo === "function" ? await adapter.requestAdapterInfo().catch(() => ({})) : {});
+        const desc = `${info.vendor || ""} ${info.architecture || ""} ${info.description || ""} ${info.device || ""}`.toLowerCase();
+        const isSoftwareRenderer = info.isFallbackAdapter || /basic render|swiftshader|llvmpipe|software|warp|microsoft basic/.test(desc);
+        if (!isSoftwareRenderer) {
+          canUseWebGPU = true;
+        } else {
+          console.warn("Rejected software/fallback WebGPU adapter in favor of fast WASM SIMD:", desc);
+        }
       }
     } catch (e) {
       console.warn("Worker WebGPU requestAdapter failed:", e);
@@ -1677,11 +1688,8 @@ async function getOrInitTTS(requestedMode = "webgpu") {
     }
   }
 
-  // WebGPU uses fp32 with Kokoro-82M-v1.0-ONNX for 100% mathematical fidelity and crystal-clear human sound.
-  // On mobile WebGPU ("webgpu-mobile"), we pair it with low-power adapter hints and 110-char micro-chunking
-  // so transient GPU activation buffers stay well under mobile OS per-tab memory limits.
   const targetDevice = canUseWebGPU ? "webgpu" : "wasm";
-  const targetDtype = canUseWebGPU ? "fp32" : "q8";
+  const targetDtype = canUseWebGPU ? "fp32" : (wantsWasmQ4 ? "q4" : "q8");
   const cacheKey = `${targetDevice}-${targetDtype}`;
 
   if (ttsInstance && currentDtype === cacheKey) {
@@ -1692,6 +1700,11 @@ async function getOrInitTTS(requestedMode = "webgpu") {
       mobile: isMobileWebGPU || requestedMode === "wasm-mobile"
     });
     return ttsInstance;
+  }
+
+  // If an initialization for the exact same engine/dtype is already in-flight (e.g. from background preload), reuse it!
+  if (initPromise && initPromiseKey === cacheKey) {
+    return initPromise;
   }
 
   const progressCb = (p) => {
@@ -1709,45 +1722,57 @@ async function getOrInitTTS(requestedMode = "webgpu") {
     }
   };
 
-  // 1. Attempt WebGPU hardware acceleration (Desktop Studio or Mobile Low-VRAM WebGPU)
-  if (canUseWebGPU) {
+  initPromiseKey = cacheKey;
+  initPromise = (async () => {
     try {
-      const modeLabel = isMobileWebGPU ? "Mobile WebGPU (Low-VRAM Mode ⚡)" : "WebGPU (FP32 Hardware Accelerated 🚀)";
+      // 1. Attempt WebGPU hardware acceleration (Desktop Studio or Mobile Low-VRAM WebGPU)
+      if (canUseWebGPU) {
+        try {
+          const modeLabel = isMobileWebGPU ? "Mobile WebGPU (Low-VRAM Mode ⚡)" : "WebGPU (FP32 Hardware Accelerated 🚀)";
+          self.postMessage({
+            status: "progress",
+            data: { percent: 0, file: "Connecting...", message: `Initializing Kokoro on ${modeLabel}...` }
+          });
+
+          ttsInstance = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
+            dtype: "fp32",
+            device: "webgpu",
+            progress_callback: progressCb
+          });
+          currentDevice = "webgpu";
+          currentDtype = cacheKey;
+          self.postMessage({ status: "device_ready", device: "webgpu", dtype: "fp32", mobile: isMobileWebGPU });
+          return ttsInstance;
+        } catch (gpuErr) {
+          console.warn("WebGPU initialization failed, falling back to WASM CPU:", gpuErr);
+          ttsInstance = null;
+        }
+      }
+
+      // 2. WebAssembly CPU SIMD with q8 (~85 MB) or q4 (~45 MB) — 4x-8x faster download & zero GPU shader stalls
+      const wasmDtype = wantsWasmQ4 ? "q4" : "q8";
+      const wasmLabel = wantsWasmQ4 ? "Turbo Mode ⚡⚡ (~45 MB)" : (requestedMode === "wasm-mobile" ? "Mobile Fast Mode 📱" : "Fast Mode ⚡ (~85 MB)");
       self.postMessage({
         status: "progress",
-        data: { percent: 0, file: "Connecting...", message: `Initializing Kokoro on ${modeLabel}...` }
+        data: { percent: 0, file: "Connecting...", message: `Initializing Kokoro on ${wasmLabel}...` }
       });
 
       ttsInstance = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
-        dtype: "fp32",
-        device: "webgpu",
+        dtype: wasmDtype,
+        device: "wasm",
         progress_callback: progressCb
       });
-      currentDevice = "webgpu";
-      currentDtype = cacheKey;
-      self.postMessage({ status: "device_ready", device: "webgpu", dtype: "fp32", mobile: isMobileWebGPU });
+      currentDevice = "wasm";
+      currentDtype = `wasm-${wasmDtype}`;
+      self.postMessage({ status: "device_ready", device: "wasm", dtype: wasmDtype, mobile: requestedMode === "wasm-mobile" });
       return ttsInstance;
-    } catch (gpuErr) {
-      console.warn("WebGPU initialization failed, falling back to WASM CPU:", gpuErr);
-      ttsInstance = null;
+    } finally {
+      initPromise = null;
+      initPromiseKey = null;
     }
-  }
+  })();
 
-  // 2. Fallback to WebAssembly CPU with q8 (Rock-solid, crystal-clear, ~85 MB)
-  self.postMessage({
-    status: "progress",
-    data: { percent: 0, file: "Connecting...", message: `Initializing Kokoro on WebAssembly (${requestedMode === "wasm-mobile" ? "Mobile Fast Mode 📱" : "Safe Mode 💻"})...` }
-  });
-
-  ttsInstance = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
-    dtype: "q8",
-    device: "wasm",
-    progress_callback: progressCb
-  });
-  currentDevice = "wasm";
-  currentDtype = `wasm-q8`;
-  self.postMessage({ status: "device_ready", device: "wasm", dtype: "q8", mobile: requestedMode === "wasm-mobile" });
-  return ttsInstance;
+  return initPromise;
 }
 
 /**
@@ -1848,7 +1873,7 @@ self.onmessage = async (e) => {
 
   if (type === "preload") {
     try {
-      await getOrInitTTS(dtype || "q4");
+      await getOrInitTTS(dtype || "wasm");
       self.postMessage({ status: "ready", id });
     } catch (err) {
       self.postMessage({ status: "error", id, message: err.message || String(err) });
@@ -1861,7 +1886,7 @@ self.onmessage = async (e) => {
     cancelRequested = false;
 
     try {
-      const tts = await getOrInitTTS(dtype || "q8");
+      let tts = await getOrInitTTS(dtype || "wasm");
       const startTime = performance.now();
       const speedValue = speed ? Math.max(0.5, Math.min(2.0, parseFloat(speed))) : 1.0;
 
@@ -1876,8 +1901,10 @@ self.onmessage = async (e) => {
         throw new Error("Please enter text to synthesize.");
       }
 
-      // Initial breather to allow browser GPU context and VRAM allocation to settle
-      await new Promise((resolve) => setTimeout(resolve, isMobileGpu ? 90 : 50));
+      // Only add initial VRAM breather when using WebGPU
+      if (currentDevice === "webgpu") {
+        await new Promise((resolve) => setTimeout(resolve, isMobileGpu ? 60 : 25));
+      }
 
       const audioSegments = [];
       let sampleRate = 24000;
@@ -1937,12 +1964,31 @@ self.onmessage = async (e) => {
           message: `Synthesizing part ${i + 1} of ${chunks.length}${estRemainingMsg}...`
         });
 
-        const res = isPortugueseVoice
-          ? await generatePortugueseChunk(tts, chunk, selectedVoice, speedValue)
-          : await tts.generate(chunk, {
-              voice: selectedVoice,
-              speed: speedValue
-            });
+        let res;
+        try {
+          res = isPortugueseVoice
+            ? await generatePortugueseChunk(tts, chunk, selectedVoice, speedValue)
+            : await tts.generate(chunk, {
+                voice: selectedVoice,
+                speed: speedValue
+              });
+        } catch (chunkErr) {
+          // If WebGPU fails during shader execution, automatically fall back to fast WASM q8
+          if (currentDevice === "webgpu") {
+            console.warn("WebGPU inference failed, switching to WASM Fast Mode:", chunkErr);
+            ttsInstance = null;
+            currentDtype = null;
+            tts = await getOrInitTTS("wasm");
+            res = isPortugueseVoice
+              ? await generatePortugueseChunk(tts, chunk, selectedVoice, speedValue)
+              : await tts.generate(chunk, {
+                  voice: selectedVoice,
+                  speed: speedValue
+                });
+          } else {
+            throw chunkErr;
+          }
+        }
 
         if (res.sampling_rate) {
           sampleRate = res.sampling_rate;
@@ -1972,10 +2018,8 @@ self.onmessage = async (e) => {
         }
 
         // Cooperative GPU & CPU yield between chunks:
-        // 160ms on Mobile WebGPU allows mobile OS memory manager to reclaim temporary tensor buffers,
-        // 90ms on Desktop WebGPU allows macOS WindowServer / display compositor to render frames smoothly.
         if (i < chunks.length - 1) {
-          const yieldMs = isMobileGpu ? 160 : (currentDevice === "webgpu" ? 90 : 30);
+          const yieldMs = isMobileGpu ? 140 : (currentDevice === "webgpu" ? 70 : 5);
           await new Promise((resolve) => setTimeout(resolve, yieldMs));
         }
       }
