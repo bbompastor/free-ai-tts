@@ -1660,7 +1660,7 @@ async function generatePortugueseChunk(tts, chunkTextStr, voiceId, speedValue) {
 let initPromise = null;
 let initPromiseKey = null;
 
-async function getOrInitTTS(requestedMode = "wasm") {
+async function getOrInitTTS(requestedMode = "wasm-q4") {
   const wantsWasmQ4 = requestedMode === "wasm-q4" || requestedMode === "q4";
   const wantsWasm = wantsWasmQ4 || requestedMode === "wasm" || requestedMode === "wasm-mobile" || requestedMode === "q8";
   const isMobileWebGPU = requestedMode === "webgpu-mobile";
@@ -1873,7 +1873,7 @@ self.onmessage = async (e) => {
 
   if (type === "preload") {
     try {
-      await getOrInitTTS(dtype || "wasm");
+      await getOrInitTTS(dtype || "wasm-q4");
       self.postMessage({ status: "ready", id });
     } catch (err) {
       self.postMessage({ status: "error", id, message: err.message || String(err) });
@@ -1886,7 +1886,7 @@ self.onmessage = async (e) => {
     cancelRequested = false;
 
     try {
-      let tts = await getOrInitTTS(dtype || "wasm");
+      let tts = await getOrInitTTS(dtype || "wasm-q4");
       const startTime = performance.now();
       const speedValue = speed ? Math.max(0.5, Math.min(2.0, parseFloat(speed))) : 1.0;
 

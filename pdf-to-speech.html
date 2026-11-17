@@ -1358,11 +1358,11 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
         <div>
           <label for="quantSelect">Synthesis Engine</label>
           <select id="quantSelect">
-            <option value="wasm" selected>⚡ Fast Mode (WASM q8 · Instant Start &amp; 4× Faster Load ~85 MB)</option>
-            <option value="wasm-q4">⚡⚡ Turbo Mode (WASM q4 · Ultra-Light &amp; Fastest Download ~45 MB)</option>
+            <option value="wasm-q4" selected>⚡⚡ Turbo Mode (WASM q4 · Ultra-Light &amp; Fastest Download ~45 MB)</option>
+            <option value="wasm">⚡ Fast Mode (WASM q8 · High Fidelity &amp; 4× Faster Load ~85 MB)</option>
             <option value="webgpu">🚀 WebGPU Studio (fp32 · Dedicated GPU Hardware Acceleration ~326 MB)</option>
           </select>
-          <div id="longTextTip" class="speed-tip">⚡ Fast Mode: 4× faster download (~85 MB) with instant multi-core SIMD synthesis</div>
+          <div id="longTextTip" class="speed-tip">⚡⚡ Turbo Mode: Ultra-compact ~45 MB weights for the fastest initial download and instant synthesis</div>
           <div style="margin-top: 8px; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted);">
             <input type="checkbox" id="streamToggle" checked style="accent-color: var(--accent); cursor: pointer;" />
             <label for="streamToggle" style="cursor: pointer; margin: 0; font-weight: normal; color: #cbd5e1;">Play audio in real-time while buffering (Instant Preview)</label>
@@ -1879,7 +1879,7 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
 
     function getWorker() {
       if (worker) return worker;
-      worker = new Worker("./js/tts.worker.js?v=5", { type: "module" });
+      worker = new Worker("./js/tts.worker.js?v=6", { type: "module" });
 
       worker.onmessage = (e) => {
         if (isStopping) return;
@@ -1890,6 +1890,8 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
           const dt = e.data.dtype ? e.data.dtype.toUpperCase() : "";
           if (dev === "webgpu") {
             deviceEngine.textContent = `Engine: WebGPU (${dt} Hardware Accelerated 🚀)`;
+          } else if (dt === "Q4") {
+            deviceEngine.textContent = `Engine: Turbo Mode SIMD (${dt} ⚡⚡)`;
           } else {
             deviceEngine.textContent = `Engine: Fast Mode SIMD (${dt} ⚡)`;
           }
@@ -1992,16 +1994,16 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
       quantSelect.innerHTML = "";
 
       if (isMobileDevice) {
+        const mobileQ4Opt = document.createElement("option");
+        mobileQ4Opt.value = "wasm-q4";
+        mobileQ4Opt.textContent = "⚡⚡ Mobile Turbo Mode (WASM q4 · Fastest & Ultra-Light ~45 MB)";
+        mobileQ4Opt.selected = true;
+        quantSelect.appendChild(mobileQ4Opt);
+
         const mobileWasmOpt = document.createElement("option");
         mobileWasmOpt.value = "wasm-mobile";
         mobileWasmOpt.textContent = "📱 Mobile Fast Mode (WASM q8 · 100% Compatible ~85 MB)";
-        mobileWasmOpt.selected = true;
         quantSelect.appendChild(mobileWasmOpt);
-
-        const mobileQ4Opt = document.createElement("option");
-        mobileQ4Opt.value = "wasm-q4";
-        mobileQ4Opt.textContent = "⚡⚡ Mobile Turbo Mode (WASM q4 · Ultra-Light ~45 MB)";
-        quantSelect.appendChild(mobileQ4Opt);
 
         if (hasWebGPU) {
           const mobileGpuOpt = document.createElement("option");
@@ -2009,18 +2011,18 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
           mobileGpuOpt.textContent = "⚡ Mobile WebGPU (Low-VRAM Mobile GPU · Hardware Accelerated)";
           quantSelect.appendChild(mobileGpuOpt);
         }
-        deviceEngine.textContent = "Engine: Mobile Neural Engine 📱";
+        deviceEngine.textContent = "Engine: Mobile Turbo Mode (Q4) ⚡⚡";
       } else {
-        const desktopWasmOpt = document.createElement("option");
-        desktopWasmOpt.value = "wasm";
-        desktopWasmOpt.textContent = "⚡ Fast Mode (WASM q8 · Instant Start & 4× Faster Load ~85 MB)";
-        desktopWasmOpt.selected = true;
-        quantSelect.appendChild(desktopWasmOpt);
-
         const desktopQ4Opt = document.createElement("option");
         desktopQ4Opt.value = "wasm-q4";
         desktopQ4Opt.textContent = "⚡⚡ Turbo Mode (WASM q4 · Ultra-Light & Fastest Download ~45 MB)";
+        desktopQ4Opt.selected = true;
         quantSelect.appendChild(desktopQ4Opt);
+
+        const desktopWasmOpt = document.createElement("option");
+        desktopWasmOpt.value = "wasm";
+        desktopWasmOpt.textContent = "⚡ Fast Mode (WASM q8 · Instant Start & 4× Faster Load ~85 MB)";
+        quantSelect.appendChild(desktopWasmOpt);
 
         if (hasWebGPU) {
           const desktopGpuOpt = document.createElement("option");
@@ -2028,7 +2030,7 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
           desktopGpuOpt.textContent = "🚀 WebGPU Studio (fp32 · Dedicated GPU Hardware Acceleration ~326 MB)";
           quantSelect.appendChild(desktopGpuOpt);
         }
-        deviceEngine.textContent = "Engine: Fast Mode (Multi-Core SIMD) ⚡";
+        deviceEngine.textContent = "Engine: Turbo Mode (Q4 SIMD) ⚡⚡";
       }
     }
     configureEngineOptions();
@@ -2039,24 +2041,25 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
       const words = text.trim() ? text.trim().split(/\s+/).length : 0;
       const currentSpeed = speedRange ? parseFloat(speedRange.value) || 1.0 : 1.0;
       const readMin = ((words / 150) / currentSpeed).toFixed(1);
-      const selectedMode = quantSelect ? quantSelect.value : "wasm";
+      const selectedMode = quantSelect ? quantSelect.value : "wasm-q4";
       const isGpuSelected = selectedMode === "webgpu" || selectedMode === "webgpu-mobile";
-      const genSec = words > 0 ? Math.max(1, Math.round(words / (isGpuSelected ? 10 : 8))) : 0;
+      const isTurboSelected = selectedMode === "wasm-q4";
+      const genSec = words > 0 ? Math.max(1, Math.round(words / (isGpuSelected ? 10 : (isTurboSelected ? 12 : 8)))) : 0;
 
       charCount.textContent = `${chars.toLocaleString()} characters`;
       wordCount.textContent = `${words.toLocaleString()} words`;
       estTime.textContent = `~${readMin} min audio`;
-      if (estGenTime) estGenTime.textContent = `~${genSec}s conversion (${isGpuSelected ? "WebGPU" : "Fast SIMD"})`;
+      if (estGenTime) estGenTime.textContent = `~${genSec}s conversion (${isGpuSelected ? "WebGPU" : (isTurboSelected ? "Turbo Q4" : "Fast SIMD")})`;
 
       if (longTextTip && quantSelect) {
         if (selectedMode === "wasm-mobile") {
           longTextTip.textContent = "📱 Mobile Fast Mode: Lightweight ~85 MB neural engine optimized for iOS & Android";
         } else if (selectedMode === "wasm-q4") {
-          longTextTip.textContent = "⚡⚡ Turbo Mode: Ultra-compact ~45 MB weights for the fastest initial download and low-RAM devices";
+          longTextTip.textContent = "⚡⚡ Turbo Mode (Default): Ultra-compact ~45 MB weights for the fastest initial download and instant synthesis";
         } else if (selectedMode === "webgpu-mobile") {
           longTextTip.textContent = "⚡ Mobile WebGPU Mode: Low-VRAM micro-chunking for hardware-accelerated mobile GPUs";
         } else if (selectedMode === "wasm") {
-          longTextTip.textContent = "⚡ Fast Mode (Recommended): 4× faster download (~85 MB) with instant multi-core synthesis & zero GPU shader stalls";
+          longTextTip.textContent = "⚡ Fast Mode: 4× faster download (~85 MB) with multi-core synthesis & zero GPU shader stalls";
         } else {
           longTextTip.textContent = "🚀 WebGPU Studio Mode: Uses ~326 MB FP32 weights (recommended only for dedicated desktop GPUs)";
         }
@@ -2147,7 +2150,7 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
         const ttsWorker = getWorker();
         ttsWorker.postMessage({
           type: "preload",
-          dtype: quantSelect ? quantSelect.value : "wasm",
+          dtype: quantSelect ? quantSelect.value : "wasm-q4",
           id: Date.now()
         });
       } catch (e) {
