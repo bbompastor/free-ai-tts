@@ -4,7 +4,7 @@
  * Supports US/UK English + European Portuguese (Portugal, pt-PT) with native client-side G2P IPA phonemization.
  * Handles automatic text chunking and seamless WAV concatenation.
  */
-import { KokoroTTS } from "https://esm.sh/kokoro-js";
+import { KokoroTTS } from "https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/dist/kokoro.web.js";
 
 let ttsInstance = null;
 let currentDtype = null;
@@ -1777,13 +1777,30 @@ async function getOrInitTTS(requestedMode = "wasm-q4") {
 
 /**
  * Splits text into natural sentence/clause chunks under maxChars to prevent model truncation.
- * On WebGPU, keeping chunks under ~240 characters ensures each inference forward pass
- * executes in under ~500ms, completely avoiding GPU command queue saturation and preventing
- * macOS WindowServer (display compositor) freezes on Apple Silicon and shared-memory GPUs.
+ * Supports a smaller firstChunkMaxChars for Chunk 0 so real-time audio streaming starts playing
+ * up to 3x-4x faster while subsequent chunks synthesize in the background.
  */
-function chunkText(text, maxChars = 240) {
+function chunkText(text, maxChars = 240, firstChunkMaxChars = maxChars) {
   const rawParagraphs = text.split(/\n+/).map(p => p.trim()).filter(Boolean);
   const chunks = [];
+
+  function splitByWords(str, limit) {
+    const words = str.trim().split(/\s+/);
+    const parts = [];
+    let cur = "";
+    for (const w of words) {
+      if (cur && (cur + " " + w).length <= limit) {
+        cur += " " + w;
+      } else if (!cur) {
+        cur = w;
+      } else {
+        parts.push(cur);
+        cur = w;
+      }
+    }
+    if (cur) parts.push(cur);
+    return parts;
+  }
 
   for (const para of rawParagraphs) {
     const sentences = para.match(/[^.!?।。！？]+[.!?।。！？]+(\s|$)|[^.!?।。！？]+$/g) || [para];
@@ -1793,23 +1810,49 @@ function chunkText(text, maxChars = 240) {
       sentence = sentence.trim();
       if (!sentence) continue;
 
-      if ((current + " " + sentence).trim().length <= maxChars) {
-        current = current ? current + " " + sentence : sentence;
+      const activeLimit = chunks.length === 0 ? firstChunkMaxChars : maxChars;
+
+      if (current && (current + " " + sentence).trim().length <= activeLimit) {
+        current = current + " " + sentence;
+      } else if (!current && sentence.length <= activeLimit) {
+        current = sentence;
       } else {
-        if (current) chunks.push(current);
-        if (sentence.length > maxChars) {
+        if (current) {
+          chunks.push(current);
+          current = "";
+        }
+        const limitAfterPush = chunks.length === 0 ? firstChunkMaxChars : maxChars;
+        if (sentence.length > limitAfterPush) {
           const clauses = sentence.match(/[^,;:—、，；：]+[,;:—、，；：]+(\s|$)|[^,;:—、，；：]+$/g) || [sentence];
           let sub = "";
           for (let clause of clauses) {
             clause = clause.trim();
-            if ((sub + " " + clause).trim().length <= maxChars) {
-              sub = sub ? sub + " " + clause : clause;
-            } else {
-              if (sub) chunks.push(sub);
+            if (!clause) continue;
+            const subLimit = chunks.length === 0 ? firstChunkMaxChars : maxChars;
+            if (sub && (sub + " " + clause).trim().length <= subLimit) {
+              sub = sub + " " + clause;
+            } else if (!sub && clause.length <= subLimit) {
               sub = clause;
+            } else {
+              if (sub) {
+                chunks.push(sub);
+                sub = "";
+              }
+              const nextLimit = chunks.length === 0 ? firstChunkMaxChars : maxChars;
+              if (clause.length > nextLimit) {
+                const wordParts = splitByWords(clause, nextLimit);
+                for (let wp = 0; wp < wordParts.length - 1; wp++) {
+                  chunks.push(wordParts[wp]);
+                }
+                sub = wordParts[wordParts.length - 1] || "";
+              } else {
+                sub = clause;
+              }
             }
           }
-          if (sub) chunks.push(sub);
+          if (sub) {
+            chunks.push(sub);
+          }
           current = "";
         } else {
           current = sentence;
@@ -1893,10 +1936,11 @@ self.onmessage = async (e) => {
       // Dynamic chunk sizing:
       // - Mobile WebGPU: 110 chars keeps transient GPU activation tensors small so mobile Safari/Chrome never exceed per-tab memory limits
       // - Desktop WebGPU: 220 chars (~1-2 sentences) keeps each forward pass around ~400ms, preventing GPU command queue saturation
-      // - WASM CPU: 320 chars provides optimal SIMD batch throughput.
+      // - WASM CPU: 90-char first chunk for instant streaming start (~3-6s TTFA), then 240 chars for subsequent chunks.
       const isMobileGpu = currentDevice === "webgpu" && dtype === "webgpu-mobile";
-      const targetMaxChars = isMobileGpu ? 110 : (currentDevice === "webgpu" ? 220 : 320);
-      const chunks = chunkText(text, targetMaxChars);
+      const targetMaxChars = isMobileGpu ? 110 : (currentDevice === "webgpu" ? 220 : 240);
+      const firstChunkMaxChars = currentDevice === "webgpu" ? (isMobileGpu ? 90 : 140) : 90;
+      const chunks = chunkText(text, targetMaxChars, firstChunkMaxChars);
       if (chunks.length === 0) {
         throw new Error("Please enter text to synthesize.");
       }

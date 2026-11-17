@@ -1879,7 +1879,7 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
 
     function getWorker() {
       if (worker) return worker;
-      worker = new Worker("./js/tts.worker.js?v=6", { type: "module" });
+      worker = new Worker("./js/tts.worker.js?v=7", { type: "module" });
 
       worker.onmessage = (e) => {
         if (isStopping) return;
@@ -2144,7 +2144,9 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
 
     let hasPreloaded = false;
     function triggerBackgroundPreload() {
-      if (hasPreloaded || isMobileDevice) return;
+      if (hasPreloaded) return;
+      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      if (conn && conn.saveData) return;
       hasPreloaded = true;
       try {
         const ttsWorker = getWorker();
