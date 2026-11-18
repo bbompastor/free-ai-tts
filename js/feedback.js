@@ -179,6 +179,105 @@
         background: rgba(255, 255, 255, 0.14);
       }
 
+      /* Studio Redirect Banner (on non-studio pages) */
+      .fb-studio-cta-box {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.14));
+        border: 1px solid rgba(139, 92, 246, 0.45);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .fb-studio-cta-text {
+        font-size: 0.82rem;
+        color: #e2e8f0;
+        line-height: 1.4;
+      }
+      .fb-studio-cta-text strong {
+        color: #ffffff;
+        display: block;
+        font-size: 0.86rem;
+      }
+      .fb-studio-cta-btns {
+        display: inline-flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .fb-studio-cta-link {
+        background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+        color: #ffffff !important;
+        text-decoration: none !important;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 7px 12px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);
+        transition: transform 0.15s ease;
+        white-space: nowrap;
+      }
+      .fb-studio-cta-link:hover {
+        transform: translateY(-1px);
+      }
+      .fb-studio-cta-link.secondary {
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(6, 182, 212, 0.45);
+        color: #67e8f9 !important;
+        box-shadow: none;
+      }
+
+      /* Top Nav & In-Page Studio Banner on Informational Pages */
+      .nav-link-cta {
+        background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
+        color: #ffffff !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35);
+        border: 1px solid rgba(196, 181, 253, 0.4) !important;
+      }
+      .nav-link-cta:hover {
+        transform: translateY(-1px);
+        background: linear-gradient(135deg, #9333ea, #581c87) !important;
+      }
+      .page-studio-banner {
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.18), rgba(6, 182, 212, 0.12));
+        border: 1px solid rgba(139, 92, 246, 0.45);
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 14px;
+        box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.5);
+      }
+      .page-studio-banner-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .page-studio-banner-title {
+        font-size: 0.98rem;
+        font-weight: 800;
+        color: #ffffff;
+      }
+      .page-studio-banner-sub {
+        font-size: 0.84rem;
+        color: #cbd5e1;
+      }
+      .page-studio-banner-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
       /* Star Rating Row */
       .fb-rating-box {
         background: #090e1a;
@@ -517,6 +616,22 @@
     modalBackdrop.setAttribute("aria-modal", "true");
     modalBackdrop.setAttribute("aria-labelledby", "fbModalTitle");
 
+    const isStudioPage = Boolean(document.getElementById("textInput") && document.getElementById("voiceSelect"));
+    const studioRedirectBannerHtml = isStudioPage
+      ? ""
+      : `
+        <div class="fb-studio-cta-box">
+          <div class="fb-studio-cta-text">
+            <strong>🎙️ Looking for the AI Voice Generator?</strong>
+            Convert text or PDFs into speech for free in the studio:
+          </div>
+          <div class="fb-studio-cta-btns">
+            <a href="/" class="fb-studio-cta-link">⚡ Open TTS Studio →</a>
+            <a href="pdf-to-speech.html" class="fb-studio-cta-link secondary">📄 PDF to Speech</a>
+          </div>
+        </div>
+      `;
+
     modalBackdrop.innerHTML = `
       <div class="fb-modal-card">
         <div class="fb-modal-header">
@@ -526,6 +641,8 @@
           </div>
           <button type="button" class="fb-close-btn" id="fbCloseModalBtn" aria-label="Close feedback modal">✕</button>
         </div>
+
+        ${studioRedirectBannerHtml}
 
         <div class="fb-rating-box">
           <span class="fb-rating-label">How is your experience with PureTTS?</span>
@@ -806,11 +923,44 @@
     });
   }
 
+  function enhanceNonStudioNavigation() {
+    const isStudioPage = Boolean(document.getElementById("textInput") && document.getElementById("voiceSelect"));
+    if (isStudioPage) return;
+
+    // 1. Highlight the "TTS Studio" link in the top navigation bar with a bright purple button pill
+    document.querySelectorAll('.nav-links a[href="/"]').forEach((link) => {
+      link.classList.add("nav-link-cta");
+      if (!link.textContent.includes("🎙️") && !link.textContent.includes("⚡")) {
+        link.textContent = "🎙️ " + link.textContent.trim();
+      }
+    });
+
+    // 2. Inject a clear "Launch Free Text-to-Speech Studio" card at the top of <main> on informational/legal pages
+    const mainEl = document.querySelector("main");
+    if (mainEl && !document.getElementById("pageStudioLaunchBanner")) {
+      const banner = document.createElement("div");
+      banner.id = "pageStudioLaunchBanner";
+      banner.className = "page-studio-banner";
+      banner.innerHTML = `
+        <div class="page-studio-banner-info">
+          <div class="page-studio-banner-title">🎙️ Ready to convert text or PDFs into speech?</div>
+          <div class="page-studio-banner-sub">100% free, unlimited characters, 30+ AI voices in 10 languages — runs directly in your browser.</div>
+        </div>
+        <div class="page-studio-banner-actions">
+          <a href="/" class="fb-studio-cta-link">⚡ Launch TTS Studio →</a>
+          <a href="pdf-to-speech.html" class="fb-studio-cta-link secondary">📄 PDF to Speech</a>
+        </div>
+      `;
+      mainEl.insertBefore(banner, mainEl.firstChild);
+    }
+  }
+
   function init() {
     injectStyles();
     createFeedbackModal();
     injectPostGenerationBar();
     enhanceFooterAndTriggers();
+    enhanceNonStudioNavigation();
     window.openPureTTSFeedback = openFeedbackModal;
   }
 
