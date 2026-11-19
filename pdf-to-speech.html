@@ -2164,22 +2164,9 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
       textInput.addEventListener("input", triggerBackgroundPreload, { once: true });
     }
 
-    let lastFreeVoice = "af_heart";
-    const partnerVoiceCallout = document.getElementById("partnerVoiceCallout");
     if (voiceSelect) {
       voiceSelect.addEventListener("change", () => {
         triggerBackgroundPreload();
-        if (voiceSelect.value === "partner_clone" || voiceSelect.value === "partner_multilingual") {
-          const triggerType = voiceSelect.value;
-          voiceSelect.value = lastFreeVoice;
-          if (partnerVoiceCallout) partnerVoiceCallout.style.display = "block";
-          if (typeof window.gtag === "function") {
-            window.gtag("event", "elevenlabs_voice_dropdown_select", { trigger: triggerType, page_type: "pdf_to_speech" });
-          }
-        } else {
-          lastFreeVoice = voiceSelect.value;
-          if (partnerVoiceCallout) partnerVoiceCallout.style.display = "none";
-        }
       });
     }
 
@@ -2221,14 +2208,7 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
       });
     });
 
-    // Track ElevenLabs affiliate and Buy Me a Coffee clicks in GA4
-    document.querySelectorAll('a[href*="elevenlabs.io"]').forEach(link => {
-      link.addEventListener("click", () => {
-        if (typeof window.gtag === "function") {
-          window.gtag("event", "elevenlabs_affiliate_click", { page_type: "pdf_to_speech" });
-        }
-      });
-    });
+    // Track Buy Me a Coffee clicks in GA4
     document.querySelectorAll('a[href*="buymeacoffee.com"]').forEach(link => {
       link.addEventListener("click", () => {
         if (typeof window.gtag === "function") {

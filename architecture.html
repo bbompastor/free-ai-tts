@@ -299,8 +299,8 @@
     </article>
 
     <article class="content-card">
-      <h2>4. WebGPU (FP32) vs. WebAssembly (Quantized q8) Comparison</h2>
-      <p>Different devices have vastly different memory ceilings and graphics capabilities. A desktop workstation with a dedicated GPU handles unquantized 32-bit floating-point tensors effortlessly, whereas mobile browsers on iOS and Android impose strict per-tab memory limits. PureTTS automatically detects your hardware environment and offers specialized execution engines:</p>
+      <h2>4. WebGPU (FP32) vs. WebAssembly (Turbo q4 &amp; Fast q8) Empirical Benchmarks</h2>
+      <p>Different devices have vastly different memory ceilings, network bandwidth, and graphics capabilities. A desktop workstation with a dedicated GPU or Apple M-Series unified memory handles unquantized 32-bit floating-point tensors effortlessly, whereas mobile browsers on iOS and Android impose strict per-tab memory limits and benefit from compact quantized weights. PureTTS automatically detects your hardware environment and offers five specialized execution paths:</p>
 
       <div class="table-wrap">
         <table>
@@ -315,33 +315,118 @@
           </thead>
           <tbody>
             <tr>
-              <td><strong>🚀 WebGPU Studio Mode</strong></td>
-              <td>Full 32-bit Float (<code>fp32</code>)</td>
-              <td>~326 MB (cached locally)</td>
-              <td>Desktop Chrome, Edge, Brave with Dedicated or Apple M-Series GPU</td>
-              <td>Maximum dynamic range, zero quantization noise, fastest real-time factor (up to 5x–15x faster than real-time).</td>
+              <td><strong>⚡⚡ Turbo Mode (Default)</strong></td>
+              <td>4-bit Quantized (<code>wasm-q4</code>)</td>
+              <td><strong>~45 MB</strong> (cached locally)</td>
+              <td>All Desktop &amp; Mobile Browsers (Chrome, Safari, Firefox, Edge, iOS, Android)</td>
+              <td>Fastest initial download (7× smaller than FP32) and 35% faster CPU inference than 8-bit WASM (~0.96× real-time on single-core SIMD).</td>
             </tr>
             <tr>
-              <td><strong>💻 CPU Safe Mode (WASM)</strong></td>
-              <td>8-bit Quantized (<code>q8</code>)</td>
-              <td>~86 MB (cached locally)</td>
-              <td>All Desktop &amp; Mobile Browsers (Safari, Firefox, Chrome, iOS, Android)</td>
-              <td>100% immune to GPU driver timeouts, low memory footprint, near-indistinguishable studio vocal clarity.</td>
+              <td><strong>⚡ Fast Mode (WASM q8)</strong></td>
+              <td>8-bit Quantized (<code>wasm</code> / <code>wasm-mobile</code>)</td>
+              <td><strong>~85 MB</strong> (cached locally)</td>
+              <td>Desktop &amp; Mobile Multi-Core CPUs</td>
+              <td>100% immune to GPU driver timeouts, low memory footprint, higher quantization bit-depth (~0.72× real-time on single-core SIMD).</td>
+            </tr>
+            <tr>
+              <td><strong>🚀 WebGPU Studio Mode</strong></td>
+              <td>Full 32-bit Float (<code>fp32</code>)</td>
+              <td><strong>~326 MB</strong> (cached locally)</td>
+              <td>Desktop Chrome, Edge, Brave with Dedicated or Apple M-Series GPU</td>
+              <td>Maximum dynamic range, zero quantization noise, fastest real-time factor (<strong>9.4× to 10.9× faster than real-time</strong>).</td>
             </tr>
             <tr>
               <td><strong>📱 Mobile WebGPU (Low-VRAM)</strong></td>
-              <td>8-bit Quantized (<code>q8</code>) on GPU</td>
-              <td>~86 MB (cached locally)</td>
+              <td>32-bit Float (<code>fp32</code>) + 110-char Micro-Chunking</td>
+              <td><strong>~326 MB</strong> (cached locally)</td>
               <td>Modern Android &amp; Mobile GPUs with WebGPU enabled</td>
-              <td>Combines compact 86 MB model weights with hardware shader acceleration to prevent mobile browser tab reloads.</td>
+              <td>Pairs hardware WGSL shader execution (<strong>9.1×–10.0× real-time</strong>) with 110-character micro-chunking so transient GPU activation tensors stay well below mobile OS tab memory limits.</td>
             </tr>
           </tbody>
         </table>
       </div>
 
+      <h3>Live Benchmark Results Across Text Sizes (Apple M5 Pro / Chromium 157)</h3>
+      <p>To quantify real-world conversion speed and streaming latency, we benchmarked all synthesis engines across four standardized text corpora using voice <code>am_adam</code> at <code>0.95x</code> speed. We measure both <strong>Time to First Audio (TTFA)</strong>—the moment real-time streaming playback begins—and <strong>Total Synthesis Time</strong> to produce the complete gapless 24kHz WAV master:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Corpus Size &amp; Audio Length</th>
+              <th>Engine Mode</th>
+              <th>Chunks</th>
+              <th>Time to First Audio (TTFA)</th>
+              <th>Total Synthesis Time</th>
+              <th>Speedup (Real-Time)</th>
+              <th>Real-Time Factor (RTF)</th>
+              <th>Throughput (Chars / Sec)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Short (108 chars / 17 words)</strong><br/>~7.9s generated audio</td>
+              <td>🚀 WebGPU Studio (<code>fp32</code>)<br/>⚡ Mobile WebGPU (<code>fp32</code>)<br/>⚡⚡ Turbo Mode (<code>wasm-q4</code>)<br/>⚡ Fast Mode (<code>wasm-q8</code>)</td>
+              <td>1<br/>1<br/>1<br/>1</td>
+              <td><strong>0.84 s</strong><br/><strong>0.79 s</strong><br/>8.21 s<br/>10.83 s</td>
+              <td><strong>0.84 s</strong><br/><strong>0.79 s</strong><br/>8.21 s<br/>10.83 s</td>
+              <td><strong>9.40×</strong><br/><strong>10.00×</strong><br/>0.96×<br/>0.73×</td>
+              <td>0.106<br/>0.100<br/>1.039<br/>1.371</td>
+              <td>128.6 c/s<br/>136.7 c/s<br/>13.2 c/s<br/>10.0 c/s</td>
+            </tr>
+            <tr>
+              <td><strong>Medium (300 chars / 38 words)</strong><br/>~20.6s generated audio</td>
+              <td>🚀 WebGPU Studio (<code>fp32</code>)<br/>⚡ Mobile WebGPU (<code>fp32</code>)<br/>⚡⚡ Turbo Mode (<code>wasm-q4</code>)<br/>⚡ Fast Mode (<code>wasm-q8</code>)</td>
+              <td>2<br/>3<br/>2<br/>2</td>
+              <td><strong>0.88 s</strong><br/><strong>0.88 s</strong><br/><strong>10.07 s</strong><br/>13.40 s</td>
+              <td><strong>1.96 s</strong><br/><strong>2.23 s</strong><br/>21.40 s<br/>28.08 s</td>
+              <td><strong>10.92×</strong><br/><strong>9.82×</strong><br/>0.96×<br/>0.72×</td>
+              <td>0.092<br/>0.102<br/>1.043<br/>1.383</td>
+              <td>153.1 c/s<br/>134.5 c/s<br/>14.0 c/s<br/>10.7 c/s</td>
+            </tr>
+            <tr>
+              <td><strong>Long (938 chars / 117 words)</strong><br/>~63.2s generated audio</td>
+              <td>🚀 WebGPU Studio (<code>fp32</code>)<br/>⚡ Mobile WebGPU (<code>fp32</code>)<br/>⚡⚡ Turbo Mode (<code>wasm-q4</code>)<br/>⚡ Fast Mode (<code>wasm-q8</code>)</td>
+              <td>7<br/>10<br/>5<br/>5</td>
+              <td><strong>1.07 s</strong><br/><strong>1.08 s</strong><br/><strong>10.12 s</strong><br/>13.55 s</td>
+              <td><strong>6.17 s</strong><br/><strong>7.26 s</strong><br/>66.36 s<br/>87.84 s</td>
+              <td><strong>10.71×</strong><br/><strong>9.44×</strong><br/>0.95×<br/>0.72×</td>
+              <td>0.093<br/>0.106<br/>1.050<br/>1.392</td>
+              <td>152.0 c/s<br/>129.2 c/s<br/>14.1 c/s<br/>10.7 c/s</td>
+            </tr>
+            <tr>
+              <td><strong>Full Article (1,488 chars / 193 words)</strong><br/>~100.6s generated audio</td>
+              <td>🚀 WebGPU Studio (<code>fp32</code>)<br/>⚡ Mobile WebGPU (<code>fp32</code>)<br/>⚡⚡ Turbo Mode (<code>wasm-q4</code>)<br/>⚡ Fast Mode (<code>wasm-q8</code>)</td>
+              <td>10<br/>17<br/>8<br/>8</td>
+              <td><strong>1.03 s</strong><br/><strong>1.09 s</strong><br/><strong>10.15 s</strong><br/>13.60 s</td>
+              <td><strong>9.53 s</strong><br/><strong>12.03 s</strong><br/>106.35 s<br/>140.32 s</td>
+              <td><strong>10.85×</strong><br/><strong>9.09×</strong><br/>0.95×<br/>0.71×</td>
+              <td>0.092<br/>0.110<br/>1.057<br/>1.400</td>
+              <td>156.1 c/s<br/>123.7 c/s<br/>14.0 c/s<br/>10.6 c/s</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Adaptive First-Chunk Micro-Chunking for Instant Audio Streaming</h3>
+      <p>A critical insight from our benchmark telemetry is that <strong>perceived latency is governed by Time to First Audio (TTFA)</strong> rather than total document synthesis time. When real-time audio streaming is enabled (the default in PureTTS), the browser begins playing Chunk 0 as soon as it finishes synthesizing, while Chunks 1 through <em>N</em> continue generating inside the background Web Worker.</p>
+      <p>To minimize TTFA on CPU/WASM devices, PureTTS implements an <strong>asymmetric two-tier chunking algorithm</strong> (`chunkText(text, maxChars = 240, firstChunkMaxChars = 90)`): the opening sentence or clause is capped at <strong>90 characters</strong> (~6–8 seconds of spoken audio), while subsequent chunks expand to <strong>240 characters</strong> for optimal SIMD matrix throughput. This cuts initial wait time by more than <strong>53%</strong> on long paragraphs without increasing total generation time.</p>
+    </article>
+
+    <article class="content-card">
+      <h2>5. Multilingual Client-Side Grapheme-to-Phoneme (G2P) Architecture Across 10 Languages</h2>
+      <p>While default browser wrappers for Kokoro-82M rely on English-only eSpeak-NG WebAssembly bindings, PureTTS implements a custom, zero-dependency <strong>client-side multilingual IPA Grapheme-to-Phoneme (G2P) engine</strong> directly inside <code>tts.worker.js</code>. This allows PureTTS to synthesize <strong>33 studio voices across 10 languages and regional dialects</strong> with authentic phonological rules and zero external API calls:</p>
+      <ul>
+        <li><strong>🇺🇸 / 🇬🇧 American &amp; British English (<code>en-US</code>, <code>en-GB</code>):</strong> Context-aware heteronym resolution, currency/date expansion, and lexical stress assignment across 10 studio voices (<em>Heart, Bella, Sky, Sarah, Adam, Michael, Emma, Isabella, George, Lewis</em>).</li>
+        <li><strong>🇵🇹 European Portuguese (<code>pt-PT</code> — Lisbon/Coimbra Standard):</strong> Models unstressed vowel reduction (<code>a → ɐ</code>, <code>e → ɨ</code>, <code>o → u</code>), coda sibilant palatalization ("chiado": syllable-final <code>s/z → ʃ</code>), cross-word sibilant sandhi (liaison before vowels and voiced consonants), and non-palatalized dental stops (<code>/t/</code> and <code>/d/</code> before <code>/i/</code> and <code>/ɨ/</code>).</li>
+        <li><strong>🇧🇷 Brazilian Portuguese (<code>pt-BR</code> — São Paulo/Rio Standard):</strong> Models dental stop affrication before front high vowels (<code>t → tʃ</code>, <code>d → dʒ</code> before <code>/i/</code> and unstressed final <code>-e</code>), coda <code>-l</code> vocalization to labiovelar <code>/w/</code> (e.g., <em>Brasil → bɾazˈiw</em>), and open pretonic vowels.</li>
+        <li><strong>🇪🇸 / 🇲🇽 Castilian &amp; Latin American Spanish (<code>es-ES</code>, <code>es-419</code>):</strong> Full syllabification and penultimate/oxytone stress derivation, differentiating Castilian <em>distinción</em> (<code>c/z → θ</code> before front vowels, <code>s → s</code>) from Latin American <em>seseo</em> (merged <code>/s/</code>) and spirantization of voiced stops (<code>b/d/g → β/ð/ɣ</code>).</li>
+        <li><strong>🇫🇷 French (<code>fr-FR</code>), 🇮🇹 Italian (<code>it-IT</code>), 🇮🇳 Hindi (<code>hi-IN</code>), 🇯🇵 Japanese (<code>ja-JP</code>), &amp; 🇨🇳 Mandarin Chinese (<code>zh-CN</code>):</strong> Dedicated orthographic-to-IPA transducers handling French nasal vowels (<code>ɑ̃, ɛ̃, ɔ̃</code>) and silent final consonants, Italian geminate consonants and palatal digraphs (<code>gli → ʎ</code>, <code>gn → ɲ</code>), Hindi Devanagari schwa-deletion (<em>halant</em> &amp; word-final schwa dropping) + retroflex stops, Japanese Kanji/Hiragana/Katakana mora phonemization, and Mandarin Hanzi/Pinyin tonal IPA mapping.</li>
+      </ul>
+
       <div class="cta-banner">
         <h3 style="margin-top: 0; color: #fff;">Experience Local WebGPU &amp; WASM Speech Synthesis</h3>
-        <p style="margin-bottom: 0;">Test both FP32 WebGPU Studio Mode and CPU Safe Mode directly in your browser—no installation or account required.</p>
+        <p style="margin-bottom: 0;">Test Turbo Mode (WASM q4), Fast Mode (WASM q8), and FP32 WebGPU Studio Mode across 33 voices and 10 languages directly in your browser.</p>
         <a href="/" class="btn-primary">⚡ Launch PureTTS Studio</a>
       </div>
     </article>

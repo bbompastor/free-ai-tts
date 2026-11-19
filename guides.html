@@ -279,8 +279,8 @@
     </article>
 
     <article class="content-card">
-      <h2>2. Complete Studio Voice Directory &amp; Vocal Profiles</h2>
-      <p>PureTTS includes ten curated American and British English voices from the Kokoro-82M v1.0 studio release. Each voice embedding was trained on distinct vocal characteristics, resonance profiles, and speaking cadences. Use the reference table below to match the right voice and speed multiplier to your project:</p>
+      <h2>2. Complete Studio Voice Directory &amp; Vocal Profiles (33 Voices Across 10 Languages)</h2>
+      <p>PureTTS includes 33 curated neural voices from the Kokoro-82M v1.0 release spanning 10 languages and regional accents—including American and British English, European and Brazilian Portuguese, Castilian and Latin American Spanish, French, Italian, Hindi, Japanese, and Mandarin Chinese. Each voice embedding was trained on distinct vocal characteristics, resonance profiles, and speaking cadences. Use the reference table below to match the right voice and speed multiplier to your project:</p>
 
       <div class="table-wrap">
         <table>
@@ -364,6 +364,62 @@
               <td><code>1.00x – 1.10x</code></td>
               <td>Tech journalism, research paper listening, journalistic articles</td>
             </tr>
+            <tr>
+              <td><strong>Dora / Alex / Duarte (<code>pt_*</code>)</strong></td>
+              <td>🇵🇹 PT-PT (Portugal)</td>
+              <td>European Portuguese cadence with Lisbon/Coimbra vowel reduction &amp; sibilant liaison</td>
+              <td><code>0.95x – 1.05x</code></td>
+              <td>Portuguese audiobooks, institutional e-learning, news &amp; documentaries</td>
+            </tr>
+            <tr>
+              <td><strong>Dora / Alex / Mateus (<code>ptbr_*</code>)</strong></td>
+              <td>🇧🇷 PT-BR (Brazil)</td>
+              <td>Warm Brazilian Portuguese cadence with dental palatalization &amp; open vowels</td>
+              <td><code>0.95x – 1.05x</code></td>
+              <td>Brazilian YouTube channels, online courses, podcast intros, audiobooks</td>
+            </tr>
+            <tr>
+              <td><strong>Dora / Alex / Mateo (<code>es_*</code> &amp; <code>esla_*</code>)</strong></td>
+              <td>🇪🇸 ES-ES &amp; 🇲🇽 ES-419</td>
+              <td>Castilian Spain (distinción) and neutral Latin American (seseo) studio voices</td>
+              <td><code>0.95x – 1.05x</code></td>
+              <td>Spanish documentaries, bilingual coursework, dubbing, audiobooks</td>
+            </tr>
+            <tr>
+              <td><strong>Siwis (<code>ff_siwis</code>)</strong></td>
+              <td>🇫🇷 FR-FR Female</td>
+              <td>Refined metropolitan French studio narrator with smooth nasal vowel prosody</td>
+              <td><code>0.95x – 1.05x</code></td>
+              <td>French literature, cultural essays, educational narration</td>
+            </tr>
+            <tr>
+              <td><strong>Sara &amp; Nicola (<code>if_sara</code>, <code>im_nicola</code>)</strong></td>
+              <td>🇮🇹 IT-IT</td>
+              <td>Expressive Italian female and male broadcast voices with crisp geminate timing</td>
+              <td><code>0.95x – 1.05x</code></td>
+              <td>Italian audiobooks, travel documentaries, corporate training</td>
+            </tr>
+            <tr>
+              <td><strong>Alpha, Beta, Omega &amp; Psi (<code>hf_*</code>, <code>hm_*</code>)</strong></td>
+              <td>🇮🇳 HI-IN (Hindi)</td>
+              <td>Natural Devanagari and romanized Hindi voices with accurate schwa deletion</td>
+              <td><code>0.95x – 1.05x</code></td>
+              <td>Hindi educational lectures, storytelling, news briefings</td>
+            </tr>
+            <tr>
+              <td><strong>Alpha, Gongitsune, Nezumi, Tebukuro &amp; Kumo (<code>jf_*</code>, <code>jm_*</code>)</strong></td>
+              <td>🇯🇵 JA-JP (Japanese)</td>
+              <td>Expressive Japanese female storytellers and calm male narrator</td>
+              <td><code>0.95x – 1.05x</code></td>
+              <td>Japanese language study, light novels, technical explainers</td>
+            </tr>
+            <tr>
+              <td><strong>Xiaobei, Xiaoni, Xiaoxiao, Xiaoyi, Yunjian, Yunxi, Yunxia &amp; Yunyang (<code>zf_*</code>, <code>zm_*</code>)</strong></td>
+              <td>🇨🇳 ZH-CN (Mandarin)</td>
+              <td>8 standard Putonghua female and male studio voices with tonal contour accuracy</td>
+              <td><code>0.95x – 1.05x</code></td>
+              <td>Mandarin audiobooks, bilingual learning, documentary voiceovers</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -386,8 +442,15 @@
         <li><strong>Equations &amp; Code Snippets:</strong> When converting computer science papers or developer documentation, replace raw symbols like <code>O(n log n)</code> with <code>big O of n log n</code>.</li>
       </ul>
 
-      <h3>C. Multi-Paragraph Chunking for Long-Form Audiobooks</h3>
-      <p>PureTTS automatically splits long manuscripts at sentence boundaries (<code>.</code>, <code>!</code>, <code>?</code>) so that every chunk fits within the optimal neural context window (~250 to 400 characters per pass) before stitching the output into a single seamless 24kHz WAV file. Keeping individual sentences under 45 words ensures maximum vocal expressiveness and prevents run-on breath fatigue.</p>
+      <h3>C. Multi-Paragraph Chunking &amp; First-Sentence Micro-Chunking</h3>
+      <p>PureTTS automatically splits long manuscripts at sentence boundaries (<code>.</code>, <code>!</code>, <code>?</code>, <code>।</code>, <code>。</code>) using an asymmetric two-tier chunking algorithm: the opening clause is capped at ~90 characters so real-time streaming audio begins playing within seconds, while subsequent chunks use 220 to 240 characters for optimal neural context before stitching the output into a single seamless 24kHz WAV file. Keeping individual sentences under 45 words ensures maximum vocal expressiveness and prevents run-on breath fatigue.</p>
+
+      <h3>D. Multilingual Script Formatting Tips (Portuguese, Spanish, French, Italian, Hindi, Japanese, Mandarin)</h3>
+      <ul>
+        <li><strong>European vs. Brazilian Portuguese (<code>pt-PT</code> vs. <code>pt-BR</code>):</strong> Preserve acute, circumflex, and tilde diacritics (<code>á, ê, õ, ã, ç</code>) in your script. Our client-side G2P lexer uses orthographic accent marks to distinguish open mid-vowels (<code>/ɛ/, /ɔ/</code>) from closed mid-vowels (<code>/e/, /o/</code>) and to trigger European Portuguese cross-word sibilant sandhi (liaison).</li>
+        <li><strong>Castilian vs. Latin American Spanish (<code>es-ES</code> vs. <code>es-419</code>):</strong> Use inverted question and exclamation marks (<code>¿...?, ¡...!</code>) or standard terminal punctuation to cue interrogative pitch contours, and keep written accents on proparoxytones (<em>esdrújulas</em> like <code>rápido</code> or <code>música</code>).</li>
+        <li><strong>Hindi (<code>hi-IN</code>), Japanese (<code>ja-JP</code>), &amp; Mandarin Chinese (<code>zh-CN</code>):</strong> For Hindi, native Devanagari script (with explicit <em>virama/halant</em> <code>्</code> on consonant clusters and <em>purna viram</em> <code>।</code> at sentence ends) produces the most accurate schwa deletion and retroflex articulation. For Japanese and Mandarin, use full-width punctuation (<code>、</code>, <code>。</code>, <code>！</code>, <code>？</code>) to guide natural phrase boundary pauses.</li>
+      </ul>
     </article>
 
     <article class="content-card">

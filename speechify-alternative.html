@@ -353,10 +353,29 @@
         <li>Strips standalone page numbers and repetitive margin artifacts.</li>
         <li>Merges hard-wrapped PDF lines into complete grammatical sentences before phoneme tokenization.</li>
       </ul>
+    </article>
+
+    <article class="content-card">
+      <h2>4. Multilingual Academic &amp; Language-Learning Study Workflows (10 Languages)</h2>
+      <p>Unlike basic browser readers that rely on operating-system voices with inconsistent pronunciation across languages, PureTTS includes a dedicated client-side <strong>International Phonetic Alphabet (IPA) Grapheme-to-Phoneme (G2P) engine</strong> supporting <strong>33 studio voices across 10 languages and regional dialects</strong>. Students enrolled in foreign language courses, international law programs, or comparative literature seminars can synthesize authentic native narration in:</p>
+      <ul>
+        <li><strong>🇵🇹 European Portuguese (<code>pt-PT</code>) &amp; 🇧🇷 Brazilian Portuguese (<code>pt-BR</code>):</strong> Distinct phonological transducers model Lisbon/Coimbra vowel reduction and sibilant liaison (<code>pt_dora, pt_alex, pt_santa</code>) separately from São Paulo/Rio dental stop palatalization and coda L-vocalization (<code>ptbr_dora, ptbr_alex, ptbr_santa</code>).</li>
+        <li><strong>🇪🇸 Castilian Spanish (<code>es-ES</code>) &amp; 🇲🇽 Latin American Spanish (<code>es-419</code>):</strong> Practice listening comprehension with either Peninsular Spanish <em>distinción</em> (<code>/θ/</code> vs. <code>/s/</code>) or neutral Latin American <em>seseo</em> across female and male academic narrators.</li>
+        <li><strong>🇫🇷 French (<code>fr-FR</code>) &amp; 🇮🇹 Italian (<code>it-IT</code>):</strong> Studio voices (<code>ff_siwis, if_sara, im_nicola</code>) accurately render French nasal vowels, liaison, and Italian double-consonant (geminate) timing.</li>
+        <li><strong>🇮🇳 Hindi (<code>hi-IN</code>), 🇯🇵 Japanese (<code>ja-JP</code>), &amp; 🇨🇳 Mandarin Chinese (<code>zh-CN</code>):</strong> Supports native Devanagari script with automatic schwa deletion, Japanese Kanji/Kana passages, and Mandarin Hanzi with 4-tone contour fidelity.</li>
+      </ul>
+
+      <h3>5. Optimizing Battery Life &amp; Memory on Mobile Phones and Laptops</h3>
+      <p>When studying on an iPad, Android tablet, or lightweight laptop away from a power outlet, choosing the right PureTTS execution engine keeps your device cool and responsive:</p>
+      <ul>
+        <li><strong>⚡⚡ Turbo Mode (<code>wasm-q4</code> ~45 MB — Default):</strong> Uses 4-bit quantized neural weights that download in seconds even on campus Wi-Fi or mobile 4G/5G and consume minimal RAM. Paired with our 90-character first-sentence micro-chunking, audio playback begins streaming almost immediately while the rest of your chapter buffers in the background.</li>
+        <li><strong>🚀 WebGPU Studio Mode (<code>fp32</code> ~326 MB):</strong> Recommended when plugged in on a MacBook (M1–M5) or desktop PC with a dedicated GPU. Synthesizes an entire 1,500-character textbook section (nearly 2 minutes of spoken audio) in under 10 seconds at <strong>10.8× real-time speed</strong>.</li>
+        <li><strong>Offline Airplane-Mode Study:</strong> Once the model weights are cached in your browser's local storage on your first conversion, you can generate new audio chapters on a flight, train commute, or library basement with zero internet connectivity.</li>
+      </ul>
 
       <div class="cta-banner">
         <h3 style="margin-top: 0; color: #fff;">Convert Your Study Notes or PDF Textbooks to Audio Now</h3>
-        <p style="margin-bottom: 0;">Use our dedicated client-side PDF to Speech reader or main TTS Studio—100% free, unlimited, and private.</p>
+        <p style="margin-bottom: 0;">Use our dedicated client-side PDF to Speech reader or main TTS Studio—100% free, unlimited, and private across 10 languages.</p>
         <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
           <a href="pdf-to-speech.html" class="btn-primary">📄 Open PDF to Speech Reader</a>
           <a href="/" class="btn-primary" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">⚡ Open Main TTS Studio</a>

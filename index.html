@@ -356,8 +356,8 @@ Paste your script, article, or study notes here, choose your preferred voice, an
 
     <!-- Studio Voice Directory & Selection Guide -->
     <section class="faq-section" style="margin-bottom: 40px;">
-      <h2 style="text-align: left; margin-bottom: 14px;">Complete Studio Voice Directory: 10 American &amp; British Neural Voices</h2>
-      <p style="color: var(--text-muted); font-size: 0.96rem; margin-bottom: 18px;">Every voice in PureTTS is driven by a distinct acoustic style vector trained on studio recordings. Choosing the right vocal profile and speaking rate dramatically improves listener engagement across different formats:</p>
+      <h2 style="text-align: left; margin-bottom: 14px;">Complete Studio Voice Directory: 33 Neural Voices Across 10 Languages</h2>
+      <p style="color: var(--text-muted); font-size: 0.96rem; margin-bottom: 18px;">Every voice in PureTTS is driven by a distinct acoustic style vector trained on studio recordings and paired with our client-side International Phonetic Alphabet (IPA) Grapheme-to-Phoneme (G2P) engines. Choosing the right vocal profile and speaking rate dramatically improves listener engagement across different formats:</p>
 
       <div style="overflow-x: auto; margin-bottom: 20px;">
         <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
@@ -584,12 +584,12 @@ Paste your script, article, or study notes here, choose your preferred voice, an
 
       <div class="faq-item">
         <h3>Why does the very first generation take a few seconds to initialize?</h3>
-        <p>On your first run, your browser downloads the open-weight neural model files (~86 MB in CPU/Mobile mode or ~326 MB in full FP32 WebGPU Studio mode) and caches them locally in your browser's Cache Storage. Every subsequent visit loads the model directly from your local disk in milliseconds and even works offline.</p>
+        <p>On your first run, your browser downloads the open-weight neural model files (just ~45 MB in default Turbo Mode <code>wasm-q4</code>, ~85 MB in Fast Mode <code>wasm-q8</code>, or ~326 MB in full FP32 WebGPU Studio mode) and caches them locally in your browser's Cache Storage. Every subsequent visit loads the model directly from your local disk in milliseconds and even works offline.</p>
       </div>
 
       <div class="faq-item">
-        <h3>What is the difference between WebGPU Studio Mode and CPU Safe Mode (WASM)?</h3>
-        <p><strong>WebGPU Studio Mode (fp32)</strong> executes unquantized 32-bit floating-point tensors directly on your graphics card for maximum dynamic fidelity and up to 10x faster-than-real-time synthesis. <strong>CPU Safe Mode (WASM q8)</strong> uses an 8-bit quantized model (~86 MB) that runs smoothly on any multi-core CPU across Safari, Firefox, Chrome, iOS, and Android without requiring a dedicated GPU.</p>
+        <h3>What is the difference between Turbo Mode (WASM q4), Fast Mode (WASM q8), and WebGPU Studio Mode (fp32)?</h3>
+        <p><strong>Turbo Mode (WASM q4, ~45 MB — Default)</strong> uses 4-bit quantized weights for the fastest initial download and 35% faster CPU inference across all desktop and mobile browsers, paired with 90-character first-sentence micro-chunking for rapid streaming playback. <strong>Fast Mode (WASM q8, ~85 MB)</strong> uses 8-bit quantization for higher CPU bit-depth with zero GPU driver stalls. <strong>WebGPU Studio Mode (fp32, ~326 MB)</strong> executes unquantized 32-bit floating-point tensors directly on your dedicated GPU or Apple M-Series graphics cores for up to <strong>10.9× faster-than-real-time</strong> synthesis.</p>
       </div>
 
       <div class="faq-item">
@@ -1187,22 +1187,9 @@ if (textInput) {
 textInput.addEventListener("focus", triggerBackgroundPreload, { once: true });
 textInput.addEventListener("input", triggerBackgroundPreload, { once: true });
 }
-let lastFreeVoice = "af_heart";
-const partnerVoiceCallout = document.getElementById("partnerVoiceCallout");
 if (voiceSelect) {
 voiceSelect.addEventListener("change", () => {
 triggerBackgroundPreload();
-if (voiceSelect.value === "partner_clone" || voiceSelect.value === "partner_multilingual") {
-const triggerType = voiceSelect.value;
-voiceSelect.value = lastFreeVoice;
-if (partnerVoiceCallout) partnerVoiceCallout.style.display = "block";
-if (typeof window.gtag === "function") {
-window.gtag("event", "elevenlabs_voice_dropdown_select", { trigger: triggerType, page_type: "home" });
-}
-} else {
-lastFreeVoice = voiceSelect.value;
-if (partnerVoiceCallout) partnerVoiceCallout.style.display = "none";
-}
 });
 }
 generateBtn.addEventListener("click", () => {
@@ -1236,13 +1223,6 @@ voice: selectedVoice,
 dtype: selectedQuant,
 speed: selectedSpeed,
 id: Date.now()
-});
-});
-document.querySelectorAll('a[href*="elevenlabs.io"]').forEach(link => {
-link.addEventListener("click", () => {
-if (typeof window.gtag === "function") {
-window.gtag("event", "elevenlabs_affiliate_click", { page_type: "home" });
-}
 });
 });
 document.querySelectorAll('a[href*="buymeacoffee.com"]').forEach(link => {

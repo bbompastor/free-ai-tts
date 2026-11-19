@@ -326,6 +326,18 @@
               <td><code>0.95x – 1.05x</code></td>
               <td>Calm, measured instructional cadence ideal for step-by-step software demonstrations.</td>
             </tr>
+            <tr>
+              <td><strong>Portuguese &amp; Spanish Global Channels</strong></td>
+              <td><strong>🇵🇹/🇧🇷 Dora &amp; Alex</strong> or <strong>🇪🇸/🇲🇽 Mateo &amp; Dora</strong></td>
+              <td><code>0.95x – 1.05x</code></td>
+              <td>Native European/Brazilian Portuguese and Castilian/Latin American Spanish G2P phonology for localized multi-channel growth.</td>
+            </tr>
+            <tr>
+              <td><strong>French, Italian, Hindi, Japanese &amp; Mandarin</strong></td>
+              <td><strong>🇫🇷 Siwis</strong>, <strong>🇮🇹 Sara/Nicola</strong>, <strong>🇮🇳 Alpha/Omega</strong>, <strong>🇯🇵 Kumo</strong>, <strong>🇨🇳 Xiaoxiao/Yunjian</strong></td>
+              <td><code>0.95x – 1.05x</code></td>
+              <td>Studio-grade regional voices enabling creators to publish localized video essays across 10 languages with zero dubbing fees.</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -339,10 +351,28 @@
         <li><strong>Export Scene-by-Scene 24kHz WAVs:</strong> For long documentaries, synthesize each chapter or scene into its own uncompressed <code>.wav</code> file. Dropping discrete scene WAVs onto your <strong>DaVinci Resolve, Premiere Pro, or CapCut</strong> timeline makes it effortless to align B-roll cuts and J-cuts.</li>
         <li><strong>Normalize Dialogue to -14 LUFS:</strong> Apply a gentle high-pass filter at <code>80 Hz</code>, a subtle 2:1 compressor, and normalize integrated loudness to <code>-14 LUFS</code> (with a true peak ceiling of <code>-1.0 dBTP</code>) while ducking background music to <code>-26 LUFS</code>. For complete EQ settings, see our <a href="guides.html" style="color: #c084fc; text-decoration: underline;">Voice Directing &amp; WAV Mastering Handbook</a>.</li>
       </ul>
+    </article>
+
+    <article class="content-card">
+      <h2>4. Multilingual Channel Localization: Expanding Reach Across 10 Languages at $0 Cost</h2>
+      <p>One of the highest-leverage growth strategies for educational, documentary, and tech YouTube creators is publishing localized audio tracks (using YouTube's Multi-Language Audio feature or dedicated regional channels). Historically, dubbing a 15-minute video (~2,200 words / ~13,500 characters) into five languages on commercial cloud platforms consumed nearly 70,000 characters per video—forcing creators onto $22 to $99/month plans.</p>
+      <p>Because PureTTS includes a native client-side <strong>International Phonetic Alphabet (IPA) Grapheme-to-Phoneme (G2P) engine</strong> for <strong>10 languages and 33 studio voices</strong>, you can translate your script and generate uncompressed 24kHz WAV master tracks locally in:</p>
+      <ul>
+        <li><strong>Portuguese (Portugal <code>pt-PT</code> &amp; Brazil <code>pt-BR</code>):</strong> Dedicated phonological rules separate European Portuguese vowel reduction and sibilant sandhi from Brazilian Portuguese affrication and L-vocalization.</li>
+        <li><strong>Spanish (Spain <code>es-ES</code> &amp; Latin America <code>es-419</code>):</strong> Target Iberian audiences with Castilian <em>distinción</em> or reach the entire Americas with neutral Latin American <em>seseo</em>.</li>
+        <li><strong>European &amp; Asian Markets (<code>fr-FR</code>, <code>it-IT</code>, <code>hi-IN</code>, <code>ja-JP</code>, <code>zh-CN</code>):</strong> Synthesize natural French, Italian, Hindi (Devanagari &amp; romanized), Japanese, and Mandarin Chinese narration with zero per-minute dubbing fees.</li>
+      </ul>
+
+      <h3>5. Choosing Between Turbo Mode (WASM q4) and WebGPU Studio (fp32) for Video Production</h3>
+      <p>When scripting and iterating on voiceover takes, PureTTS lets you switch synthesis engines on the fly depending on your stage of production:</p>
+      <ul>
+        <li><strong>Rapid Script Prototyping — ⚡⚡ Turbo Mode (<code>wasm-q4</code> ~45 MB):</strong> Loads in seconds and uses asymmetric 90-character first-chunk micro-chunking so you can audition your opening hook and sentence pacing immediately on any laptop or mobile device.</li>
+        <li><strong>Final Broadcast Master — 🚀 WebGPU Studio Mode (<code>fp32</code> ~326 MB):</strong> Executes unquantized 32-bit floating-point tensors on your GPU at <strong>9.4× to 10.9× faster-than-real-time speed</strong> (generating a full 100-second video essay narration in just <strong>9.5 seconds</strong> with <1 second Time to First Audio).</li>
+      </ul>
 
       <div class="cta-banner">
         <h3 style="margin-top: 0; color: #fff;">Generate Unlimited 24kHz WAV Voiceovers for Your Next Video</h3>
-        <p style="margin-bottom: 0;">Open the PureTTS Studio to test all 10 American and British neural voices right in your browser—100% free and commercial-ready.</p>
+        <p style="margin-bottom: 0;">Open the PureTTS Studio to test all 33 neural voices across 10 languages right in your browser—100% free and commercial-ready.</p>
         <a href="/" class="btn-primary">⚡ Launch PureTTS Studio</a>
       </div>
     </article>
