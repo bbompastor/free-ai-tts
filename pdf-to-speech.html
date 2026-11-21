@@ -1909,6 +1909,15 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
           progressStatus.textContent = message;
           setBusy(true, message);
         } else if (status === "chunk_ready") {
+          if (chunkIndex === 0 && typeof window.gtag === "function") {
+            window.gtag("event", "tts_first_chunk", {
+              voice: voiceSelect ? voiceSelect.value : "af_heart",
+              engine: quantSelect ? quantSelect.value : "wasm-q4",
+              chunk_duration_sec: chunkDuration,
+              total_chunks: totalChunks,
+              page_type: "pdf_to_speech"
+            });
+          }
           const chunkUrl = URL.createObjectURL(chunkBlob);
           streamPlaylist[chunkIndex] = { url: chunkUrl, duration: chunkDuration };
 
@@ -1945,6 +1954,20 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
 
           statusLabel.textContent = `Generated ${totalDuration}s audio (${chunksProcessed} parts) in ${elapsed}s!`;
 
+          if (typeof window.gtag === "function") {
+            window.gtag("event", "tts_complete", {
+              voice: voiceSelect ? voiceSelect.value : "af_heart",
+              engine: quantSelect ? quantSelect.value : "wasm-q4",
+              elapsed_sec: parseFloat(elapsed) || 0,
+              audio_duration_sec: parseFloat(totalDuration) || 0,
+              chunks: chunksProcessed,
+              page_type: "pdf_to_speech"
+            });
+          }
+          const genCount = (parseInt(sessionStorage.getItem("puretts_gen_count") || "0", 10) || 0) + 1;
+          sessionStorage.setItem("puretts_gen_count", String(genCount));
+          setTimeout(showGratitudeToast, genCount >= 2 ? 4000 : 12000);
+
           if (!isStreamingMode || audioPlayer.paused || currentPlayingChunk === -1) {
             isStreamingMode = false;
             audioPlayer.src = masterUrl;
@@ -1956,6 +1979,13 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
         } else if (status === "error") {
           progressBox.style.display = "none";
           setBusy(false);
+          if (typeof window.gtag === "function") {
+            window.gtag("event", "tts_error", {
+              message: String(message || "unknown").slice(0, 100),
+              engine: quantSelect ? quantSelect.value : "wasm-q4",
+              page_type: "pdf_to_speech"
+            });
+          }
           alert(`TTS Error: ${message}`);
         }
       };
@@ -2208,16 +2238,21 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
       });
     });
 
-    // Track Buy Me a Coffee clicks in GA4
+    // Track Buy Me a Coffee clicks in GA4 with exact button placement
     document.querySelectorAll('a[href*="buymeacoffee.com"]').forEach(link => {
       link.addEventListener("click", () => {
         if (typeof window.gtag === "function") {
-          window.gtag("event", "bmac_support_click", { page_type: "pdf_to_speech" });
+          let placement = "other";
+          if (link.closest("nav")) placement = "nav";
+          else if (link.closest("#audioResult")) placement = "audio_player";
+          else if (link.classList.contains("btn-gratitude-coffee")) placement = "gratitude_toast";
+          else if (link.closest("footer")) placement = "footer";
+          window.gtag("event", "bmac_support_click", { page_type: "pdf_to_speech", placement: placement });
         }
       });
     });
 
-    // Post-Download Gratitude Toast Handler
+    // Post-Generation & Download Gratitude Toast Handler
     const gratitudeToast = document.getElementById("gratitudeToast");
     const closeGratitudeBtn = document.getElementById("closeGratitudeBtn");
     const dismissGratitudeBtn = document.getElementById("dismissGratitudeBtn");
@@ -2229,6 +2264,9 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
         return;
       }
       gratitudeToast.classList.add("show");
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "gratitude_toast_shown", { page_type: "pdf_to_speech" });
+      }
     }
 
     function hideGratitudeToast() {
@@ -2250,18 +2288,18 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
     if (dismissGratitudeBtn) dismissGratitudeBtn.addEventListener("click", hideGratitudeToast);
   </script>
 
-  <!-- Post-Download Gratitude Toast -->
+  <!-- Post-Generation & Download Gratitude Toast -->
   <div id="gratitudeToast" class="gratitude-toast">
     <div class="gratitude-header">
-      <span class="gratitude-title">☕ Enjoying PureTTS?</span>
+      <span class="gratitude-title">☕ Saved You a $139/yr Speechify Plan?</span>
       <button type="button" class="gratitude-close" id="closeGratitudeBtn" aria-label="Close notification">✕</button>
     </div>
     <p class="gratitude-body">
-      PureTTS has zero character limits, no subscriptions, and complete privacy. If it saved you money or time today, please consider buying a coffee to keep it 100% free!
+      Commercial PDF readers charge <strong>$139–$264/year</strong> and lock WAV downloads behind paywalls. PureTTS gives you unlimited PDF-to-speech 100% free. If it helped your studies or work today, consider buying a coffee to support our open-source project!
     </p>
     <div class="gratitude-actions" style="flex-wrap:wrap;">
       <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="btn-gratitude-coffee">
-        ☕ Buy Me a Coffee ($3)
+        ☕ Support PureTTS (Buy Me a Coffee) →
       </a>
       <button type="button" class="btn-gratitude-dismiss" id="dismissGratitudeBtn">Maybe Later</button>
     </div>

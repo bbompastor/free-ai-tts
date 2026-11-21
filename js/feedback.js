@@ -878,7 +878,16 @@
         speed: diag.speed
       });
       upBtn.classList.add("voted");
-      promptEl.innerHTML = `💜 Glad it sounded great! <a href="#" id="inlineLeaveNoteLink" style="color:#c4b5fd;text-decoration:underline;margin-left:4px;">Leave a comment or feature idea →</a>`;
+      promptEl.innerHTML = `💜 Glad it sounded great! <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" id="inlineBmacLink" style="display:inline-flex;align-items:center;gap:4px;background:#facc15;color:#090e1a;padding:3px 10px;border-radius:999px;font-weight:700;font-size:0.78rem;text-decoration:none;margin-left:6px;box-shadow:0 2px 8px rgba(250,204,21,0.35);">☕ Buy the Creator a Coffee</a> <a href="#" id="inlineLeaveNoteLink" style="color:#c4b5fd;text-decoration:underline;margin-left:8px;font-size:0.78rem;">or leave a comment →</a>`;
+      const bmacLink = bar.querySelector("#inlineBmacLink");
+      if (bmacLink) {
+        bmacLink.addEventListener("click", () => {
+          trackGAEvent("bmac_support_click", {
+            page_type: diag.page,
+            placement: "thumbs_up_rating"
+          });
+        });
+      }
       const noteLink = bar.querySelector("#inlineLeaveNoteLink");
       if (noteLink) {
         noteLink.addEventListener("click", (e) => {
@@ -910,6 +919,21 @@
     });
 
     document.querySelectorAll(".footer-links").forEach((footerNav) => {
+      if (!footerNav.querySelector('a[href*="buymeacoffee.com"]')) {
+        const bmacFooterLink = document.createElement("a");
+        bmacFooterLink.href = "https://buymeacoffee.com/puretts";
+        bmacFooterLink.target = "_blank";
+        bmacFooterLink.rel = "noopener";
+        bmacFooterLink.textContent = "☕ Support This Project";
+        bmacFooterLink.addEventListener("click", () => {
+          trackGAEvent("bmac_support_click", {
+            page_type: window.location.pathname || "/",
+            placement: "footer"
+          });
+        });
+        footerNav.appendChild(bmacFooterLink);
+      }
+
       if (footerNav.querySelector("[data-feedback-footer]")) return;
       const fbLink = document.createElement("a");
       fbLink.href = "#feedback";
