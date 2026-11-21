@@ -261,12 +261,12 @@ Paste your script, article, or study notes here, choose your preferred voice, an
       <div id="proCreatorSuite" style="background: rgba(139, 92, 246, 0.06); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px;">
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <span id="proStatusBadge" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #ffffff; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">⭐ Creator Suite</span>
+            <span id="proStatusBadge" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #ffffff; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">🔒 VIP Creator Suite</span>
             <span style="font-size: 0.86rem; font-weight: 700; color: #f8fafc;">Podcast Dialogue, Voice Blender &amp; .SRT Subtitles</span>
           </div>
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <button type="button" id="dialoguePresetBtn" class="chip-btn" style="background: rgba(139, 92, 246, 0.18); border-color: rgba(139, 92, 246, 0.45); color: #e9d5ff; font-weight: 600;">🎭 Insert 2-Speaker Podcast Script</button>
-            <button type="button" id="toggleVoiceMixerBtn" class="chip-btn" style="background: rgba(6, 182, 212, 0.15); border-color: rgba(6, 182, 212, 0.4); color: #67e8f9; font-weight: 600;">🎛️ Custom Voice Blender</button>
+            <button type="button" id="dialoguePresetBtn" class="chip-btn" style="background: rgba(139, 92, 246, 0.18); border-color: rgba(139, 92, 246, 0.45); color: #e9d5ff; font-weight: 600;">🔒 2-Speaker Podcast Script (VIP)</button>
+            <button type="button" id="toggleVoiceMixerBtn" class="chip-btn" style="background: rgba(6, 182, 212, 0.15); border-color: rgba(6, 182, 212, 0.4); color: #67e8f9; font-weight: 600;">🔒 Custom Voice Blender (VIP)</button>
             <button type="button" id="openVipCodeBtn" class="chip-btn" style="background: rgba(250, 204, 21, 0.12); border-color: rgba(250, 204, 21, 0.4); color: #fde047; font-weight: 600;">🔑 Supporter Key</button>
           </div>
         </div>
@@ -1182,12 +1182,22 @@ audioDuration.textContent = `Streaming Part ${currentPlayingChunk + 1} of ${tota
 progressBox.style.display = "none";
 setBusy(false);
 masterBlob = blob;
+window.__latestSrtContent = srtContent || "";
 const masterUrl = URL.createObjectURL(blob);
 downloadBtn.href = masterUrl;
 const downloadSrtBtn = document.getElementById("downloadSrtBtn");
 if (downloadSrtBtn && srtContent) {
+if (localStorage.getItem("puretts_vip_verified") === "true") {
 const srtBlob = new Blob([srtContent], { type: "text/plain;charset=utf-8" });
 downloadSrtBtn.href = URL.createObjectURL(srtBlob);
+downloadSrtBtn.setAttribute("download", "puretts_subtitles.srt");
+downloadSrtBtn.textContent = "📝 Download .SRT Subtitles";
+} else {
+downloadSrtBtn.removeAttribute("href");
+downloadSrtBtn.removeAttribute("download");
+downloadSrtBtn.style.cursor = "pointer";
+downloadSrtBtn.textContent = "🔒 Download .SRT Subtitles (VIP)";
+}
 downloadSrtBtn.style.display = "inline-flex";
 }
 audioResult.style.display = "block";
@@ -1378,7 +1388,7 @@ if (blendWeightRange) blendWeightRange.addEventListener("input", updateBlendLabe
 if (toggleVoiceMixerBtn && voiceMixerDrawer) {
 toggleVoiceMixerBtn.addEventListener("click", () => {
 if (!isVipVerified()) {
-voiceMixerDrawer.style.display = "block";
+voiceMixerDrawer.style.display = "none";
 promptVipUnlock("Custom 256-D Voice Blender", "voice_blender");
 return;
 }
@@ -1483,14 +1493,26 @@ badge.style.color = "#090e1a";
 if (openVipCodeBtn) openVipCodeBtn.style.display = "none";
 if (dialoguePresetBtn) dialoguePresetBtn.textContent = "🎭 Insert 2-Speaker Podcast Script";
 if (toggleVoiceMixerBtn) toggleVoiceMixerBtn.textContent = "🎛️ Custom Voice Blender";
-if (srtBtn) srtBtn.textContent = "📝 Download .SRT Subtitles";
+if (srtBtn) {
+srtBtn.textContent = "📝 Download .SRT Subtitles";
+if (window.__latestSrtContent) {
+const srtBlob = new Blob([window.__latestSrtContent], { type: "text/plain;charset=utf-8" });
+srtBtn.href = URL.createObjectURL(srtBlob);
+srtBtn.setAttribute("download", "puretts_subtitles.srt");
+}
+}
 } else {
 badge.textContent = "🔒 VIP Creator Suite";
 badge.style.background = "linear-gradient(135deg, #8b5cf6, #6d28d9)";
 badge.style.color = "#ffffff";
 if (dialoguePresetBtn) dialoguePresetBtn.textContent = "🔒 2-Speaker Podcast Script (VIP)";
 if (toggleVoiceMixerBtn) toggleVoiceMixerBtn.textContent = "🔒 Custom Voice Blender (VIP)";
-if (srtBtn) srtBtn.textContent = "🔒 Download .SRT Subtitles (VIP)";
+if (voiceMixerDrawer) voiceMixerDrawer.style.display = "none";
+if (srtBtn) {
+srtBtn.textContent = "🔒 Download .SRT Subtitles (VIP)";
+srtBtn.removeAttribute("href");
+srtBtn.removeAttribute("download");
+}
 }
 }
 }

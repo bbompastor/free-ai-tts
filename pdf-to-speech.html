@@ -1951,12 +1951,22 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
           progressBox.style.display = "none";
           setBusy(false);
           masterBlob = blob;
+          window.__latestSrtContent = srtContent || "";
           const masterUrl = URL.createObjectURL(blob);
           downloadBtn.href = masterUrl;
           const downloadSrtBtn = document.getElementById("downloadSrtBtn");
           if (downloadSrtBtn && srtContent) {
-            const srtBlob = new Blob([srtContent], { type: "text/plain;charset=utf-8" });
-            downloadSrtBtn.href = URL.createObjectURL(srtBlob);
+            if (localStorage.getItem("puretts_vip_verified") === "true") {
+              const srtBlob = new Blob([srtContent], { type: "text/plain;charset=utf-8" });
+              downloadSrtBtn.href = URL.createObjectURL(srtBlob);
+              downloadSrtBtn.setAttribute("download", "puretts_pdf_subtitles.srt");
+              downloadSrtBtn.textContent = "📝 Download .SRT Subtitles";
+            } else {
+              downloadSrtBtn.removeAttribute("href");
+              downloadSrtBtn.removeAttribute("download");
+              downloadSrtBtn.style.cursor = "pointer";
+              downloadSrtBtn.textContent = "🔒 Download .SRT Subtitles (VIP)";
+            }
             downloadSrtBtn.style.display = "inline-flex";
           }
           audioResult.style.display = "block";
@@ -2300,6 +2310,8 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
     if (downloadSrtBtnEl) {
       if (localStorage.getItem("puretts_vip_verified") !== "true") {
         downloadSrtBtnEl.textContent = "🔒 Download .SRT Subtitles (VIP)";
+        downloadSrtBtnEl.removeAttribute("href");
+        downloadSrtBtnEl.removeAttribute("download");
       }
       downloadSrtBtnEl.addEventListener("click", (e) => {
         const isVip = localStorage.getItem("puretts_vip_verified") === "true";
@@ -2312,6 +2324,11 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
           if (entered && VALID_VIP_CODES.has(entered.trim().toUpperCase())) {
             localStorage.setItem("puretts_vip_verified", "true");
             downloadSrtBtnEl.textContent = "📝 Download .SRT Subtitles";
+            if (window.__latestSrtContent) {
+              const srtBlob = new Blob([window.__latestSrtContent], { type: "text/plain;charset=utf-8" });
+              downloadSrtBtnEl.href = URL.createObjectURL(srtBlob);
+              downloadSrtBtnEl.setAttribute("download", "puretts_pdf_subtitles.srt");
+            }
             alert("🎉 VIP Supporter status activated! Click Download .SRT Subtitles again to save your file.");
           } else if (entered !== null) {
             showGratitudeToast();
