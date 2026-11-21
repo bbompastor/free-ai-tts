@@ -2284,12 +2284,50 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
       localStorage.setItem("puretts_tip_dismissed", Date.now().toString());
     }
 
+    const VALID_VIP_CODES = new Set(["PURETTS-VIP", "PURETTS-PRO", "VIP_2026", "VIP2026", "BMAC-VIP"]);
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const supParam = (urlParams.get("supporter") || urlParams.get("vip") || "").trim().toUpperCase();
+      if (VALID_VIP_CODES.has(supParam)) {
+        localStorage.setItem("puretts_vip_verified", "true");
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+        }
+      }
+    } catch (e) {}
+
+    const downloadSrtBtnEl = document.getElementById("downloadSrtBtn");
+    if (downloadSrtBtnEl) {
+      if (localStorage.getItem("puretts_vip_verified") !== "true") {
+        downloadSrtBtnEl.textContent = "🔒 Download .SRT Subtitles (VIP)";
+      }
+      downloadSrtBtnEl.addEventListener("click", (e) => {
+        const isVip = localStorage.getItem("puretts_vip_verified") === "true";
+        if (typeof window.gtag === "function") {
+          window.gtag("event", "srt_download", { supporter: isVip, page_type: "pdf_to_speech" });
+        }
+        if (!isVip) {
+          e.preventDefault();
+          const entered = window.prompt("🔒 Synced .SRT Subtitle Export is a VIP Supporter feature!\n\nSupport PureTTS on Buy Me a Coffee (https://buymeacoffee.com/puretts) to receive your instant VIP Supporter Key in the thank-you message, or enter your key below:");
+          if (entered && VALID_VIP_CODES.has(entered.trim().toUpperCase())) {
+            localStorage.setItem("puretts_vip_verified", "true");
+            downloadSrtBtnEl.textContent = "📝 Download .SRT Subtitles";
+            alert("🎉 VIP Supporter status activated! Click Download .SRT Subtitles again to save your file.");
+          } else if (entered !== null) {
+            showGratitudeToast();
+          }
+        }
+      });
+    }
+
     if (downloadBtn) {
       downloadBtn.addEventListener("click", () => {
         if (typeof window.gtag === "function") {
           window.gtag("event", "wav_download", { page_type: "pdf_to_speech" });
         }
-        setTimeout(showGratitudeToast, 600);
+        if (localStorage.getItem("puretts_vip_verified") !== "true") {
+          setTimeout(showGratitudeToast, 600);
+        }
       });
     }
 

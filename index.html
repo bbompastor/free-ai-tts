@@ -1327,6 +1327,31 @@ const blendVoiceSelect = document.getElementById("blendVoiceSelect");
 const blendWeightRange = document.getElementById("blendWeightRange");
 const blendWeightLabel = document.getElementById("blendWeightLabel");
 
+function isVipVerified() {
+return localStorage.getItem("puretts_vip_verified") === "true";
+}
+
+function promptVipUnlock(featureLabel, featureId) {
+if (vipKeyDrawer) {
+vipKeyDrawer.style.display = "block";
+vipKeyDrawer.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+if (vipKeyInput) {
+setTimeout(() => vipKeyInput.focus(), 150);
+}
+if (vipKeyStatusMsg) {
+vipKeyStatusMsg.style.display = "block";
+vipKeyStatusMsg.style.color = "#fde047";
+vipKeyStatusMsg.innerHTML = `🔒 <strong>${featureLabel}</strong> is a VIP Supporter feature! <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" style="color:#ffffff;text-decoration:underline;font-weight:700;">Support PureTTS on Buy Me a Coffee →</a> to receive your instant VIP Supporter Key in the thank-you receipt.`;
+}
+if (typeof window.showCreatorSuiteToast === "function") {
+window.showCreatorSuiteToast(featureId || "vip_lock");
+}
+if (typeof window.gtag === "function") {
+window.gtag("event", "vip_lock_prompt", { feature: featureId || featureLabel, page_type: "home" });
+}
+}
+
 function updateBlendLabel() {
 if (!blendVoiceSelect || !blendWeightRange || !blendWeightLabel) return;
 const secVoice = blendVoiceSelect.value;
@@ -1337,11 +1362,26 @@ blendWeightLabel.textContent = "100% Primary / 0% Secondary";
 blendWeightLabel.textContent = `${100 - w}% Primary + ${w}% Secondary`;
 }
 }
-if (blendVoiceSelect) blendVoiceSelect.addEventListener("change", updateBlendLabel);
+if (blendVoiceSelect) {
+blendVoiceSelect.addEventListener("change", () => {
+if (blendVoiceSelect.value && !isVipVerified()) {
+blendVoiceSelect.value = "";
+updateBlendLabel();
+promptVipUnlock("Custom 256-D Voice Blender", "voice_blender");
+return;
+}
+updateBlendLabel();
+});
+}
 if (blendWeightRange) blendWeightRange.addEventListener("input", updateBlendLabel);
 
 if (toggleVoiceMixerBtn && voiceMixerDrawer) {
 toggleVoiceMixerBtn.addEventListener("click", () => {
+if (!isVipVerified()) {
+voiceMixerDrawer.style.display = "block";
+promptVipUnlock("Custom 256-D Voice Blender", "voice_blender");
+return;
+}
 const isOpen = voiceMixerDrawer.style.display !== "none";
 voiceMixerDrawer.style.display = isOpen ? "none" : "block";
 });
@@ -1349,6 +1389,10 @@ voiceMixerDrawer.style.display = isOpen ? "none" : "block";
 
 if (dialoguePresetBtn && textInput) {
 dialoguePresetBtn.addEventListener("click", () => {
+if (!isVipVerified()) {
+promptVipUnlock("Multi-Speaker Podcast Dialogue Mode", "dialogue_preset");
+return;
+}
 textInput.value = `[Adam]: Welcome back to the podcast! Today we are testing multi-speaker neural dialogue running directly inside the web browser.\n\n[Heart]: What makes this so exciting is that you can assign a different voice character to each line using simple bracket tags—and export a single studio WAV file plus synced SRT subtitles.\n\n[George]: And because the entire eighty-two million parameter model runs locally on your device, you can produce full audiobook chapters and interviews with zero character limits.`;
 updateTextStats();
 triggerBackgroundPreload();
@@ -1361,18 +1405,14 @@ window.gtag("event", "creator_suite_use", { feature: "dialogue_preset", page_typ
 const downloadSrtBtnEl = document.getElementById("downloadSrtBtn");
 if (downloadSrtBtnEl) {
 downloadSrtBtnEl.addEventListener("click", (e) => {
-const isSupporter = localStorage.getItem("puretts_vip_verified") === "true";
+const isSupporter = isVipVerified();
 if (typeof window.gtag === "function") {
 window.gtag("event", "srt_download", { supporter: isSupporter, page_type: "home" });
 }
 if (!isSupporter) {
-setTimeout(() => {
-if (typeof window.showCreatorSuiteToast === "function") {
-window.showCreatorSuiteToast("srt_export");
-} else {
-showGratitudeToast();
-}
-}, 400);
+e.preventDefault();
+promptVipUnlock("Synced .SRT Subtitle Export", "srt_export");
+return;
 }
 });
 }
@@ -1383,6 +1423,12 @@ if (!text) {
 alert("Please enter some text to speak.");
 return;
 }
+const isMultiSpeaker = /^(?:\[[A-Za-z0-9_ -]{2,20}\]|[A-Za-z0-9_]{2,15})\s*:\s+/m.test(text);
+const selectedBlendVoice = blendVoiceSelect && blendVoiceSelect.value ? blendVoiceSelect.value : null;
+if (!isVipVerified() && (isMultiSpeaker || selectedBlendVoice)) {
+promptVipUnlock(isMultiSpeaker ? "Multi-Speaker Podcast Dialogue Mode" : "Custom 256-D Voice Blender", isMultiSpeaker ? "multi_speaker_generate" : "voice_blend_generate");
+return;
+}
 isStopping = false;
 streamPlaylist = [];
 currentPlayingChunk = -1;
@@ -1391,9 +1437,7 @@ masterBlob = null;
 const selectedVoice = voiceSelect.value;
 const selectedQuant = quantSelect.value;
 const selectedSpeed = speedRange ? parseFloat(speedRange.value) || 1.0 : 1.0;
-const selectedBlendVoice = blendVoiceSelect && blendVoiceSelect.value ? blendVoiceSelect.value : null;
 const selectedBlendWeight = selectedBlendVoice && blendWeightRange ? parseFloat(blendWeightRange.value) || 0 : 0;
-const isMultiSpeaker = /^(?:\[[A-Za-z0-9_ -]{2,20}\]|[A-Za-z0-9_]{2,15})\s*:\s+/m.test(text);
 setBusy(true, "Initializing neural engine...");
 if (typeof window.gtag === "function") {
 window.gtag("event", "tts_generate", {
@@ -1430,16 +1474,23 @@ const vipKeyStatusMsg = document.getElementById("vipKeyStatusMsg");
 function applyVipBadgeState() {
 const isVip = localStorage.getItem("puretts_vip_verified") === "true";
 const badge = document.getElementById("proStatusBadge");
+const srtBtn = document.getElementById("downloadSrtBtn");
 if (badge) {
 if (isVip) {
 badge.textContent = "⭐ VIP Supporter";
 badge.style.background = "linear-gradient(135deg, #facc15, #f59e0b)";
 badge.style.color = "#090e1a";
 if (openVipCodeBtn) openVipCodeBtn.style.display = "none";
+if (dialoguePresetBtn) dialoguePresetBtn.textContent = "🎭 Insert 2-Speaker Podcast Script";
+if (toggleVoiceMixerBtn) toggleVoiceMixerBtn.textContent = "🎛️ Custom Voice Blender";
+if (srtBtn) srtBtn.textContent = "📝 Download .SRT Subtitles";
 } else {
-badge.textContent = "⭐ Creator Suite";
+badge.textContent = "🔒 VIP Creator Suite";
 badge.style.background = "linear-gradient(135deg, #8b5cf6, #6d28d9)";
 badge.style.color = "#ffffff";
+if (dialoguePresetBtn) dialoguePresetBtn.textContent = "🔒 2-Speaker Podcast Script (VIP)";
+if (toggleVoiceMixerBtn) toggleVoiceMixerBtn.textContent = "🔒 Custom Voice Blender (VIP)";
+if (srtBtn) srtBtn.textContent = "🔒 Download .SRT Subtitles (VIP)";
 }
 }
 }
@@ -1527,8 +1578,8 @@ if (!gratitudeToast) return;
 if (localStorage.getItem("puretts_vip_verified") === "true") return;
 const titleEl = gratitudeToast.querySelector(".gratitude-title");
 const bodyEl = gratitudeToast.querySelector(".gratitude-body");
-if (titleEl) titleEl.textContent = "⭐ Enjoying Creator Suite (.SRT, Voice Blender & Dialogue)?";
-if (bodyEl) bodyEl.innerHTML = "Other AI studios charge <strong>$22–$99/month</strong> for synced <code>.SRT</code> subtitles, 2-speaker podcast dialogue, and custom voice blending. We keep them 100% unlocked for everyone—if they save you time on YouTube or client projects, please support PureTTS with a coffee!";
+if (titleEl) titleEl.textContent = "🔒 Unlock VIP Creator Suite (.SRT, Voice Blender & 2-Speaker Dialogue)";
+if (bodyEl) bodyEl.innerHTML = "Support PureTTS with a coffee on <strong>Buy Me a Coffee</strong> to immediately receive your <strong>VIP Supporter Key</strong> in the thank-you receipt—unlocking synced <code>.SRT</code> subtitles, 2-speaker podcast dialogue, and custom 256-D voice blending forever!";
 gratitudeToast.classList.add("show");
 if (typeof window.gtag === "function") {
 window.gtag("event", "gratitude_toast_shown", { page_type: "home", trigger: featureName });
