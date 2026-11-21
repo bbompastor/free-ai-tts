@@ -1776,12 +1776,61 @@ async function getOrInitTTS(requestedMode = "wasm-q4") {
 }
 
 /**
+ * Sanitizes Markdown, ChatGPT/LLM formatting, asterisks, hashes, and unspoken decorative punctuation
+ * so eSpeak-NG / G2P never reads "asterisk asterisk", "hash", "underscore", or "backtick" out loud,
+ * while preserving natural prosody punctuation (. , ! ? ; : — ' ").
+ */
+function sanitizeTextForSpeech(rawText) {
+  if (!rawText) return "";
+  return String(rawText)
+    // 1. Convert Markdown links [label](url) -> label (and strip bare image syntax ![alt](url))
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    // 2. Strip fenced code block markers ```lang or ~~~
+    .replace(/```[a-zA-Z0-9_-]*\n?/g, " ")
+    .replace(/~~~[a-zA-Z0-9_-]*\n?/g, " ")
+    // 3. Convert horizontal rules / section dividers (---, ***, ___, ===) on their own line to a period pause
+    .replace(/^\s*(?:[-*_~=+]{3,})\s*$/gm, ".")
+    // 4. Strip Markdown heading hashes at start of lines (e.g. "### 1. Intro" -> "1. Intro")
+    .replace(/^\s*#{1,6}\s+/gm, "")
+    // 5. Strip Markdown blockquote markers (>) and bullet symbols (*, -, +, •, ▪, ▸, ►) at line start
+    .replace(/^\s*(?:>\s*)+/gm, "")
+    .replace(/^\s*[*+•▪▸►◦‣⁃-]\s+/gm, "")
+    // 6. Strip all remaining asterisks (*, **, ***), underscores used for emphasis (_word_, __word__), backticks (`), tildes (~), carets (^), and pipes (|)
+    .replace(/\*+/g, "")
+    .replace(/`+/g, "")
+    .replace(/~+/g, "")
+    .replace(/\^+/g, "")
+    .replace(/\|+/g, " ")
+    .replace(/(^|\s)_+([^_]+)_+(?=\s|[.,!?;:]|$)/g, "$1$2")
+    .replace(/_{2,}/g, " ")
+    // 7. Strip standalone hashes (#) not followed by a digit (keep "#1" as number 1, strip "#topic" -> "topic")
+    .replace(/#(?=\d)/g, "number ")
+    .replace(/#+/g, "")
+    // 8. Strip angle/square/curly brackets around words or citations (e.g. [1], [citation], <tag>)
+    .replace(/\[\d+\]/g, "")
+    .replace(/<\/?[a-zA-Z][^>]*>/g, " ")
+    .replace(/[\[\]{}<>\\]/g, " ")
+    // 9. Normalize repeated punctuation (e.g. "...." -> ".", "??!" -> "?!", "--" -> " — ")
+    .replace(/\s*--\s*/g, " — ")
+    .replace(/\.{2,}/g, ".")
+    .replace(/!{2,}/g, "!")
+    .replace(/\?{2,}/g, "?")
+    .replace(/,{2,}/g, ",")
+    // 10. Remove isolated punctuation tokens sitting alone between spaces (e.g. " / ", " - - ")
+    .replace(/(^|\s)[/\\]+(?=\s|$)/g, " ")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+}
+
+/**
  * Splits text into natural sentence/clause chunks under maxChars to prevent model truncation.
  * Supports a smaller firstChunkMaxChars for Chunk 0 so real-time audio streaming starts playing
  * up to 3x-4x faster while subsequent chunks synthesize in the background.
  */
 function chunkText(text, maxChars = 240, firstChunkMaxChars = maxChars) {
-  const rawParagraphs = text.split(/\n+/).map(p => p.trim()).filter(Boolean);
+  const cleanedText = sanitizeTextForSpeech(text);
+  const rawParagraphs = cleanedText.split(/\n+/).map(p => p.trim()).filter(Boolean);
   const chunks = [];
 
   function splitByWords(str, limit) {
