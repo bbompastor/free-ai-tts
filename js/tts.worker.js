@@ -1147,26 +1147,122 @@ function phonemizeFrenchWord(rawWord) {
  * Hindi (hi-IN) Devanagari & Hinglish to IPA G2P engine.
  * Implements Devanagari abugida consonant + matra + virama + nukta rules and word-final schwa deletion.
  */
+/**
+ * High-frequency Hindi (Devanagari & Romanized Hinglish / Indian English) lexicon
+ * with authentic word-medial & word-final schwa deletion, retroflexion, and stress.
+ */
+const HI_LEXICON = {
+  // Common Romanized Hinglish & Indian English words
+  "puretts": "pjˈʊəɾ tˈiː tˈiː ˈɛs", "tts": "tˈiː tˈiː ˈɛs", "ai": "ˈeː ˈaːiː",
+  "100": "sˈɔː", "१००": "sˈɔː",
+  "namaste": "nəmˈəsteː", "namaskar": "nəməskˈaːɾ", "bharat": "bʱˈaːɾət", "india": "ˈɪɳɖɪjaː", "indian": "ˈɪɳɖɪjən",
+  "hindi": "ɦˈɪndiː", "hinglish": "ɦˈɪŋɡlɪʃ", "dost": "dˈoːst", "dosto": "dˈoːstoː", "doston": "dˈoːstõː",
+  "bhai": "bʱˈaːiː", "yaar": "jˈaːɾ", "kya": "kjˈaː", "kaise": "kˈɛːseː", "kaisa": "kˈɛːsaː", "kaisi": "kˈɛːsiː",
+  "kyun": "kjˈũː", "kyunki": "kjˈũːkɪ", "kahan": "kəɦˈaː̃", "kab": "kˈəb", "kaun": "kˈɔːn", "kitna": "kˈɪtnaː",
+  "hai": "ɦˈɛː", "hain": "ɦˈɛ̃ː", "ho": "ɦˈoː", "hoon": "ɦˈũː", "hun": "ɦˈũː", "tha": "tʰˈaː", "thi": "tʰˈiː", "the": "tʰˈeː",
+  "aur": "ˈɔːɾ", "ya": "jˈaː", "lekin": "lˈeːkɪn", "magar": "mˈəɡəɾ", "par": "pˈəɾ", "phir": "pʰˈɪɾ", "fir": "fˈɪɾ",
+  "bhi": "bʱˈiː", "hi": "ɦˈiː", "toh": "tˈoː", "to": "tˈoː", "na": "nˈaː", "nahi": "nəɦˈĩː", "nahin": "nəɦˈĩː", "mat": "mˈət",
+  "haan": "ɦˈaː̃", "han": "ɦˈaː̃", "ji": "ʤˈiː", "achha": "ˈəʧʧʰaː", "acha": "ˈəʧʧʰaː", "theek": "ʈʰˈiːk", "thik": "ʈʰˈiːk",
+  "bahut": "bəɦˈʊt", "bohot": "bˈoːɦoːt", "zyada": "zjˈaːdaː", "jyada": "ʤjˈaːdaː", "kam": "kˈəm", "sab": "sˈəb", "sabhi": "səbʱˈiː",
+  "kuch": "kˈʊʧʰ", "kuchh": "kˈʊʧʰ", "koi": "kˈoːiː", "har": "ɦˈəɾ", "ek": "ˈeːk", "do": "dˈoː", "teen": "tˈiːn", "char": "ʧˈaːɾ",
+  "main": "mˈɛ̃ː", "mai": "mˈɛ̃ː", "hum": "ɦˈəm", "tum": "tˈʊm", "aap": "ˈaːp", "aapka": "ˈaːpkaː", "aapki": "ˈaːpkiː", "aapke": "ˈaːpkeː",
+  "mera": "mˈeːɾaː", "meri": "mˈeːɾiː", "mere": "mˈeːɾeː", "hamara": "ɦəmˈaːɾaː", "hamari": "ɦəmˈaːɾiː", "hamare": "ɦəmˈaːɾeː",
+  "tumhara": "tʊmɦˈaːɾaː", "tumhari": "tʊmɦˈaːɾiː", "uska": "ˈʊskaː", "uski": "ˈʊskiː", "uske": "ˈʊskeː", "unka": "ˈʊnkaː", "unki": "ˈʊnkiː",
+  "yeh": "jˈeː", "ye": "jˈeː", "woh": "ʋˈoː", "wo": "ʋˈoː", "is": "ˈɪs", "us": "ˈʊs", "in": "ˈɪn", "un": "ˈʊn",
+  "mein": "mˈẽː", "me": "mˈẽː", "se": "sˈeː", "ko": "kˈoː", "ka": "kˈaː", "ki": "kˈiː", "ke": "kˈeː", "ne": "nˈeː",
+  "pe": "pˈeː", "तक": "tˈək", "tak": "tˈək", "saath": "sˈaːtʰ", "sath": "sˈaːtʰ", "liye": "lˈɪjeː", "baad": "bˈaːd", "pehle": "pˈɛɦleː",
+  "aaj": "ˈaːʤ", "kal": "kˈəl", "ab": "ˈəb", "abhi": "əbʱˈiː", "yahan": "jəɦˈaː̃", "wahan": "ʋəɦˈaː̃", "jahan": "ʤəɦˈaː̃",
+  "kar": "kˈəɾ", "karna": "kˈəɾnaː", "karte": "kˈəɾteː", "karta": "kˈəɾtaː", "karti": "kˈəɾtiː", "kiya": "kɪjˈaː", "karein": "kəɾˈẽː", "karo": "kˈəɾoː",
+  "hona": "ɦˈoːnaː", "hota": "ɦˈoːtaː", "hoti": "ɦˈoːtiː", "hote": "ɦˈoːteː", "hua": "ɦʊˈaː", "hui": "ɦʊˈiː", "hue": "ɦʊˈeː",
+  "ja": "ʤˈaː", "jana": "ʤˈaːnaː", "jata": "ʤˈaːtaː", "jati": "ʤˈaːtiː", "jate": "ʤˈaːteː", "gaya": "ɡəjˈaː", "gayi": "ɡəjˈiː", "gaye": "ɡəjˈeː",
+  "aa": "ˈaː", "aana": "ˈaːnaː", "aata": "ˈaːtaː", "aati": "ˈaːtiː", "aate": "ˈaːteː", "aaya": "ˈaːjaː", "aayi": "ˈaːjiː", "aaye": "ˈaːjeː",
+  "de": "dˈeː", "dena": "dˈeːnaː", "deta": "dˈeːtaː", "deti": "dˈeːtiː", "dete": "dˈeːteː", "diya": "dɪjˈaː", "le": "lˈeː", "lena": "lˈeːnaː", "liya": "lɪjˈaː",
+  "raha": "ɾəɦˈaː", "rahi": "ɾəɦˈiː", "rahe": "ɾəɦˈeː", "sakta": "sˈəktaː", "sakti": "sˈəktiː", "sakte": "sˈəkteː", "chahiye": "ʧˈaːɦɪjeː",
+  "baat": "bˈaːt", "log": "lˈoːɡ", "logo": "lˈoːɡoː", "logon": "lˈoːɡõː", "time": "ʈˈaːɪm", "video": "ʋˈiːɖɪjoː", "channel": "ʧˈɛːnəl",
+  "subscribe": "səbskɾˈaːɪb", "like": "lˈaːɪk", "share": "ʃˈeːəɾ", "comment": "kˈəmeɳʈ", "story": "sʈˈoːɾiː", "kahani": "kəɦˈaːniː",
+  "zindagi": "zˈɪndəɡiː", "duniya": "dˈʊnɪjaː", "dil": "dˈɪl", "pyaar": "pjˈaːɾ", "pyar": "pjˈaːɾ", "paisa": "pˈɛːsaː", "kaam": "kˈaːm",
+  "ghar": "ɡʱˈəɾ", "desh": "dˈeːʃ", "samay": "sˈəməj", "waqt": "ʋˈəkt", "tarah": "tˈəɾəɦ", "matlab": "mˈətləb", "zaroor": "zəɾˈuːɾ",
+  "bilkul": "bˈɪlkʊl", "shayad": "ʃˈaːjəd", "अच्छा": "ˈəʧʧʰaː", "बहुत": "bəɦˈʊt", "नहीं": "nəɦˈĩː", "में": "mˈẽː", "मैं": "mˈɛ̃ː",
+  "हैं": "ɦˈɛ̃ː", "है": "ɦˈɛː", "था": "tʰˈaː", "थी": "tʰˈiː", "थे": "tʰˈeː", "और": "ˈɔːɾ", "कि": "kˈɪ", "की": "kˈiː", "का": "kˈaː", "के": "kˈeː",
+  "को": "kˈoː", "से": "sˈeː", "पर": "pˈəɾ", "यह": "jˈeː", "वह": "ʋˈoː", "इस": "ˈɪs", "उस": "ˈʊs", "एक": "ˈeːk", "हम": "ɦˈəm", "आप": "ˈaːp",
+  "क्या": "kjˈaː", "कैसे": "kˈɛːseː", "क्यों": "kjˈõː", "कहाँ": "kəɦˈaː̃", "लेकिन": "lˈeːkɪn", "अगर": "ˈəɡəɾ", "तो": "tˈoː", "भी": "bʱˈiː", "ही": "ɦˈiː"
+};
+
 function phonemizeHindiWord(rawWord) {
   const w = rawWord.trim();
   if (!w) return "";
   const lower = w.toLowerCase();
-  const hiLexicon = {
-    "puretts": "pjˈʊəɾ tˈiː tˈiː ˈɛs", "tts": "tˈiː tˈiː ˈɛs", "ai": "ˈeː ˈaːiː",
-    "100": "sˈɔː", "१००": "sˈɔː", "namaste": "nəmˈəsteː", "bharat": "bʱˈaːɾət", "hindi": "ɦˈɪndiː"
-  };
-  if (hiLexicon[lower]) return hiLexicon[lower];
+  if (HI_LEXICON[lower]) return HI_LEXICON[lower];
+  if (HI_LEXICON[w]) return HI_LEXICON[w];
 
-  // If word is Latin/Romanized Hinglish, apply simple Roman-to-Hindi IPA
-  if (/^[a-z0-9-]+$/i.test(lower)) {
-    return lower
-      .replace(/sh/g, "ʃ").replace(/ch/g, "ʧ").replace(/kh/g, "kʰ").replace(/gh/g, "ɡʱ")
-      .replace(/th/g, "tʰ").replace(/dh/g, "dʱ").replace(/ph/g, "pʰ").replace(/bh/g, "bʱ")
-      .replace(/aa/g, "aː").replace(/ee/g, "iː").replace(/oo/g, "uː")
-      .replace(/j/g, "ʤ").replace(/v|w/g, "ʋ").replace(/r/g, "ɾ").replace(/h/g, "ɦ").replace(/g/g, "ɡ");
+  // If word is Latin/Romanized Hinglish or English inside Hindi script:
+  // Apply Indian English / Hinglish phonological rules (retroflex t/d -> ʈ/ɖ, dental th/dh, vowel mapping)
+  if (/^[a-z0-9'-]+$/i.test(lower)) {
+    if (/^\d+$/.test(lower)) return lower;
+    let rom = lower
+      // Multi-char vowel & consonant clusters first
+      .replace(/tion\b/g, "ʃən")
+      .replace(/sion\b/g, "ʒən")
+      .replace(/ture\b/g, "ʧəɾ")
+      .replace(/ough/g, "oː")
+      .replace(/igh/g, "aːɪ")
+      .replace(/sh/g, "ʃ")
+      .replace(/chh/g, "ʧʰ")
+      .replace(/ch/g, "ʧ")
+      .replace(/kh/g, "kʰ")
+      .replace(/gh/g, "ɡʱ")
+      .replace(/th/g, "tʰ")
+      .replace(/dh/g, "dʱ")
+      .replace(/ph/g, "pʰ")
+      .replace(/bh/g, "bʱ")
+      .replace(/zh/g, "ʒ")
+      .replace(/ng/g, "ŋɡ")
+      .replace(/nk/g, "ŋk")
+      .replace(/aa/g, "aː")
+      .replace(/ee/g, "iː")
+      .replace(/oo/g, "uː")
+      .replace(/ai/g, "ɛː")
+      .replace(/au|ou/g, "ɔː")
+      .replace(/ei|ey|ay/g, "eː")
+      .replace(/oi|oy/g, "ɔɪ")
+      // Word-final vowels in Hinglish (e.g., "karna" -> aː, "karke" -> eː, "kaho" -> oː, "rani" -> iː)
+      .replace(/a\b/g, "aː")
+      .replace(/e\b/g, "eː")
+      .replace(/i\b/g, "iː")
+      .replace(/o\b/g, "oː")
+      .replace(/u\b/g, "uː")
+      .replace(/y\b/g, "iː")
+      // Medial short vowels in Hinglish
+      .replace(/a/g, "ə")
+      .replace(/e/g, "eː")
+      .replace(/i/g, "ɪ")
+      .replace(/o/g, "oː")
+      .replace(/u/g, "ʊ")
+      // Indian accent retroflex stops for bare 't' and 'd', tapped 'r', labiodental approximant 'ʋ'
+      .replace(/t/g, "ʈ")
+      .replace(/d/g, "ɖ")
+      .replace(/c/g, "k")
+      .replace(/q/g, "k")
+      .replace(/x/g, "ks")
+      .replace(/j/g, "ʤ")
+      .replace(/v|w/g, "ʋ")
+      .replace(/r/g, "ɾ")
+      .replace(/h/g, "ɦ")
+      .replace(/g/g, "ɡ")
+      .replace(/y/g, "j");
+
+    // Add primary stress marker on first long vowel or first syllable
+    if (rom && !rom.includes("ˈ")) {
+      if (/[aɪiʊueɛoɔ]ː/.test(rom)) {
+        rom = rom.replace(/([aɪiʊueɛoɔ]ː)/, "ˈ$1");
+      } else {
+        rom = rom.replace(/([əaɪiʊueɛoɔ])/, "ˈ$1");
+      }
+    }
+    return rom;
   }
 
-  // Devanagari abugida parser
+  // Devanagari abugida parser with authentic word-medial & word-final Schwa Deletion (हलन्त / श्वा लोप)
   const indepVowels = {
     "अ": "ə", "आ": "aː", "इ": "ɪ", "ई": "iː", "उ": "ʊ", "ऊ": "uː",
     "ऋ": "ɾɪ", "ए": "eː", "ऐ": "ɛː", "ओ": "oː", "औ": "ɔː", "ऑ": "ɔ"
@@ -1189,9 +1285,11 @@ function phonemizeHindiWord(rawWord) {
     "क": "k", "ख": "x", "ग": "ɣ", "ज": "z", "ड": "ɽ", "ढ": "ɽʱ", "फ": "f"
   };
 
+  // 1. Parse Devanagari characters into a sequence of linguistic syllable units (aksharas)
+  // so we can apply standard Hindi medial & final schwa deletion (VCəCV -> VCCV) accurately.
   const chars = Array.from(w);
   const len = chars.length;
-  let ipa = "";
+  const units = [];
   let i = 0;
 
   while (i < len) {
@@ -1199,8 +1297,17 @@ function phonemizeHindiWord(rawWord) {
     const next = i + 1 < len ? chars[i + 1] : "";
 
     if (indepVowels[c]) {
-      ipa += indepVowels[c];
-      i++;
+      let vIpa = indepVowels[c];
+      let step = 1;
+      if (next === "ं" || next === "ँ") {
+        vIpa += "\u0303";
+        step++;
+      } else if (next === "ः") {
+        vIpa += "ɦ";
+        step++;
+      }
+      units.push({ type: "V", vowel: vIpa, inherent: false });
+      i += step;
       continue;
     }
 
@@ -1209,54 +1316,121 @@ function phonemizeHindiWord(rawWord) {
       if (next === "़" && nuktaMap[c]) {
         consIpa = nuktaMap[c];
         i++;
+      } else if ((c === "ड" || c === "ढ") && units.length > 0) {
+        // Intervocalic/post-vocalic ड and ढ in Hindi are flapped retroflex /ɽ/ and /ɽʱ/
+        const prevU = units[units.length - 1];
+        if (prevU.vowel) {
+          consIpa = c === "ड" ? "ɽ" : "ɽʱ";
+        }
       }
+
       const afterCons = i + 1 < len ? chars[i + 1] : "";
       if (afterCons === "्") {
-        // Virama suppresses inherent schwa
-        ipa += consIpa;
+        // Explicit virama (halant): consonant cluster with no vowel
+        units.push({ type: "C", cons: consIpa, vowel: "", inherent: false });
         i += 2;
         continue;
       } else if (matras[afterCons]) {
-        ipa += consIpa + matras[afterCons];
-        i += 2;
+        let vIpa = matras[afterCons];
+        let step = 2;
+        const afterMatra = i + 2 < len ? chars[i + 2] : "";
+        if (afterMatra === "ं" || afterMatra === "ँ") {
+          vIpa += "\u0303";
+          step++;
+        } else if (afterMatra === "ः") {
+          vIpa += "ɦ";
+          step++;
+        }
+        units.push({ type: "CV", cons: consIpa, vowel: vIpa, inherent: false });
+        i += step;
         continue;
       } else {
-        // Inherent schwa (ə), deleted at word-end in spoken Hindi unless monosyllabic
-        const isWordFinal = (i === len - 1) || (i === len - 2 && (afterCons === "ं" || afterCons === "ँ"));
-        if (isWordFinal && len > 1) {
-          ipa += consIpa;
-        } else {
-          ipa += consIpa + "ə";
+        // Consonant with inherent schwa (ə)
+        let nasalSuffix = "";
+        let step = 1;
+        if (afterCons === "ं" || afterCons === "ँ") {
+          const nextCons = i + 2 < len ? chars[i + 2] : "";
+          if (nextCons && "कखगघ".includes(nextCons)) nasalSuffix = "ŋ";
+          else if (nextCons && "चछजझ".includes(nextCons)) nasalSuffix = "ɲ";
+          else if (nextCons && "टठडढण".includes(nextCons)) nasalSuffix = "ɳ";
+          else if (nextCons && "तथदधन".includes(nextCons)) nasalSuffix = "n";
+          else if (nextCons && "पफबभम".includes(nextCons)) nasalSuffix = "m";
+          else nasalSuffix = "\u0303";
+          step++;
+        } else if (afterCons === "ः") {
+          nasalSuffix = "ɦ";
+          step++;
         }
-        i++;
+        units.push({
+          type: "CV",
+          cons: consIpa,
+          vowel: "ə",
+          nasal: nasalSuffix,
+          inherent: nasalSuffix === ""
+        });
+        i += step;
         continue;
       }
     }
 
-    if (matras[c]) {
-      ipa += matras[c];
-    } else if (c === "ं" || c === "ँ") {
-      // Anusvara before stop or word-end -> nasalization tilde or nasal consonant
-      if (next && "कखगघ".includes(next)) ipa += "ŋ";
-      else if (next && "चछजझ".includes(next)) ipa += "ɲ";
-      else if (next && "टठडढण".includes(next)) ipa += "ɳ";
-      else if (next && "तथदधन".includes(next)) ipa += "n";
-      else if (next && "पफबभम".includes(next)) ipa += "m";
-      else ipa += "\u0303";
-    } else if (c === "ः") {
-      ipa += "ɦ";
-    }
     i++;
   }
 
-  // Place primary stress on the first long vowel or first vowel
-  if (ipa && !ipa.includes("ˈ")) {
-    if (/[aɪiʊueɛoɔ]ː/.test(ipa)) {
-      ipa = ipa.replace(/([aɪiʊueɛoɔ]ː)/, "ˈ$1");
-    } else {
-      ipa = ipa.replace(/([əaɪiʊueɛoɔ])/, "ˈ$1");
+  // 2. Apply Hindi Phonological Schwa Deletion Rules:
+  // Rule A (Word-Final Schwa Deletion): Delete inherent word-final schwa in multi-akshara words
+  // unless preceded by a consonant cluster (type "C") where keeping a light release vowel aids pronunciation.
+  if (units.length > 1) {
+    const lastIdx = units.length - 1;
+    const lastU = units[lastIdx];
+    const prevU = units[lastIdx - 1];
+    if (lastU.inherent && prevU.type !== "C") {
+      lastU.vowel = "";
+      lastU.inherent = false;
     }
   }
+
+  // Rule B (Word-Medial Schwa Deletion — Ohala's VCəCV Rule):
+  // In a sequence [Vowel] + [Consonant with inherent ə] + [Consonant + Vowel],
+  // delete the medial inherent schwa (e.g., करना ka-ra-naa -> kar-naa, समझना sa-ma-jha-naa -> sa-majh-naa).
+  for (let u = 1; u < units.length - 1; u++) {
+    const prevU = units[u - 1];
+    const currU = units[u];
+    const nextU = units[u + 1];
+    if (
+      currU.inherent &&
+      Boolean(prevU.vowel) &&
+      nextU.type !== "C" &&
+      Boolean(nextU.vowel)
+    ) {
+      currU.vowel = "";
+      currU.inherent = false;
+    }
+  }
+
+  // 3. Assemble IPA string and assign primary stress to the heaviest syllable
+  let ipa = "";
+  let stressedIdx = -1;
+  for (let u = units.length - 1; u >= 0; u--) {
+    if (units[u].vowel && units[u].vowel.includes("ː")) {
+      stressedIdx = u;
+      break;
+    }
+  }
+  if (stressedIdx === -1) {
+    for (let u = 0; u < units.length; u++) {
+      if (units[u].vowel) {
+        stressedIdx = u;
+        break;
+      }
+    }
+  }
+
+  for (let u = 0; u < units.length; u++) {
+    const unit = units[u];
+    const stressMark = u === stressedIdx ? "ˈ" : "";
+    ipa += (unit.cons || "") + stressMark + (unit.vowel || "") + (unit.nasal || "");
+  }
+
   return ipa;
 }
 
