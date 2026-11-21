@@ -1399,9 +1399,12 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
           <span id="audioDuration">0.0s</span>
         </div>
         <audio id="audioPlayer" controls></audio>
-        <div class="audio-actions">
-          <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="btn-coffee-nav" style="background: rgba(255,255,255,0.05); color:#fde047; padding:8px 14px; border-radius:8px;">
-            ☕ Buy me a coffee
+        <div class="audio-actions" style="flex-wrap: wrap;">
+          <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="btn-coffee-nav" style="background: rgba(250,204,21,0.12); border: 1px solid rgba(250,204,21,0.4); color:#fde047; padding:8px 14px; border-radius:8px; font-weight:700;">
+            ☕ Support PureTTS
+          </a>
+          <a id="downloadSrtBtn" href="#" class="btn-download" download="puretts_pdf_subtitles.srt" style="display: none; background: linear-gradient(135deg, #06b6d4, #0284c7);" title="Download synced .SRT captions">
+            📝 Download .SRT Subtitles
           </a>
           <a id="downloadBtn" href="#" class="btn-download" download="puretts_pdf_audio.wav">
             ⬇ Download .WAV Audio
@@ -1879,11 +1882,11 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
 
     function getWorker() {
       if (worker) return worker;
-      worker = new Worker("./js/tts.worker.js?v=9", { type: "module" });
+      worker = new Worker("./js/tts.worker.js?v=10", { type: "module" });
 
       worker.onmessage = (e) => {
         if (isStopping) return;
-        const { status, data, blob, elapsed, totalDuration, chunksProcessed, totalChunks, message, percent, current, total, chunkIndex, chunkBlob, chunkDuration } = e.data;
+        const { status, data, blob, srtContent, elapsed, totalDuration, chunksProcessed, totalChunks, message, percent, current, total, chunkIndex, chunkBlob, chunkDuration } = e.data;
 
         if (status === "device_ready") {
           const dev = e.data.device;
@@ -1950,6 +1953,12 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
           masterBlob = blob;
           const masterUrl = URL.createObjectURL(blob);
           downloadBtn.href = masterUrl;
+          const downloadSrtBtn = document.getElementById("downloadSrtBtn");
+          if (downloadSrtBtn && srtContent) {
+            const srtBlob = new Blob([srtContent], { type: "text/plain;charset=utf-8" });
+            downloadSrtBtn.href = URL.createObjectURL(srtBlob);
+            downloadSrtBtn.style.display = "inline-flex";
+          }
           audioResult.style.display = "block";
 
           statusLabel.textContent = `Generated ${totalDuration}s audio (${chunksProcessed} parts) in ${elapsed}s!`;

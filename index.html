@@ -257,6 +257,52 @@ Paste your script, article, or study notes here, choose your preferred voice, an
         </div>
       </div>
 
+      <!-- Pro Creator Suite Bar (Multi-Speaker Dialogue, Custom Voice Mixer & SRT Subtitles) -->
+      <div id="proCreatorSuite" style="background: rgba(139, 92, 246, 0.06); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span id="proStatusBadge" style="background: linear-gradient(135deg, #facc15, #f59e0b); color: #090e1a; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">⭐ Creator Suite</span>
+            <span style="font-size: 0.86rem; font-weight: 700; color: #f8fafc;">Podcast Dialogue, Voice Blender &amp; .SRT Subtitles</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <button type="button" id="dialoguePresetBtn" class="chip-btn" style="background: rgba(139, 92, 246, 0.18); border-color: rgba(139, 92, 246, 0.45); color: #e9d5ff; font-weight: 600;">🎭 Insert 2-Speaker Podcast Script</button>
+            <button type="button" id="toggleVoiceMixerBtn" class="chip-btn" style="background: rgba(6, 182, 212, 0.15); border-color: rgba(6, 182, 212, 0.4); color: #67e8f9; font-weight: 600;">🎛️ Custom Voice Blender</button>
+          </div>
+        </div>
+
+        <!-- Collapsible Custom Voice Blender Drawer -->
+        <div id="voiceMixerDrawer" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+          <div style="display: grid; grid-template-columns: 1.4fr 1.6fr; gap: 14px; align-items: center;">
+            <div>
+              <label for="blendVoiceSelect" style="font-size: 0.8rem; margin-bottom: 4px; color: #cbd5e1;">
+                <span>Secondary Voice to Blend (256-D Style Vector Mix)</span>
+              </label>
+              <select id="blendVoiceSelect" style="padding: 8px 10px; font-size: 0.85rem;">
+                <option value="">None (100% Primary Voice)</option>
+                <option value="bf_emma">🇬🇧 Emma (UK RP Female)</option>
+                <option value="af_heart">🇺🇸 Heart (US Expressive Female)</option>
+                <option value="af_bella">🇺🇸 Bella (US Broadcast Female)</option>
+                <option value="af_sky">🇺🇸 Sky (US Upbeat Female)</option>
+                <option value="am_adam">🇺🇸 Adam (US Deep Baritone Male)</option>
+                <option value="bm_george">🇬🇧 George (UK Senior Narrator Male)</option>
+                <option value="am_michael">🇺🇸 Michael (US Tech Narrator Male)</option>
+                <option value="bm_lewis">🇬🇧 Lewis (UK Presenter Male)</option>
+              </select>
+            </div>
+            <div>
+              <label for="blendWeightRange" style="font-size: 0.8rem; margin-bottom: 4px; color: #cbd5e1;">
+                <span>Voice Blend Ratio</span>
+                <span id="blendWeightLabel" style="color: #67e8f9; font-weight: 700;">100% Primary / 0% Secondary</span>
+              </label>
+              <input type="range" id="blendWeightRange" min="0" max="0.8" step="0.05" value="0.35" class="speed-slider" />
+            </div>
+          </div>
+          <div style="margin-top: 8px; font-size: 0.76rem; color: var(--text-muted);">
+            💡 <strong>Tip:</strong> Blending two neural style vectors (e.g., 65% 🇺🇸 Heart + 35% 🇬🇧 Emma) synthesizes a brand-new mid-Atlantic vocal timbre unique to your channel. You can also write <code>[Adam]: Hello!</code> and <code>[Heart]: Hi there!</code> on separate lines in the text box for multi-speaker dialogue!
+          </div>
+        </div>
+      </div>
+
       <!-- Live Progress Bar -->
       <div id="progressBox" class="progress-box">
         <div class="progress-header">
@@ -286,9 +332,12 @@ Paste your script, article, or study notes here, choose your preferred voice, an
           <span id="audioDuration">0.0s</span>
         </div>
         <audio id="audioPlayer" controls></audio>
-        <div class="audio-actions">
-          <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="btn-tip" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #fde047; text-decoration: none; font-size: 0.9rem; font-weight: 600;">
-            ☕ Buy me a coffee
+        <div class="audio-actions" style="flex-wrap: wrap;">
+          <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="btn-tip" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: rgba(250, 204, 21, 0.12); border: 1px solid rgba(250, 204, 21, 0.4); border-radius: 8px; color: #fde047; text-decoration: none; font-size: 0.9rem; font-weight: 700;">
+            ☕ Support PureTTS
+          </a>
+          <a id="downloadSrtBtn" href="#" class="btn-download" download="puretts_subtitles.srt" style="display: none; background: linear-gradient(135deg, #06b6d4, #0284c7);" title="Download synced .SRT captions for Premiere Pro, CapCut, DaVinci Resolve & YouTube">
+            📝 Download .SRT Subtitles
           </a>
           <a id="downloadBtn" href="#" class="btn-download" download="puretts_audio.wav">
             ⬇ Download .WAV Audio
@@ -1052,10 +1101,10 @@ audioDuration.textContent = `Buffering Part ${nextIndex + 1}...`;
 });
 function getWorker() {
 if (worker) return worker;
-worker = new Worker("./js/tts.worker.js?v=9", { type: "module" });
+worker = new Worker("./js/tts.worker.js?v=10", { type: "module" });
 worker.onmessage = (e) => {
 if (isStopping) return;
-const { status, data, blob, partialBlob, partialDuration, elapsed, totalDuration, chunksProcessed, totalChunks, message, percent, current, total, chunkIndex, chunkBlob, chunkDuration } = e.data;
+const { status, data, blob, srtContent, partialBlob, partialDuration, elapsed, totalDuration, chunksProcessed, totalChunks, message, percent, current, total, chunkIndex, chunkBlob, chunkDuration } = e.data;
 if (status === "device_ready") {
 const dev = e.data.device;
 const dt = e.data.dtype ? e.data.dtype.toUpperCase() : "";
@@ -1119,6 +1168,12 @@ setBusy(false);
 masterBlob = blob;
 const masterUrl = URL.createObjectURL(blob);
 downloadBtn.href = masterUrl;
+const downloadSrtBtn = document.getElementById("downloadSrtBtn");
+if (downloadSrtBtn && srtContent) {
+const srtBlob = new Blob([srtContent], { type: "text/plain;charset=utf-8" });
+downloadSrtBtn.href = URL.createObjectURL(srtBlob);
+downloadSrtBtn.style.display = "inline-flex";
+}
 audioResult.style.display = "block";
 statusLabel.textContent = `Generated ${totalDuration}s audio (${chunksProcessed} parts) in ${elapsed}s!`;
 if (typeof window.gtag === "function") {
@@ -1249,6 +1304,63 @@ voiceSelect.addEventListener("change", () => {
 triggerBackgroundPreload();
 });
 }
+const dialoguePresetBtn = document.getElementById("dialoguePresetBtn");
+const toggleVoiceMixerBtn = document.getElementById("toggleVoiceMixerBtn");
+const voiceMixerDrawer = document.getElementById("voiceMixerDrawer");
+const blendVoiceSelect = document.getElementById("blendVoiceSelect");
+const blendWeightRange = document.getElementById("blendWeightRange");
+const blendWeightLabel = document.getElementById("blendWeightLabel");
+
+function updateBlendLabel() {
+if (!blendVoiceSelect || !blendWeightRange || !blendWeightLabel) return;
+const secVoice = blendVoiceSelect.value;
+const w = Math.round((parseFloat(blendWeightRange.value) || 0) * 100);
+if (!secVoice || w === 0) {
+blendWeightLabel.textContent = "100% Primary / 0% Secondary";
+} else {
+blendWeightLabel.textContent = `${100 - w}% Primary + ${w}% Secondary`;
+}
+}
+if (blendVoiceSelect) blendVoiceSelect.addEventListener("change", updateBlendLabel);
+if (blendWeightRange) blendWeightRange.addEventListener("input", updateBlendLabel);
+
+if (toggleVoiceMixerBtn && voiceMixerDrawer) {
+toggleVoiceMixerBtn.addEventListener("click", () => {
+const isOpen = voiceMixerDrawer.style.display !== "none";
+voiceMixerDrawer.style.display = isOpen ? "none" : "block";
+});
+}
+
+if (dialoguePresetBtn && textInput) {
+dialoguePresetBtn.addEventListener("click", () => {
+textInput.value = `[Adam]: Welcome back to the podcast! Today we are testing multi-speaker neural dialogue running directly inside the web browser.\n\n[Heart]: What makes this so exciting is that you can assign a different voice character to each line using simple bracket tags—and export a single studio WAV file plus synced SRT subtitles.\n\n[George]: And because the entire eighty-two million parameter model runs locally on your device, you can produce full audiobook chapters and interviews with zero character limits.`;
+updateTextStats();
+triggerBackgroundPreload();
+if (typeof window.gtag === "function") {
+window.gtag("event", "creator_suite_use", { feature: "dialogue_preset", page_type: "home" });
+}
+});
+}
+
+const downloadSrtBtnEl = document.getElementById("downloadSrtBtn");
+if (downloadSrtBtnEl) {
+downloadSrtBtnEl.addEventListener("click", (e) => {
+const isSupporter = localStorage.getItem("puretts_supporter_unlocked") === "true";
+if (typeof window.gtag === "function") {
+window.gtag("event", "srt_download", { supporter: isSupporter, page_type: "home" });
+}
+if (!isSupporter) {
+setTimeout(() => {
+if (typeof window.showCreatorSuiteToast === "function") {
+window.showCreatorSuiteToast("srt_export");
+} else {
+showGratitudeToast();
+}
+}, 400);
+}
+});
+}
+
 generateBtn.addEventListener("click", () => {
 const text = textInput.value.trim();
 if (!text) {
@@ -1263,10 +1375,15 @@ masterBlob = null;
 const selectedVoice = voiceSelect.value;
 const selectedQuant = quantSelect.value;
 const selectedSpeed = speedRange ? parseFloat(speedRange.value) || 1.0 : 1.0;
+const selectedBlendVoice = blendVoiceSelect && blendVoiceSelect.value ? blendVoiceSelect.value : null;
+const selectedBlendWeight = selectedBlendVoice && blendWeightRange ? parseFloat(blendWeightRange.value) || 0 : 0;
+const isMultiSpeaker = /^(?:\[[A-Za-z0-9_ -]{2,20}\]|[A-Za-z0-9_]{2,15})\s*:\s+/m.test(text);
 setBusy(true, "Initializing neural engine...");
 if (typeof window.gtag === "function") {
 window.gtag("event", "tts_generate", {
 voice: selectedVoice,
+blend_voice: selectedBlendVoice || "none",
+multi_speaker: isMultiSpeaker,
 engine: selectedQuant,
 char_length: text.length,
 page_type: "home"
@@ -1277,6 +1394,8 @@ ttsWorker.postMessage({
 type: "generate",
 text: text,
 voice: selectedVoice,
+blendVoice: selectedBlendVoice,
+blendWeight: selectedBlendWeight,
 dtype: selectedQuant,
 speed: selectedSpeed,
 id: Date.now()
@@ -1284,6 +1403,9 @@ id: Date.now()
 });
 document.querySelectorAll('a[href*="buymeacoffee.com"]').forEach(link => {
 link.addEventListener("click", () => {
+localStorage.setItem("puretts_supporter_unlocked", "true");
+const badge = document.getElementById("proStatusBadge");
+if (badge) badge.textContent = "⭐ VIP Supporter";
 if (typeof window.gtag === "function") {
 let placement = "other";
 if (link.classList.contains("btn-coffee-nav")) placement = "nav";
@@ -1295,6 +1417,10 @@ window.gtag("event", "bmac_support_click", { page_type: "home", placement: place
 }
 });
 });
+if (localStorage.getItem("puretts_supporter_unlocked") === "true") {
+const badge = document.getElementById("proStatusBadge");
+if (badge) badge.textContent = "⭐ VIP Supporter";
+}
 const gratitudeToast = document.getElementById("gratitudeToast");
 const closeGratitudeBtn = document.getElementById("closeGratitudeBtn");
 const dismissGratitudeBtn = document.getElementById("dismissGratitudeBtn");
@@ -1309,6 +1435,17 @@ if (typeof window.gtag === "function") {
 window.gtag("event", "gratitude_toast_shown", { page_type: "home" });
 }
 }
+window.showCreatorSuiteToast = (featureName) => {
+if (!gratitudeToast) return;
+const titleEl = gratitudeToast.querySelector(".gratitude-title");
+const bodyEl = gratitudeToast.querySelector(".gratitude-body");
+if (titleEl) titleEl.textContent = "⭐ Enjoying Creator Suite (.SRT, Voice Blender & Dialogue)?";
+if (bodyEl) bodyEl.innerHTML = "Other AI studios charge <strong>$22–$99/month</strong> for synced <code>.SRT</code> subtitles, 2-speaker podcast dialogue, and custom voice blending. We keep them 100% unlocked for everyone—if they save you time on YouTube or client projects, please support PureTTS with a coffee!";
+gratitudeToast.classList.add("show");
+if (typeof window.gtag === "function") {
+window.gtag("event", "gratitude_toast_shown", { page_type: "home", trigger: featureName });
+}
+};
 function hideGratitudeToast() {
 if (!gratitudeToast) return;
 gratitudeToast.classList.remove("show");

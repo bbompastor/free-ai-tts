@@ -5,6 +5,7 @@
  * Handles automatic text chunking and seamless WAV concatenation.
  */
 import { KokoroTTS } from "https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/dist/kokoro.web.js";
+import { phonemize as espeakPhonemize } from "https://cdn.jsdelivr.net/npm/phonemizer@1.2.1/dist/phonemizer.min.js";
 
 let ttsInstance = null;
 let currentDtype = null;
@@ -1792,6 +1793,102 @@ async function phonemizePortugueseKeepPunctuation(text, lang = "pt-PT") {
 }
 
 /**
+ * Resolves any voice ID (standard English or multilingual) to its underlying Kokoro .bin embedding file name.
+ */
+function resolveVoiceBinName(voiceId) {
+  if (PORTUGUESE_VOICE_MAP[voiceId]) {
+    return PORTUGUESE_VOICE_MAP[voiceId].bin;
+  }
+  return voiceId || "af_heart";
+}
+
+/**
+ * Phonemizes English (en-US / en-GB) text into Kokoro-compatible IPA phonemes for custom blended voice vectors.
+ */
+async function phonemizeEnglishForKokoro(text, isBritish = false) {
+  const lang = isBritish ? "en" : "en-us";
+  const arr = await espeakPhonemize(text, lang);
+  let ipa = (Array.isArray(arr) ? arr.join(" ") : String(arr || ""))
+    .replace(/kəkˈoːɹoʊ/g, "kˈoʊkəɹoʊ")
+    .replace(/kəkˈɔːɹəʊ/g, "kˈəʊkəɹəʊ")
+    .replace(/ʲ/g, "j")
+    .replace(/r/g, "ɹ")
+    .replace(/x/g, "k")
+    .replace(/ɬ/g, "l")
+    .trim();
+  if (!isBritish) {
+    ipa = ipa.replace(/(?<=nˈaɪn)ti(?!ː)/g, "di");
+  }
+  return ipa;
+}
+
+/**
+ * Synthesizes a chunk of text with an optional blended 256-dim style vector (Voice A + Voice B).
+ */
+async function generateChunkWithVoiceOrBlend(tts, chunkTextStr, primaryVoiceId, speedValue, blendVoiceId = null, blendWeight = 0) {
+  const useBlend = Boolean(blendVoiceId && blendWeight > 0 && blendVoiceId !== primaryVoiceId);
+  const isPrimaryMultilingual = Boolean(PORTUGUESE_VOICE_MAP[primaryVoiceId]);
+
+  if (!useBlend) {
+    if (isPrimaryMultilingual) {
+      return await generatePortugueseChunk(tts, chunkTextStr, primaryVoiceId, speedValue);
+    }
+    return await tts.generate(chunkTextStr, {
+      voice: primaryVoiceId,
+      speed: speedValue
+    });
+  }
+
+  // Custom Voice Blender path: interpolate 256-dim style vectors of Primary Voice and Secondary Voice
+  let phonemes = "";
+  if (isPrimaryMultilingual) {
+    const voiceCfg = PORTUGUESE_VOICE_MAP[primaryVoiceId];
+    phonemes = await phonemizePortugueseKeepPunctuation(chunkTextStr, voiceCfg.lang);
+  } else {
+    const isBritish = primaryVoiceId.startsWith("b");
+    phonemes = await phonemizeEnglishForKokoro(chunkTextStr, isBritish);
+  }
+
+  if (!phonemes) {
+    return { audio: new Float32Array(0), sampling_rate: 24000 };
+  }
+
+  const { input_ids } = tts.tokenizer(phonemes, { truncation: true });
+  const seqLen = input_ids.dims ? input_ids.dims.at(-1) : input_ids.size;
+  const numTokens = Math.min(Math.max(seqLen - 2, 0), 509);
+  const offset = numTokens * STYLE_DIM;
+
+  const binA = resolveVoiceBinName(primaryVoiceId);
+  const binB = resolveVoiceBinName(blendVoiceId);
+  const [voiceDataA, voiceDataB] = await Promise.all([
+    getCustomVoiceData(binA),
+    getCustomVoiceData(binB)
+  ]);
+
+  const sliceA = voiceDataA.slice(offset, offset + STYLE_DIM);
+  const sliceB = voiceDataB.slice(offset, offset + STYLE_DIM);
+  const mixedSlice = new Float32Array(STYLE_DIM);
+  const wB = Math.max(0, Math.min(1, parseFloat(blendWeight) || 0));
+  const wA = 1 - wB;
+  for (let k = 0; k < STYLE_DIM; k++) {
+    mixedSlice[k] = wA * (sliceA[k] || 0) + wB * (sliceB[k] || 0);
+  }
+
+  const TensorCtor = input_ids.constructor;
+  const inputs = {
+    input_ids,
+    style: new TensorCtor("float32", mixedSlice, [1, STYLE_DIM]),
+    speed: new TensorCtor("float32", [speedValue], [1])
+  };
+
+  const { waveform } = await tts.model(inputs);
+  return {
+    audio: waveform.data,
+    sampling_rate: 24000
+  };
+}
+
+/**
  * Synthesizes a chunk of European Portuguese text using Kokoro-82M + eSpeak-NG pt-PT IPA phonemes.
  */
 async function generatePortugueseChunk(tts, chunkTextStr, voiceId, speedValue) {
@@ -1998,6 +2095,79 @@ function sanitizeTextForSpeech(rawText) {
 }
 
 /**
+ * Maps friendly speaker labels (e.g. "[Adam]:", "[Heart]:", "[Emma]:", "[Dora]:")
+ * in Multi-Speaker Dialogue scripts to their exact Kokoro voice ID.
+ */
+const SPEAKER_NAME_TO_VOICE = {
+  "heart": "af_heart", "af_heart": "af_heart",
+  "bella": "af_bella", "af_bella": "af_bella",
+  "sky": "af_sky", "af_sky": "af_sky",
+  "sarah": "af_sarah", "af_sarah": "af_sarah",
+  "adam": "am_adam", "am_adam": "am_adam",
+  "michael": "am_michael", "am_michael": "am_michael",
+  "emma": "bf_emma", "bf_emma": "bf_emma",
+  "isabella": "bf_isabella", "bf_isabella": "bf_isabella",
+  "george": "bm_george", "bm_george": "bm_george",
+  "lewis": "bm_lewis", "bm_lewis": "bm_lewis",
+  "dora": "pt_dora", "pt_dora": "pt_dora", "ptbr_dora": "ptbr_dora", "es_dora": "es_dora", "esla_dora": "esla_dora",
+  "alex": "pt_alex", "pt_alex": "pt_alex", "ptbr_alex": "ptbr_alex", "es_alex": "es_alex", "esla_alex": "esla_alex",
+  "duarte": "pt_santa", "pt_santa": "pt_santa",
+  "mateus": "ptbr_santa", "ptbr_santa": "ptbr_santa",
+  "mateo": "es_santa", "es_santa": "es_santa", "esla_santa": "esla_santa",
+  "siwis": "ff_siwis", "ff_siwis": "ff_siwis",
+  "sara": "if_sara", "if_sara": "if_sara",
+  "nicola": "im_nicola", "im_nicola": "im_nicola",
+  "alpha": "hf_alpha", "hf_alpha": "hf_alpha", "jf_alpha": "jf_alpha",
+  "beta": "hf_beta", "hf_beta": "hf_beta",
+  "omega": "hm_omega", "hm_omega": "hm_omega",
+  "psi": "hm_psi", "hm_psi": "hm_psi",
+  "kumo": "jm_kumo", "jm_kumo": "jm_kumo",
+  "gongitsune": "jf_gongitsune", "nezumi": "jf_nezumi", "tebukuro": "jf_tebukuro",
+  "xiaobei": "zf_xiaobei", "xiaoni": "zf_xiaoni", "xiaoxiao": "zf_xiaoxiao", "xiaoyi": "zf_xiaoyi",
+  "yunjian": "zm_yunjian", "yunxi": "zm_yunxi", "yunxia": "zm_yunxia", "yunyang": "zm_yunyang",
+  "host": "af_heart", "guest": "am_adam", "narrator": "bm_george", "speaker 1": "af_heart", "speaker 2": "am_adam"
+};
+
+/**
+ * Parses text into an array of { text, voice } chunk items, supporting inline
+ * Multi-Speaker Dialogue tags like `[Adam]: Hello!` or `Heart: Welcome back!`.
+ */
+function buildChunksWithSpeakers(rawText, defaultVoice, maxChars, firstChunkMaxChars) {
+  const lines = String(rawText || "").split(/\n+/);
+  const segments = [];
+  let activeVoice = defaultVoice || "af_heart";
+
+  for (let rawLine of lines) {
+    let line = rawLine.trim();
+    if (!line) continue;
+
+    // Match "[Speaker]: text" or "Speaker: text" at start of line
+    const tagMatch = line.match(/^(?:\[([A-Za-z0-9_ -]{2,20})\]|([A-Za-z0-9_]{2,15}))\s*:\s+(.+)$/);
+    if (tagMatch) {
+      const rawSpeaker = (tagMatch[1] || tagMatch[2] || "").trim().toLowerCase();
+      if (SPEAKER_NAME_TO_VOICE[rawSpeaker]) {
+        activeVoice = SPEAKER_NAME_TO_VOICE[rawSpeaker];
+        line = tagMatch[3].trim();
+      }
+    }
+
+    if (line) {
+      segments.push({ text: line, voice: activeVoice });
+    }
+  }
+
+  const chunkItems = [];
+  for (const seg of segments) {
+    const firstLim = chunkItems.length === 0 ? firstChunkMaxChars : maxChars;
+    const subChunks = chunkText(seg.text, maxChars, firstLim);
+    for (const sc of subChunks) {
+      chunkItems.push({ text: sc, voice: seg.voice });
+    }
+  }
+  return chunkItems;
+}
+
+/**
  * Splits text into natural sentence/clause chunks under maxChars to prevent model truncation.
  * Supports a smaller firstChunkMaxChars for Chunk 0 so real-time audio streaming starts playing
  * up to 3x-4x faster while subsequent chunks synthesize in the background.
@@ -2126,11 +2296,25 @@ function createWavBlob(float32Array, sampleRate = 24000) {
   return new Blob([buffer], { type: "audio/wav" });
 }
 
+/**
+ * Formats seconds (e.g. 12.345) into SRT timestamp format "HH:MM:SS,mmm".
+ */
+function formatSrtTimestamp(sec) {
+  const totalMs = Math.max(0, Math.round(sec * 1000));
+  const hours = Math.floor(totalMs / 3600000);
+  const minutes = Math.floor((totalMs % 3600000) / 60000);
+  const seconds = Math.floor((totalMs % 60000) / 1000);
+  const millis = totalMs % 1000;
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const pad3 = (n) => String(n).padStart(3, "0");
+  return `${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)},${pad3(millis)}`;
+}
+
 let currentJobId = null;
 let cancelRequested = false;
 
 self.onmessage = async (e) => {
-  const { type, text, voice, dtype, speed, id } = e.data;
+  const { type, text, voice, blendVoice, blendWeight, dtype, speed, id } = e.data;
 
   if (type === "cancel") {
     cancelRequested = true;
@@ -2163,8 +2347,9 @@ self.onmessage = async (e) => {
       const isMobileGpu = currentDevice === "webgpu" && dtype === "webgpu-mobile";
       const targetMaxChars = isMobileGpu ? 110 : (currentDevice === "webgpu" ? 220 : 240);
       const firstChunkMaxChars = currentDevice === "webgpu" ? (isMobileGpu ? 90 : 140) : 90;
-      const chunks = chunkText(text, targetMaxChars, firstChunkMaxChars);
-      if (chunks.length === 0) {
+      const selectedVoice = voice || "af_heart";
+      const chunkItems = buildChunksWithSpeakers(text, selectedVoice, targetMaxChars, firstChunkMaxChars);
+      if (chunkItems.length === 0) {
         throw new Error("Please enter text to synthesize.");
       }
 
@@ -2174,11 +2359,11 @@ self.onmessage = async (e) => {
       }
 
       const audioSegments = [];
+      const srtEntries = [];
+      let cumulativeSamples = 0;
       let sampleRate = 24000;
-      const selectedVoice = voice || "af_heart";
-      const isPortugueseVoice = Boolean(PORTUGUESE_VOICE_MAP[selectedVoice]);
 
-      for (let i = 0; i < chunks.length; i++) {
+      for (let i = 0; i < chunkItems.length; i++) {
         // Check if user requested cancellation
         if (cancelRequested || currentJobId !== id) {
           if (audioSegments.length > 0) {
@@ -2197,8 +2382,8 @@ self.onmessage = async (e) => {
               partialBlob,
               partialDuration,
               chunksProcessed: i,
-              totalChunks: chunks.length,
-              message: `Synthesis stopped. Preserved ${partialDuration}s audio (${i}/${chunks.length} parts).`
+              totalChunks: chunkItems.length,
+              message: `Synthesis stopped. Preserved ${partialDuration}s audio (${i}/${chunkItems.length} parts).`
             });
           } else {
             self.postMessage({
@@ -2210,14 +2395,15 @@ self.onmessage = async (e) => {
           return;
         }
 
-        const chunk = chunks[i];
-        const progressPct = Math.round(((i + 1) / chunks.length) * 100);
+        const chunk = chunkItems[i].text;
+        const chunkVoice = chunkItems[i].voice || selectedVoice;
+        const progressPct = Math.round(((i + 1) / chunkItems.length) * 100);
 
         // Calculate dynamic estimated remaining time based on observed speed
         let estRemainingMsg = "";
         if (i > 0) {
           const avgChunkTime = (performance.now() - startTime) / i;
-          const remainingChunks = chunks.length - i;
+          const remainingChunks = chunkItems.length - i;
           const estSec = Math.max(1, Math.round((avgChunkTime * remainingChunks) / 1000));
           estRemainingMsg = ` (~${estSec}s remaining)`;
         }
@@ -2226,19 +2412,21 @@ self.onmessage = async (e) => {
           status: "synthesizing",
           id,
           current: i + 1,
-          total: chunks.length,
+          total: chunkItems.length,
           percent: progressPct,
-          message: `Synthesizing part ${i + 1} of ${chunks.length}${estRemainingMsg}...`
+          message: `Synthesizing part ${i + 1} of ${chunkItems.length}${estRemainingMsg}...`
         });
 
         let res;
         try {
-          res = isPortugueseVoice
-            ? await generatePortugueseChunk(tts, chunk, selectedVoice, speedValue)
-            : await tts.generate(chunk, {
-                voice: selectedVoice,
-                speed: speedValue
-              });
+          res = await generateChunkWithVoiceOrBlend(
+            tts,
+            chunk,
+            chunkVoice,
+            speedValue,
+            blendVoice,
+            blendWeight
+          );
         } catch (chunkErr) {
           // If WebGPU fails during shader execution, automatically fall back to fast WASM q8
           if (currentDevice === "webgpu") {
@@ -2246,12 +2434,14 @@ self.onmessage = async (e) => {
             ttsInstance = null;
             currentDtype = null;
             tts = await getOrInitTTS("wasm");
-            res = isPortugueseVoice
-              ? await generatePortugueseChunk(tts, chunk, selectedVoice, speedValue)
-              : await tts.generate(chunk, {
-                  voice: selectedVoice,
-                  speed: speedValue
-                });
+            res = await generateChunkWithVoiceOrBlend(
+              tts,
+              chunk,
+              chunkVoice,
+              speedValue,
+              blendVoice,
+              blendWeight
+            );
           } else {
             throw chunkErr;
           }
@@ -2262,6 +2452,12 @@ self.onmessage = async (e) => {
         }
 
         if (res.audio && res.audio.length > 0) {
+          const segStartSec = cumulativeSamples / sampleRate;
+          const segEndSec = (cumulativeSamples + res.audio.length) / sampleRate;
+          srtEntries.push(
+            `${srtEntries.length + 1}\n${formatSrtTimestamp(segStartSec)} --> ${formatSrtTimestamp(segEndSec)}\n${chunk}\n`
+          );
+          cumulativeSamples += res.audio.length;
           audioSegments.push(res.audio);
 
           // Dispatch individual chunk immediately for real-time progressive streaming
@@ -2271,21 +2467,22 @@ self.onmessage = async (e) => {
             status: "chunk_ready",
             id,
             chunkIndex: i,
-            totalChunks: chunks.length,
+            totalChunks: chunkItems.length,
             chunkBlob,
             chunkDuration,
             percent: progressPct
           });
 
           // Insert natural breath pause between sentences
-          if (i < chunks.length - 1) {
+          if (i < chunkItems.length - 1) {
             const pauseSamples = new Float32Array(Math.round(sampleRate * 0.16));
             audioSegments.push(pauseSamples);
+            cumulativeSamples += pauseSamples.length;
           }
         }
 
         // Cooperative GPU & CPU yield between chunks:
-        if (i < chunks.length - 1) {
+        if (i < chunkItems.length - 1) {
           const yieldMs = isMobileGpu ? 140 : (currentDevice === "webgpu" ? 70 : 5);
           await new Promise((resolve) => setTimeout(resolve, yieldMs));
         }
@@ -2305,14 +2502,16 @@ self.onmessage = async (e) => {
       const totalDurationSec = (totalSamples / sampleRate).toFixed(1);
       const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
       const blob = createWavBlob(combinedBuffer, sampleRate);
+      const srtContent = srtEntries.join("\n");
 
       self.postMessage({
         status: "complete",
         id,
         blob,
+        srtContent,
         elapsed,
         totalDuration: totalDurationSec,
-        chunksProcessed: chunks.length,
+        chunksProcessed: chunkItems.length,
         message: `Generated ${totalDurationSec}s of audio in ${elapsed}s`
       });
     } catch (err) {
