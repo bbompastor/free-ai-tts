@@ -2294,11 +2294,20 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
       localStorage.setItem("puretts_tip_dismissed", Date.now().toString());
     }
 
-    const VALID_VIP_CODES = new Set(["PURETTS-VIP", "PURETTS-PRO", "VIP_2026", "VIP2026", "BMAC-VIP"]);
+    function verifyVipKeyHash(rawStr) {
+      const s = String(rawStr || "").trim().toUpperCase();
+      if (!s) return false;
+      let h1 = 0x811c9dc5;
+      for (let i = 0; i < s.length; i++) {
+        h1 ^= s.charCodeAt(i);
+        h1 = Math.imul(h1, 0x01000193) >>> 0;
+      }
+      return h1 === 4292835802 || h1 === 4210064395 || h1 === 846026578 || h1 === 2422347086;
+    }
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const supParam = (urlParams.get("supporter") || urlParams.get("vip") || "").trim().toUpperCase();
-      if (VALID_VIP_CODES.has(supParam)) {
+      if (verifyVipKeyHash(supParam)) {
         localStorage.setItem("puretts_vip_verified", "true");
         if (window.history && window.history.replaceState) {
           window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
@@ -2321,7 +2330,7 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
         if (!isVip) {
           e.preventDefault();
           const entered = window.prompt("🔒 Synced .SRT Subtitle Export is a VIP Supporter feature!\n\nSupport PureTTS on Buy Me a Coffee (https://buymeacoffee.com/puretts) to receive your instant VIP Supporter Key in the thank-you message, or enter your key below:");
-          if (entered && VALID_VIP_CODES.has(entered.trim().toUpperCase())) {
+          if (entered && verifyVipKeyHash(entered)) {
             localStorage.setItem("puretts_vip_verified", "true");
             downloadSrtBtnEl.textContent = "📝 Download .SRT Subtitles";
             if (window.__latestSrtContent) {

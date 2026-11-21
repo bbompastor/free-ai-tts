@@ -278,7 +278,7 @@ Paste your script, article, or study notes here, choose your preferred voice, an
               <strong>☕ Have a Buy Me a Coffee Supporter Key?</strong> Enter the key from your supporter receipt to activate <strong>⭐ VIP Supporter</strong> status and disable supporter reminder popups:
             </div>
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <input type="text" id="vipKeyInput" placeholder="Enter key (e.g. PURETTS-VIP)" style="padding: 7px 12px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--card-inner); color: #fff; font-size: 0.82rem; width: 190px; outline: none;" />
+              <input type="password" id="vipKeyInput" placeholder="Enter your supporter key..." style="padding: 7px 12px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--card-inner); color: #fff; font-size: 0.82rem; width: 195px; outline: none;" />
               <button type="button" id="activateVipKeyBtn" class="btn-pdf-action" style="padding: 7px 14px;">Activate VIP</button>
               <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" style="font-size: 0.78rem; color: #fde047; font-weight: 700; text-decoration: underline;">Get a Key →</a>
             </div>
@@ -1474,7 +1474,17 @@ id: Date.now()
 // Clear legacy false-positive click unlock key
 localStorage.removeItem("puretts_supporter_unlocked");
 
-const VALID_VIP_CODES = new Set(["PURETTS-VIP", "PURETTS-PRO", "VIP_2026", "VIP2026", "BMAC-VIP"]);
+// Hash-verified VIP key check (so raw key string is not exposed in plain text)
+function verifyVipKeyHash(rawStr) {
+const s = String(rawStr || "").trim().toUpperCase();
+if (!s) return false;
+let h1 = 0x811c9dc5;
+for (let i = 0; i < s.length; i++) {
+h1 ^= s.charCodeAt(i);
+h1 = Math.imul(h1, 0x01000193) >>> 0;
+}
+return h1 === 4292835802 || h1 === 4210064395 || h1 === 846026578 || h1 === 2422347086;
+}
 const openVipCodeBtn = document.getElementById("openVipCodeBtn");
 const vipKeyDrawer = document.getElementById("vipKeyDrawer");
 const vipKeyInput = document.getElementById("vipKeyInput");
@@ -1517,11 +1527,11 @@ srtBtn.removeAttribute("download");
 }
 }
 
-// 1. Automated URL Redirect Unlock from Buy Me a Coffee Thank-You Link (?supporter=vip_2026)
+// 1. Automated URL Redirect Unlock from Buy Me a Coffee Thank-You Link
 try {
 const urlParams = new URLSearchParams(window.location.search);
 const supParam = (urlParams.get("supporter") || urlParams.get("vip") || "").trim().toUpperCase();
-if (VALID_VIP_CODES.has(supParam)) {
+if (verifyVipKeyHash(supParam)) {
 localStorage.setItem("puretts_vip_verified", "true");
 if (window.history && window.history.replaceState) {
 const cleanUrl = window.location.pathname + window.location.hash;
@@ -1545,7 +1555,7 @@ vipKeyDrawer.style.display = isOpen ? "none" : "block";
 if (activateVipKeyBtn && vipKeyInput) {
 activateVipKeyBtn.addEventListener("click", () => {
 const code = vipKeyInput.value.trim().toUpperCase();
-if (VALID_VIP_CODES.has(code)) {
+if (verifyVipKeyHash(code)) {
 localStorage.setItem("puretts_vip_verified", "true");
 applyVipBadgeState();
 if (vipKeyStatusMsg) {
