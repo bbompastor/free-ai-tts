@@ -261,13 +261,29 @@ Paste your script, article, or study notes here, choose your preferred voice, an
       <div id="proCreatorSuite" style="background: rgba(139, 92, 246, 0.06); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 12px; padding: 12px 16px; margin-bottom: 20px;">
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <span id="proStatusBadge" style="background: linear-gradient(135deg, #facc15, #f59e0b); color: #090e1a; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">⭐ Creator Suite</span>
+            <span id="proStatusBadge" style="background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: #ffffff; font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">⭐ Creator Suite</span>
             <span style="font-size: 0.86rem; font-weight: 700; color: #f8fafc;">Podcast Dialogue, Voice Blender &amp; .SRT Subtitles</span>
           </div>
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <button type="button" id="dialoguePresetBtn" class="chip-btn" style="background: rgba(139, 92, 246, 0.18); border-color: rgba(139, 92, 246, 0.45); color: #e9d5ff; font-weight: 600;">🎭 Insert 2-Speaker Podcast Script</button>
             <button type="button" id="toggleVoiceMixerBtn" class="chip-btn" style="background: rgba(6, 182, 212, 0.15); border-color: rgba(6, 182, 212, 0.4); color: #67e8f9; font-weight: 600;">🎛️ Custom Voice Blender</button>
+            <button type="button" id="openVipCodeBtn" class="chip-btn" style="background: rgba(250, 204, 21, 0.12); border-color: rgba(250, 204, 21, 0.4); color: #fde047; font-weight: 600;">🔑 Supporter Key</button>
           </div>
+        </div>
+
+        <!-- Collapsible Supporter Key Activation Drawer -->
+        <div id="vipKeyDrawer" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+            <div style="font-size: 0.8rem; color: #cbd5e1; flex: 1; min-width: 220px;">
+              <strong>☕ Have a Buy Me a Coffee Supporter Key?</strong> Enter the key from your supporter receipt to activate <strong>⭐ VIP Supporter</strong> status and disable supporter reminder popups:
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <input type="text" id="vipKeyInput" placeholder="Enter key (e.g. PURETTS-VIP)" style="padding: 7px 12px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--card-inner); color: #fff; font-size: 0.82rem; width: 190px; outline: none;" />
+              <button type="button" id="activateVipKeyBtn" class="btn-pdf-action" style="padding: 7px 14px;">Activate VIP</button>
+              <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" style="font-size: 0.78rem; color: #fde047; font-weight: 700; text-decoration: underline;">Get a Key →</a>
+            </div>
+          </div>
+          <div id="vipKeyStatusMsg" style="margin-top: 6px; font-size: 0.78rem; display: none;"></div>
         </div>
 
         <!-- Collapsible Custom Voice Blender Drawer -->
@@ -1345,7 +1361,7 @@ window.gtag("event", "creator_suite_use", { feature: "dialogue_preset", page_typ
 const downloadSrtBtnEl = document.getElementById("downloadSrtBtn");
 if (downloadSrtBtnEl) {
 downloadSrtBtnEl.addEventListener("click", (e) => {
-const isSupporter = localStorage.getItem("puretts_supporter_unlocked") === "true";
+const isSupporter = localStorage.getItem("puretts_vip_verified") === "true";
 if (typeof window.gtag === "function") {
 window.gtag("event", "srt_download", { supporter: isSupporter, page_type: "home" });
 }
@@ -1401,11 +1417,85 @@ speed: selectedSpeed,
 id: Date.now()
 });
 });
+// Clear legacy false-positive click unlock key
+localStorage.removeItem("puretts_supporter_unlocked");
+
+const VALID_VIP_CODES = new Set(["PURETTS-VIP", "PURETTS-PRO", "VIP_2026", "VIP2026", "BMAC-VIP"]);
+const openVipCodeBtn = document.getElementById("openVipCodeBtn");
+const vipKeyDrawer = document.getElementById("vipKeyDrawer");
+const vipKeyInput = document.getElementById("vipKeyInput");
+const activateVipKeyBtn = document.getElementById("activateVipKeyBtn");
+const vipKeyStatusMsg = document.getElementById("vipKeyStatusMsg");
+
+function applyVipBadgeState() {
+const isVip = localStorage.getItem("puretts_vip_verified") === "true";
+const badge = document.getElementById("proStatusBadge");
+if (badge) {
+if (isVip) {
+badge.textContent = "⭐ VIP Supporter";
+badge.style.background = "linear-gradient(135deg, #facc15, #f59e0b)";
+badge.style.color = "#090e1a";
+if (openVipCodeBtn) openVipCodeBtn.style.display = "none";
+} else {
+badge.textContent = "⭐ Creator Suite";
+badge.style.background = "linear-gradient(135deg, #8b5cf6, #6d28d9)";
+badge.style.color = "#ffffff";
+}
+}
+}
+
+// 1. Automated URL Redirect Unlock from Buy Me a Coffee Thank-You Link (?supporter=vip_2026)
+try {
+const urlParams = new URLSearchParams(window.location.search);
+const supParam = (urlParams.get("supporter") || urlParams.get("vip") || "").trim().toUpperCase();
+if (VALID_VIP_CODES.has(supParam)) {
+localStorage.setItem("puretts_vip_verified", "true");
+if (window.history && window.history.replaceState) {
+const cleanUrl = window.location.pathname + window.location.hash;
+window.history.replaceState({}, document.title, cleanUrl);
+}
+if (typeof window.gtag === "function") {
+window.gtag("event", "vip_supporter_activated", { method: "url_redirect" });
+}
+}
+} catch (e) {}
+
+applyVipBadgeState();
+
+if (openVipCodeBtn && vipKeyDrawer) {
+openVipCodeBtn.addEventListener("click", () => {
+const isOpen = vipKeyDrawer.style.display !== "none";
+vipKeyDrawer.style.display = isOpen ? "none" : "block";
+});
+}
+
+if (activateVipKeyBtn && vipKeyInput) {
+activateVipKeyBtn.addEventListener("click", () => {
+const code = vipKeyInput.value.trim().toUpperCase();
+if (VALID_VIP_CODES.has(code)) {
+localStorage.setItem("puretts_vip_verified", "true");
+applyVipBadgeState();
+if (vipKeyStatusMsg) {
+vipKeyStatusMsg.style.display = "block";
+vipKeyStatusMsg.style.color = "#6ee7b7";
+vipKeyStatusMsg.textContent = "🎉 VIP Supporter status activated! Thank you for supporting PureTTS.";
+}
+if (typeof window.gtag === "function") {
+window.gtag("event", "vip_supporter_activated", { method: "key_input" });
+}
+setTimeout(() => { if (vipKeyDrawer) vipKeyDrawer.style.display = "none"; }, 2000);
+} else {
+if (vipKeyStatusMsg) {
+vipKeyStatusMsg.style.display = "block";
+vipKeyStatusMsg.style.color = "#fca5a5";
+vipKeyStatusMsg.textContent = "Invalid Supporter Key. Check your Buy Me a Coffee thank-you note or receipt!";
+}
+}
+});
+}
+
 document.querySelectorAll('a[href*="buymeacoffee.com"]').forEach(link => {
 link.addEventListener("click", () => {
-localStorage.setItem("puretts_supporter_unlocked", "true");
-const badge = document.getElementById("proStatusBadge");
-if (badge) badge.textContent = "⭐ VIP Supporter";
 if (typeof window.gtag === "function") {
 let placement = "other";
 if (link.classList.contains("btn-coffee-nav")) placement = "nav";
@@ -1417,15 +1507,12 @@ window.gtag("event", "bmac_support_click", { page_type: "home", placement: place
 }
 });
 });
-if (localStorage.getItem("puretts_supporter_unlocked") === "true") {
-const badge = document.getElementById("proStatusBadge");
-if (badge) badge.textContent = "⭐ VIP Supporter";
-}
 const gratitudeToast = document.getElementById("gratitudeToast");
 const closeGratitudeBtn = document.getElementById("closeGratitudeBtn");
 const dismissGratitudeBtn = document.getElementById("dismissGratitudeBtn");
 function showGratitudeToast() {
 if (!gratitudeToast) return;
+if (localStorage.getItem("puretts_vip_verified") === "true") return;
 const lastDismissed = localStorage.getItem("puretts_tip_dismissed");
 if (lastDismissed && Date.now() - parseInt(lastDismissed, 10) < 12 * 60 * 60 * 1000) {
 return;
@@ -1437,6 +1524,7 @@ window.gtag("event", "gratitude_toast_shown", { page_type: "home" });
 }
 window.showCreatorSuiteToast = (featureName) => {
 if (!gratitudeToast) return;
+if (localStorage.getItem("puretts_vip_verified") === "true") return;
 const titleEl = gratitudeToast.querySelector(".gratitude-title");
 const bodyEl = gratitudeToast.querySelector(".gratitude-body");
 if (titleEl) titleEl.textContent = "⭐ Enjoying Creator Suite (.SRT, Voice Blender & Dialogue)?";
