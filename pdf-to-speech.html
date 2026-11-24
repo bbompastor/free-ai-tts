@@ -1336,6 +1336,33 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
               <option value="zm_yunxia" data-vip="true">🔒 🇨🇳 Yunxia (Male Energetic · VIP)</option>
               <option value="zm_yunyang" data-vip="true">🔒 🇨🇳 Yunyang (Male Professional Anchor · VIP)</option>
             </optgroup>
+            <optgroup label="🇩🇪 German (Deutschland / DACH — Deutsch)">
+              <option value="de_hanna">🇩🇪 Hanna (Female Natural &amp; Clear · DE-DE)</option>
+              <option value="de_lukas" data-vip="true">🔒 🇩🇪 Lukas (Male Articulate Presenter · VIP)</option>
+              <option value="de_markus" data-vip="true">🔒 🇩🇪 Markus (Male Deep Documentary · VIP)</option>
+            </optgroup>
+            <optgroup label="🇵🇰 Urdu (Pakistan — اردو &amp; Roman Urdu)">
+              <option value="ur_ayesha">🇵🇰 Ayesha (Female Natural &amp; Expressive · UR-PK)</option>
+              <option value="ur_hamza" data-vip="true">🔒 🇵🇰 Hamza (Male Deep Narrator · VIP)</option>
+              <option value="ur_bilal" data-vip="true">🔒 🇵🇰 Bilal (Male Articulate Presenter · VIP)</option>
+            </optgroup>
+            <optgroup label="🇸🇦 Arabic (Standard &amp; Gulf/Maghreb — العربية)">
+              <option value="ar_layla">🇸🇦 Layla (Female Studio Narrator · AR)</option>
+              <option value="ar_omar" data-vip="true">🔒 🇸🇦 Omar (Male Clear Presenter · VIP)</option>
+              <option value="ar_tariq" data-vip="true">🔒 🇸🇦 Tariq (Male Deep Documentary · VIP)</option>
+            </optgroup>
+            <optgroup label="🇮🇩 Indonesian &amp; Malay (Bahasa Indonesia / Melayu)">
+              <option value="id_putri">🇮🇩 Putri (Female Natural &amp; Warm · ID-ID)</option>
+              <option value="id_budi" data-vip="true">🔒 🇮🇩 Budi (Male Professional Presenter · VIP)</option>
+            </optgroup>
+            <optgroup label="🇹🇷 Turkish (Türkiye — Türkçe)">
+              <option value="tr_elif">🇹🇷 Elif (Female Expressive Narrator · TR-TR)</option>
+              <option value="tr_emre" data-vip="true">🔒 🇹🇷 Emre (Male Studio Presenter · VIP)</option>
+            </optgroup>
+            <optgroup label="🇷🇺 Russian (Русский)">
+              <option value="ru_elena">🇷🇺 Elena (Female Clear Studio Voice · RU-RU)</option>
+              <option value="ru_dmitri" data-vip="true">🔒 🇷🇺 Dmitri (Male Deep Narrator · VIP)</option>
+            </optgroup>
           </select>
         </div>
 
@@ -1882,7 +1909,7 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
 
     function getWorker() {
       if (worker) return worker;
-      worker = new Worker("./js/tts.worker.js?v=10", { type: "module" });
+      worker = new Worker("./js/tts.worker.js?v=11", { type: "module" });
 
       worker.onmessage = (e) => {
         if (isStopping) return;
@@ -2223,7 +2250,13 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
       "im_nicola",
       "hf_beta", "hm_omega", "hm_psi",
       "jf_gongitsune", "jf_nezumi", "jf_tebukuro", "jm_kumo",
-      "zf_xiaoni", "zf_xiaoxiao", "zf_xiaoyi", "zm_yunjian", "zm_yunxi", "zm_yunxia", "zm_yunyang"
+      "zf_xiaoni", "zf_xiaoxiao", "zf_xiaoyi", "zm_yunjian", "zm_yunxi", "zm_yunxia", "zm_yunyang",
+      "de_lukas", "de_markus",
+      "ur_hamza", "ur_bilal",
+      "ar_omar", "ar_tariq",
+      "id_budi",
+      "tr_emre",
+      "ru_dmitri"
     ]);
     let lastUnlockedVoice = "af_heart";
 

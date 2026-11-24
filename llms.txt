@@ -17,6 +17,12 @@ PureTTS executes all multilingual International Phonetic Alphabet (IPA) Grapheme
 - **Hindi (`hi-IN` — Devanagari & Romanized)**: `hf_alpha`, `hf_beta`, `hm_omega`, `hm_psi`
 - **Japanese (`ja-JP`)**: `jf_alpha`, `jf_gongitsune`, `jf_nezumi`, `jf_tebukuro`, `jm_kumo`
 - **Mandarin Chinese (`zh-CN` — Putonghua)**: `zf_xiaobei`, `zf_xiaoni`, `zf_xiaoxiao`, `zf_xiaoyi`, `zm_yunjian`, `zm_yunxi`, `zm_yunxia`, `zm_yunyang`
+- **German (`de-DE` — Hochdeutsch)**: `de_hanna`, `de_lukas`, `de_markus`
+- **Urdu (`ur-PK` — Pakistan Nastaliq & Roman Urdu)**: `ur_ayesha`, `ur_hamza`, `ur_bilal`
+- **Arabic (`ar-SA` — Standard & Gulf/Maghreb)**: `ar_layla`, `ar_omar`, `ar_tariq`
+- **Indonesian & Malay (`id-ID` / `ms-MY`)**: `id_putri`, `id_budi`
+- **Turkish (`tr-TR` — Türkçe)**: `tr_elif`, `tr_emre`
+- **Russian (`ru-RU` — Русский)**: `ru_elena`, `ru_dmitri`
 
 ## Core Tools & Applications
 

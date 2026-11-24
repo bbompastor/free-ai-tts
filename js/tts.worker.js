@@ -65,7 +65,28 @@ const PORTUGUESE_VOICE_MAP = {
   zm_yunjian: { bin: "zm_yunjian", lang: "zh-CN" },
   zm_yunxi: { bin: "zm_yunxi", lang: "zh-CN" },
   zm_yunxia: { bin: "zm_yunxia", lang: "zh-CN" },
-  zm_yunyang: { bin: "zm_yunyang", lang: "zh-CN" }
+  zm_yunyang: { bin: "zm_yunyang", lang: "zh-CN" },
+  // 🇩🇪 German (Deutschland / DACH)
+  de_hanna: { bin: "ff_siwis", lang: "de-DE" },
+  de_lukas: { bin: "bm_lewis", lang: "de-DE" },
+  de_markus: { bin: "bm_george", lang: "de-DE" },
+  // 🇵🇰 Urdu (Pakistan — اردو & Roman Urdu)
+  ur_ayesha: { bin: "hf_alpha", lang: "ur-PK" },
+  ur_hamza: { bin: "hm_omega", lang: "ur-PK" },
+  ur_bilal: { bin: "hm_psi", lang: "ur-PK" },
+  // 🇸🇦 Arabic (Standard & Gulf/Maghreb — العربية)
+  ar_layla: { bin: "if_sara", lang: "ar-SA" },
+  ar_omar: { bin: "im_nicola", lang: "ar-SA" },
+  ar_tariq: { bin: "am_adam", lang: "ar-SA" },
+  // 🇮🇩 Indonesian / Malay (Bahasa Indonesia & Melayu)
+  id_putri: { bin: "af_bella", lang: "id-ID" },
+  id_budi: { bin: "am_michael", lang: "id-ID" },
+  // 🇹🇷 Turkish (Türkiye — Türkçe)
+  tr_elif: { bin: "if_sara", lang: "tr-TR" },
+  tr_emre: { bin: "im_nicola", lang: "tr-TR" },
+  // 🇷🇺 Russian (Русский)
+  ru_elena: { bin: "bf_emma", lang: "ru-RU" },
+  ru_dmitri: { bin: "bm_george", lang: "ru-RU" }
 };
 
 const customVoiceMemoryCache = new Map();
@@ -1693,7 +1714,292 @@ async function phonemizeChineseText(text) {
 }
 
 /**
- * Phonemizes text into target language IPA phonemes (pt-PT, pt-BR, es-ES, es-419, fr-FR, it-IT, hi-IN, ja-JP, zh-CN)
+ * German (de-DE) word-to-IPA G2P engine (Standard Hochdeutsch phonology).
+ * Models umlauts (ä -> ɛ, ö -> ø, ü -> y), diphthongs (ei/ai -> aɪ, eu/äu -> ɔʏ, au -> aʊ, ie -> iː),
+ * ich-Laut vs ach-Laut (ch -> ç/x), initial sp/st -> ʃp/ʃt, and Auslautverhärtung (final devoicing).
+ */
+const DE_LEXICON = {
+  "der": "dˈeːɐ", "die": "dˈiː", "das": "dˈas", "den": "dˈeːn", "dem": "dˈeːm", "des": "dˈɛs",
+  "ein": "ˈaɪn", "eine": "ˈaɪnə", "einer": "ˈaɪnɐ", "einem": "ˈaɪnəm", "einen": "ˈaɪnən",
+  "und": "ˈʊnt", "oder": "ˈoːdɐ", "aber": "ˈaːbɐ", "nicht": "nˈɪçt", "mit": "mˈɪt", "von": "fˈɔn",
+  "für": "fˈyːɐ", "auf": "ˈaʊf", "ist": "ˈɪst", "sind": "zˈɪnt", "war": "vˈaːɐ", "wird": "vˈɪʁt",
+  "ich": "ˈɪç", "du": "dˈuː", "er": "ˈeːɐ", "sie": "zˈiː", "es": "ˈɛs", "wir": "vˈiːɐ", "ihr": "ˈiːɐ",
+  "hallo": "hˈaloː", "willkommen": "vɪlkˈɔmən", "bei": "bˈaɪ", "puretts": "pjˈuːɐ tˈeː tˈeː ˈɛs",
+  "deutsch": "dˈɔʏʧ", "sprache": "ʃpɾˈaːxə", "stimme": "ʃtˈɪmə", "kostenlos": "kˈɔstənloːs"
+};
+
+function phonemizeGermanWord(rawWord) {
+  const w = rawWord.toLowerCase().trim();
+  if (!w) return "";
+  if (DE_LEXICON[w]) return DE_LEXICON[w];
+
+  let s = w
+    .replace(/sch/g, "ʃ")
+    .replace(/^sp/, "ʃp")
+    .replace(/^st/, "ʃt")
+    .replace(/tsch/g, "ʧ")
+    .replace(/äu|eu/g, "ɔʏ")
+    .replace(/ei|ai|ey|ay/g, "aɪ")
+    .replace(/au/g, "aʊ")
+    .replace(/ie/g, "iː")
+    .replace(/äh/g, "ɛː")
+    .replace(/öh/g, "øː")
+    .replace(/üh/g, "yː")
+    .replace(/ah/g, "aː")
+    .replace(/eh/g, "eː")
+    .replace(/ih/g, "iː")
+    .replace(/oh/g, "oː")
+    .replace(/uh/g, "uː")
+    .replace(/([aou])ch/g, "$1x")
+    .replace(/ch/g, "ç")
+    .replace(/ck/g, "k")
+    .replace(/ph/g, "f")
+    .replace(/qu/g, "kv")
+    .replace(/ng/g, "ŋ")
+    .replace(/nk/g, "ŋk")
+    .replace(/tion\b/g, "tsiˈoːn")
+    .replace(/er\b/g, "ɐ")
+    .replace(/en\b/g, "ən")
+    .replace(/e\b/g, "ə")
+    .replace(/ä/g, "ɛ")
+    .replace(/ö/g, "ø")
+    .replace(/ü/g, "y")
+    .replace(/ß/g, "s")
+    .replace(/z/g, "ts")
+    .replace(/v/g, "f")
+    .replace(/w/g, "v")
+    .replace(/j/g, "j")
+    .replace(/^s(?=[aeiouɛøyaɪɔʏ])/, "z")
+    .replace(/r/g, "ʁ")
+    .replace(/b\b/g, "p")
+    .replace(/d\b/g, "t")
+    .replace(/g\b/g, "k");
+
+  if (s && !s.includes("ˈ")) {
+    s = s.replace(/([aeiouɛøyɔɪʊə])/, "ˈ$1");
+  }
+  return s;
+}
+
+/**
+ * Indonesian & Malay (id-ID / ms-MY) word-to-IPA G2P engine.
+ * Models c -> ʧ, j -> ʤ, sy -> ʃ, ny -> ɲ, ng -> ŋ, kh -> x, and penultimate syllable stress.
+ */
+function phonemizeIndonesianWord(rawWord) {
+  const w = rawWord.toLowerCase().trim();
+  if (!w) return "";
+  if (w === "puretts") return "pjˈuɾ tˈiː tˈiː ˈɛs";
+  if (w === "dan") return "dˈan";
+  if (w === "yang") return "jˈaŋ";
+
+  let s = w
+    .replace(/sy/g, "ʃ")
+    .replace(/ny/g, "ɲ")
+    .replace(/ngg/g, "ŋɡ")
+    .replace(/ng/g, "ŋ")
+    .replace(/nk/g, "ŋk")
+    .replace(/kh/g, "x")
+    .replace(/dj/g, "ʤ")
+    .replace(/tj/g, "ʧ")
+    .replace(/c/g, "ʧ")
+    .replace(/j/g, "ʤ")
+    .replace(/y/g, "j")
+    .replace(/r/g, "ɾ")
+    .replace(/g/g, "ɡ")
+    .replace(/k\b/g, "ʔ");
+
+  // Place stress on penultimate vowel (or first vowel if monosyllabic)
+  const vowels = [...s.matchAll(/[aeiouə]/g)];
+  if (vowels.length >= 2) {
+    const targetIdx = vowels[vowels.length - 2].index;
+    s = s.slice(0, targetIdx) + "ˈ" + s.slice(targetIdx);
+  } else if (vowels.length === 1) {
+    const targetIdx = vowels[0].index;
+    s = s.slice(0, targetIdx) + "ˈ" + s.slice(targetIdx);
+  }
+  return s;
+}
+
+/**
+ * Turkish (tr-TR) word-to-IPA G2P engine.
+ * Models ç -> ʧ, ş -> ʃ, c -> ʤ, ğ -> ː (soft g vowel lengthening), ı -> ɯ, ö -> ø, ü -> y, y -> j.
+ */
+function phonemizeTurkishWord(rawWord) {
+  const w = rawWord.toLocaleLowerCase("tr-TR").trim();
+  if (!w) return "";
+  if (w === "puretts") return "pjˈuɾ tˈeː tˈeː ˈes";
+
+  let s = w
+    .replace(/([aıoueiöü])ğ([aıoueiöü])/g, "$1ː$2")
+    .replace(/([aıoueiöü])ğ/g, "$1ː")
+    .replace(/ğ/g, "ː")
+    .replace(/ç/g, "ʧ")
+    .replace(/ş/g, "ʃ")
+    .replace(/c/g, "ʤ")
+    .replace(/j/g, "ʒ")
+    .replace(/ı/g, "ɯ")
+    .replace(/ö/g, "ø")
+    .replace(/ü/g, "y")
+    .replace(/y/g, "j")
+    .replace(/r/g, "ɾ")
+    .replace(/g/g, "ɡ");
+
+  // Turkish default stress is oxytone (final syllable)
+  const vowels = [...s.matchAll(/[aɯoueiøy]/g)];
+  if (vowels.length > 0) {
+    const targetIdx = vowels[vowels.length - 1].index;
+    s = s.slice(0, targetIdx) + "ˈ" + s.slice(targetIdx);
+  }
+  return s;
+}
+
+/**
+ * Urdu (ur-PK — Perso-Arabic script & Roman Urdu) word-to-IPA G2P engine.
+ * Converts Urdu Nastaliq characters into IPA with uvular/velar fricatives (/x, ɣ, q, z, f/)
+ * and shares the Roman Urdu / Hindustani lexicon with Hindi.
+ */
+const UR_CHAR_MAP = {
+  "آ": "ˈaː", "ا": "aː", "ب": "b", "پ": "p", "ت": "t", "ٹ": "ʈ", "ث": "s",
+  "ج": "ʤ", "چ": "ʧ", "ح": "ɦ", "خ": "x", "د": "d", "ڈ": "ɖ", "ذ": "z",
+  "ر": "ɾ", "ڑ": "ɽ", "ز": "z", "ژ": "ʒ", "س": "s", "ش": "ʃ", "ص": "s",
+  "ض": "z", "ط": "t", "ظ": "z", "ع": "ə", "غ": "ɣ", "ف": "f", "ق": "k",
+  "ک": "k", "ك": "k", "گ": "ɡ", "ل": "l", "م": "m", "ن": "n", "ں": "\u0303",
+  "و": "oː", "ہ": "ɦ", "ھ": "ʰ", "ء": "", "ی": "iː", "ے": "eː", "ئ": "j", "ؤ": "oː",
+  "َ": "ə", "ِ": "ɪ", "ُ": "ʊ", "ّ": "", "ْ": ""
+};
+
+const UR_LEXICON = {
+  "السلام": "əssəlˈaːm", "علیکم": "əlˈɛːkʊm", "خوش": "xˈʊʃ", "آمدید": "aːmdˈiːd",
+  "اردو": "ˈʊɾduː", "پاکستان": "pˈaːkɪstaːn", "آپ": "ˈaːp", "کا": "kˈaː", "کی": "kˈiː",
+  "کے": "kˈeː", "ہے": "ɦˈɛː", "ہیں": "ɦˈɛ̃ː", "اور": "ˈɔːɾ", "میں": "mˈẽː", "یہ": "jˈeː",
+  "ایک": "ˈeːk", "مکمل": "mʊkˈəmməl", "مفت": "mˈʊft", "شکریہ": "ʃʊkɾˈɪjaː",
+  "assalam": "əssəlˈaːm", "alaikum": "əlˈɛːkʊm", "shukriya": "ʃʊkɾˈɪjaː", "pakistan": "pˈaːkɪstaːn",
+  "urdu": "ˈʊɾduː"
+};
+
+function phonemizeUrduWord(rawWord) {
+  const w = rawWord.trim();
+  if (!w) return "";
+  const lower = w.toLowerCase();
+  if (UR_LEXICON[w]) return UR_LEXICON[w];
+  if (UR_LEXICON[lower]) return UR_LEXICON[lower];
+  if (HI_LEXICON[lower]) return HI_LEXICON[lower];
+
+  // Roman Urdu / English inside Urdu voice delegates to our Indian/Hindustani accent transducer
+  if (/^[a-z0-9'-]+$/i.test(lower)) {
+    return phonemizeHindiWord(lower);
+  }
+
+  // Perso-Arabic Urdu script parser
+  const chars = Array.from(w);
+  let ipa = "";
+  for (let i = 0; i < chars.length; i++) {
+    const c = chars[i];
+    const next = i + 1 < chars.length ? chars[i + 1] : "";
+    const mapped = UR_CHAR_MAP[c];
+    if (mapped !== undefined) {
+      ipa += mapped;
+      // Insert short schwa between consecutive consonants unless followed by long vowel/do-chashmi-he
+      const isCons = /^[bptʈsʤʧɦxdɖzɾɽʒɣfklɡmn]$/.test(mapped);
+      const nextMapped = UR_CHAR_MAP[next] || "";
+      const nextIsCons = /^[bptʈsʤʧɦxdɖzɾɽʒɣfklɡmn]$/.test(nextMapped);
+      if (isCons && nextIsCons && i < chars.length - 1) {
+        ipa += "ə";
+      }
+    }
+  }
+  if (ipa && !ipa.includes("ˈ")) {
+    ipa = ipa.replace(/([aɪiʊueɛoɔə])/, "ˈ$1");
+  }
+  return ipa;
+}
+
+/**
+ * Arabic (ar-SA) Arabic script & Arabizi/Romanized word-to-IPA G2P engine.
+ */
+const AR_CHAR_MAP = {
+  "ا": "aː", "أ": "ˈa", "إ": "ˈɪ", "آ": "ˈaː", "ء": "ʔ", "ؤ": "ʔʊ", "ئ": "ʔɪ",
+  "ب": "b", "ت": "t", "ث": "θ", "ج": "ʤ", "ح": "ħ", "خ": "x",
+  "د": "d", "ذ": "ð", "ر": "ɾ", "ز": "z", "س": "s", "ش": "ʃ",
+  "ص": "sˤ", "ض": "dˤ", "ط": "tˤ", "ظ": "ðˤ", "ع": "ʕ", "غ": "ɣ",
+  "ف": "f", "ق": "q", "ك": "k", "ل": "l", "م": "m", "ن": "n",
+  "ه": "h", "ة": "a", "و": "uː", "ي": "iː", "ى": "aː",
+  "َ": "a", "ِ": "ɪ", "ُ": "ʊ", "ً": "an", "ٍ": "ɪn", "ٌ": "ʊn", "ّ": "ː", "ْ": ""
+};
+
+const AR_LEXICON = {
+  "مرحبا": "mˈaɾħaban", "أهلا": "ˈahlan", "وسهلا": "wasˈahlan", "بكم": "bˈɪkʊm",
+  "في": "fˈiː", "هذا": "hˈaːðaː", "هو": "hˈʊwa", "من": "mˈɪn", "على": "ʕˈalaː",
+  "إلى": "ˈɪlaː", "كل": "kˈʊll", "مجاني": "maʤʤˈaːniː", "بالكامل": "bɪlkˈaːmɪl",
+  "شكرا": "ʃˈʊkɾan", "السلام": "assalˈaːm", "عليكم": "ʕalˈajkʊm"
+};
+
+function phonemizeArabicWord(rawWord) {
+  const w = rawWord.trim();
+  if (!w) return "";
+  if (AR_LEXICON[w]) return AR_LEXICON[w];
+  if (/^[a-z0-9'-]+$/i.test(w)) return w.toLowerCase();
+
+  const chars = Array.from(w);
+  let ipa = "";
+  for (let i = 0; i < chars.length; i++) {
+    const c = chars[i];
+    const next = i + 1 < chars.length ? chars[i + 1] : "";
+    const mapped = AR_CHAR_MAP[c];
+    if (mapped !== undefined) {
+      ipa += mapped;
+      const isCons = !/^[aɪʊuːiː]+$/.test(mapped) && mapped !== "";
+      const nextMapped = AR_CHAR_MAP[next] || "";
+      const nextIsVowel = /^[aɪʊuːiː]/.test(nextMapped);
+      if (isCons && !nextIsVowel && i < chars.length - 1 && next !== "ّ" && next !== "ْ") {
+        ipa += "a";
+      }
+    }
+  }
+  // Map pharyngeal/emphatic symbols to closest Kokoro vocabulary tokens
+  ipa = ipa.replace(/sˤ/g, "s").replace(/dˤ/g, "d").replace(/tˤ/g, "t").replace(/ðˤ/g, "ð").replace(/ħ/g, "h").replace(/ʕ/g, "ˈa").replace(/q/g, "k");
+  if (ipa && !ipa.includes("ˈ")) {
+    ipa = ipa.replace(/([aɪʊui])/, "ˈ$1");
+  }
+  return ipa;
+}
+
+/**
+ * Russian (ru-RU) Cyrillic word-to-IPA G2P engine.
+ * Models palatalization before soft vowels (я, е, ё, ю, и, ь), akanje (unstressed о -> ɐ), and final devoicing.
+ */
+const RU_CHAR_MAP = {
+  "а": "a", "б": "b", "в": "v", "г": "ɡ", "д": "d", "е": "je", "ё": "ˈjo",
+  "ж": "ʐ", "з": "z", "и": "i", "й": "j", "к": "k", "л": "l", "м": "m",
+  "н": "n", "о": "o", "п": "p", "р": "ɾ", "с": "s", "т": "t", "у": "u",
+  "ф": "f", "х": "x", "ц": "ts", "ч": "ʨ", "ш": "ʂ", "щ": "ɕː", "ъ": "",
+  "ы": "ɨ", "ь": "ʲ", "э": "ɛ", "ю": "ju", "я": "ja"
+};
+
+function phonemizeRussianWord(rawWord) {
+  const w = rawWord.toLowerCase().trim();
+  if (!w) return "";
+  if (w === "привет") return "pɾʲɪvˈet";
+  if (w === "здравствуйте") return "zdɾˈastvʊjtʲe";
+  if (w === "добро") return "dɐbɾˈo";
+  if (w === "пожаловать") return "pɐʐˈaləvətʲ";
+
+  let ipa = "";
+  for (const ch of w) {
+    if (RU_CHAR_MAP[ch] !== undefined) {
+      ipa += RU_CHAR_MAP[ch];
+    } else if (/[a-z0-9]/.test(ch)) {
+      ipa += ch;
+    }
+  }
+  if (ipa && !ipa.includes("ˈ")) {
+    ipa = ipa.replace(/([aeiouɨɛ])/, "ˈ$1");
+  }
+  return ipa;
+}
+
+/**
+ * Phonemizes text into target language IPA phonemes
  * while preserving punctuation so Kokoro-82M maintains natural prosody and clause pauses.
  */
 async function phonemizePortugueseKeepPunctuation(text, lang = "pt-PT") {
@@ -1719,6 +2025,47 @@ async function phonemizePortugueseKeepPunctuation(text, lang = "pt-PT") {
       }
     }
     return hiOut.join(" ").replace(/\s+/g, " ").trim().normalize("NFD");
+  }
+  if (lang === "ur-PK") {
+    const urNorm = text.replace(/۔/g, ".").replace(/،/g, ",").replace(/؟/g, "?");
+    const urTokens = urNorm.match(/[\u0600-\u06FFA-Za-z0-9'-]+|[,;:.!?—…"«»“”]+/g) || [];
+    const urOut = [];
+    for (const tok of urTokens) {
+      if (/^[,;:.!?—…"«»“”]+$/.test(tok)) {
+        if (urOut.length > 0) urOut[urOut.length - 1] += tok;
+      } else {
+        const ph = phonemizeUrduWord(tok);
+        if (ph) urOut.push(ph);
+      }
+    }
+    return urOut.join(" ").replace(/\s+/g, " ").trim().normalize("NFD");
+  }
+  if (lang === "ar-SA") {
+    const arNorm = text.replace(/۔/g, ".").replace(/،/g, ",").replace(/؟/g, "?");
+    const arTokens = arNorm.match(/[\u0600-\u06FFA-Za-z0-9'-]+|[,;:.!?—…"«»“”]+/g) || [];
+    const arOut = [];
+    for (const tok of arTokens) {
+      if (/^[,;:.!?—…"«»“”]+$/.test(tok)) {
+        if (arOut.length > 0) arOut[arOut.length - 1] += tok;
+      } else {
+        const ph = phonemizeArabicWord(tok);
+        if (ph) arOut.push(ph);
+      }
+    }
+    return arOut.join(" ").replace(/\s+/g, " ").trim().normalize("NFD");
+  }
+  if (lang === "ru-RU") {
+    const ruTokens = text.match(/[\u0400-\u04FFA-Za-z0-9'-]+|[,;:.!?—…"«»“”]+/g) || [];
+    const ruOut = [];
+    for (const tok of ruTokens) {
+      if (/^[,;:.!?—…"«»“”]+$/.test(tok)) {
+        if (ruOut.length > 0) ruOut[ruOut.length - 1] += tok;
+      } else {
+        const ph = phonemizeRussianWord(tok);
+        if (ph) ruOut.push(ph);
+      }
+    }
+    return ruOut.join(" ").replace(/\s+/g, " ").trim().normalize("NFD");
   }
 
   let normalized = text;
@@ -1749,7 +2096,7 @@ async function phonemizePortugueseKeepPunctuation(text, lang = "pt-PT") {
   }
 
   // Tokenize into words and punctuation clusters
-  const tokens = normalized.match(/[A-Za-zÀ-ÖØ-öø-ÿŒœ0-9'-]+|[,;:.!?¡¿—…"«»“”]+/g) || [];
+  const tokens = normalized.match(/[A-Za-zÀ-ÖØ-öø-ÿŒœĂăÂâÎîȘșȚțĞğİıŞşÇçÖöÜüß0-9'-]+|[,;:.!?¡¿—…"«»“”]+/g) || [];
   const out = [];
 
   for (let t = 0; t < tokens.length; t++) {
@@ -1770,6 +2117,12 @@ async function phonemizePortugueseKeepPunctuation(text, lang = "pt-PT") {
         ph = phonemizeFrenchWord(tok);
       } else if (lang === "it-IT") {
         ph = phonemizeItalianWord(tok);
+      } else if (lang === "de-DE") {
+        ph = phonemizeGermanWord(tok);
+      } else if (lang === "id-ID") {
+        ph = phonemizeIndonesianWord(tok);
+      } else if (lang === "tr-TR") {
+        ph = phonemizeTurkishWord(tok);
       } else {
         ph = phonemizePortugueseWord(tok);
       }

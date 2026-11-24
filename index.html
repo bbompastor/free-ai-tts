@@ -107,6 +107,12 @@
         <button class="chip-btn" data-preset="french">🇫🇷 Français</button>
         <button class="chip-btn" data-preset="italian">🇮🇹 Italiano</button>
         <button class="chip-btn" data-preset="hindi">🇮🇳 हिन्दी</button>
+        <button class="chip-btn" data-preset="urdu">🇵🇰 اردو / Urdu</button>
+        <button class="chip-btn" data-preset="german">🇩🇪 Deutsch</button>
+        <button class="chip-btn" data-preset="arabic">🇸🇦 العربية</button>
+        <button class="chip-btn" data-preset="indonesian">🇮🇩 Indonesia</button>
+        <button class="chip-btn" data-preset="turkish">🇹🇷 Türkçe</button>
+        <button class="chip-btn" data-preset="russian">🇷🇺 Русский</button>
         <button class="chip-btn" data-preset="japanese">🇯🇵 日本語</button>
         <button class="chip-btn" data-preset="chinese">🇨🇳 中文</button>
         <button class="chip-btn" data-preset="story">📖 Audiobook</button>
@@ -222,6 +228,33 @@ Paste your script, article, or study notes here, choose your preferred voice, an
               <option value="zm_yunxi" data-vip="true">🔒 🇨🇳 Yunxi (Male Clear Narrator · VIP)</option>
               <option value="zm_yunxia" data-vip="true">🔒 🇨🇳 Yunxia (Male Energetic · VIP)</option>
               <option value="zm_yunyang" data-vip="true">🔒 🇨🇳 Yunyang (Male Professional Anchor · VIP)</option>
+            </optgroup>
+            <optgroup label="🇩🇪 German (Deutschland / DACH — Deutsch)">
+              <option value="de_hanna">🇩🇪 Hanna (Female Natural &amp; Clear · DE-DE)</option>
+              <option value="de_lukas" data-vip="true">🔒 🇩🇪 Lukas (Male Articulate Presenter · VIP)</option>
+              <option value="de_markus" data-vip="true">🔒 🇩🇪 Markus (Male Deep Documentary · VIP)</option>
+            </optgroup>
+            <optgroup label="🇵🇰 Urdu (Pakistan — اردو &amp; Roman Urdu)">
+              <option value="ur_ayesha">🇵🇰 Ayesha (Female Natural &amp; Expressive · UR-PK)</option>
+              <option value="ur_hamza" data-vip="true">🔒 🇵🇰 Hamza (Male Deep Narrator · VIP)</option>
+              <option value="ur_bilal" data-vip="true">🔒 🇵🇰 Bilal (Male Articulate Presenter · VIP)</option>
+            </optgroup>
+            <optgroup label="🇸🇦 Arabic (Standard &amp; Gulf/Maghreb — العربية)">
+              <option value="ar_layla">🇸🇦 Layla (Female Studio Narrator · AR)</option>
+              <option value="ar_omar" data-vip="true">🔒 🇸🇦 Omar (Male Clear Presenter · VIP)</option>
+              <option value="ar_tariq" data-vip="true">🔒 🇸🇦 Tariq (Male Deep Documentary · VIP)</option>
+            </optgroup>
+            <optgroup label="🇮🇩 Indonesian &amp; Malay (Bahasa Indonesia / Melayu)">
+              <option value="id_putri">🇮🇩 Putri (Female Natural &amp; Warm · ID-ID)</option>
+              <option value="id_budi" data-vip="true">🔒 🇮🇩 Budi (Male Professional Presenter · VIP)</option>
+            </optgroup>
+            <optgroup label="🇹🇷 Turkish (Türkiye — Türkçe)">
+              <option value="tr_elif">🇹🇷 Elif (Female Expressive Narrator · TR-TR)</option>
+              <option value="tr_emre" data-vip="true">🔒 🇹🇷 Emre (Male Studio Presenter · VIP)</option>
+            </optgroup>
+            <optgroup label="🇷🇺 Russian (Русский)">
+              <option value="ru_elena">🇷🇺 Elena (Female Clear Studio Voice · RU-RU)</option>
+              <option value="ru_dmitri" data-vip="true">🔒 🇷🇺 Dmitri (Male Deep Narrator · VIP)</option>
             </optgroup>
           </select>
         </div>
@@ -860,6 +893,12 @@ spanish: `¡Hola! Bienvenido a PureTTS, tu estudio de voz con inteligencia artif
 french: `Bonjour ! Bienvenue sur PureTTS, votre studio de voix avec intelligence artificielle entièrement dans le navigateur. Tout le traitement s'effectue localement sur votre appareil — rapide, privé et 100% gratuit.`,
 italian: `Ciao! Benvenuto su PureTTS, il tuo studio di voce con intelligenza artificiale direttamente nel browser. Tutto avviene localmente sul tuo dispositivo — veloce, privato e 100% gratuito.`,
 hindi: `नमस्ते! PureTTS में आपका स्वागत है। यह पूरी तरह से मुफ़्त और असीमित टेक्स्ट टू स्पीच स्टूडियो है जो आपके ब्राउज़र में काम करता है।`,
+urdu: `السلام علیکم! PureTTS میں خوش آمدید۔ यह ایک مکمل طور پر مفت اور لامحدود ٹیکسٹ ٹو اسپیچ اسٹوڈیو ہے جو آپ کے براؤزر میں کام کرتا ہے۔ Shukriya!`,
+german: `Hallo und herzlich willkommen bei PureTTS! Dies ist ein komplett kostenloses Text-zu-Sprache-Studio mit künstlicher Intelligenz, das direkt in Ihrem Browser läuft — schnell, privat und ohne Zeichenlimits.`,
+arabic: `مرحبا بكم في PureTTS! هذا استوديو تحويل النص إلى كلام مجاني بالكامل يعمل مباشرة داخل المتصفح الخاص بك بخصوصية تامة.`,
+indonesian: `Halo! Selamat datang di PureTTS, studio suara kecerdasan buatan gratis dan tanpa batas yang berjalan langsung di dalam browser Anda — cepat, aman, dan pribadi.`,
+turkish: `Merhaba! Tarayıcınızda doğrudan çalışan, tamamen ücretsiz ve sınırsız yapay zeka seslendirme stüdyosu PureTTS'e hoş geldiniz.`,
+russian: `Привет! Добро пожаловать в PureTTS — бесплатную студию синтеза речи с искусственным интеллектом, которая работает прямо в вашем браузере.`,
 japanese: `こんにちは！PureTTSへようこそ。これは人工知能による完全無料の音声合成スタジオです。すべての処理はお使いのデバイス上で直接動作し、高速で安全です。`,
 chinese: `你好！欢迎使用 PureTTS，这是一个完全免费的人工智能语音合成工具。所有处理都在您的浏览器中本地运行，快速、私密且100%免费。`
 };
@@ -881,6 +920,18 @@ voiceSelect.value = "ff_siwis";
 voiceSelect.value = "if_sara";
 } else if (key === "hindi") {
 voiceSelect.value = "hf_alpha";
+} else if (key === "urdu") {
+voiceSelect.value = "ur_ayesha";
+} else if (key === "german") {
+voiceSelect.value = "de_hanna";
+} else if (key === "arabic") {
+voiceSelect.value = "ar_layla";
+} else if (key === "indonesian") {
+voiceSelect.value = "id_putri";
+} else if (key === "turkish") {
+voiceSelect.value = "tr_elif";
+} else if (key === "russian") {
+voiceSelect.value = "ru_elena";
 } else if (key === "japanese") {
 voiceSelect.value = "jf_alpha";
 } else if (key === "chinese") {
@@ -1118,7 +1169,7 @@ audioDuration.textContent = `Buffering Part ${nextIndex + 1}...`;
 });
 function getWorker() {
 if (worker) return worker;
-worker = new Worker("./js/tts.worker.js?v=10", { type: "module" });
+worker = new Worker("./js/tts.worker.js?v=11", { type: "module" });
 worker.onmessage = (e) => {
 if (isStopping) return;
 const { status, data, blob, srtContent, partialBlob, partialDuration, elapsed, totalDuration, chunksProcessed, totalChunks, message, percent, current, total, chunkIndex, chunkBlob, chunkDuration } = e.data;
@@ -1336,7 +1387,13 @@ const VIP_VOICE_SET = new Set([
 "im_nicola",
 "hf_beta", "hm_omega", "hm_psi",
 "jf_gongitsune", "jf_nezumi", "jf_tebukuro", "jm_kumo",
-"zf_xiaoni", "zf_xiaoxiao", "zf_xiaoyi", "zm_yunjian", "zm_yunxi", "zm_yunxia", "zm_yunyang"
+"zf_xiaoni", "zf_xiaoxiao", "zf_xiaoyi", "zm_yunjian", "zm_yunxi", "zm_yunxia", "zm_yunyang",
+"de_lukas", "de_markus",
+"ur_hamza", "ur_bilal",
+"ar_omar", "ar_tariq",
+"id_budi",
+"tr_emre",
+"ru_dmitri"
 ]);
 let lastUnlockedVoice = "af_heart";
 
