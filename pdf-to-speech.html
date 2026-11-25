@@ -2380,12 +2380,13 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
     function verifyVipKeyHash(rawStr) {
       const s = String(rawStr || "").trim().toUpperCase();
       if (!s) return false;
+      const salted = "PTTS_SALT_9921::" + s;
       let h1 = 0x811c9dc5;
-      for (let i = 0; i < s.length; i++) {
-        h1 ^= s.charCodeAt(i);
+      for (let i = 0; i < salted.length; i++) {
+        h1 ^= salted.charCodeAt(i);
         h1 = Math.imul(h1, 0x01000193) >>> 0;
       }
-      return h1 === 4292835802 || h1 === 4210064395 || h1 === 846026578 || h1 === 2422347086;
+      return h1 === 821146402;
     }
     try {
       const urlParams = new URLSearchParams(window.location.search);
