@@ -1274,11 +1274,13 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
           <select id="voiceSelect">
             <optgroup label="🇺🇸 American Voices (Natural & Expressive)">
               <option value="af_heart" selected>🇺🇸 Heart (Warm, Highly Expressive Female)</option>
-              <option value="af_bella">🇺🇸 Bella (Crisp, Professional Interviewer)</option>
-              <option value="am_adam">🇺🇸 Adam (Deep, Confident Male)</option>
+              <option value="af_bella">🇺🇸 Bella (Crisp, Energetic Interviewer Female)</option>
+              <option value="am_michael">🇺🇸 Michael (Energetic, Clear &amp; Authoritative Male)</option>
+              <option value="am_puck">🇺🇸 Puck (Upbeat, Dynamic &amp; Engaging Male)</option>
+              <option value="am_adam">🇺🇸 Adam (Deep, Calm Documentary Male)</option>
+              <option value="am_fenrir" data-vip="true">🔒 🇺🇸 Fenrir (Cinematic Storyteller Male · VIP)</option>
               <option value="af_sky" data-vip="true">🔒 🇺🇸 Sky (Conversational &amp; Engaging · VIP)</option>
               <option value="af_sarah" data-vip="true">🔒 🇺🇸 Sarah (Calm, Informative Pacing · VIP)</option>
-              <option value="am_michael" data-vip="true">🔒 🇺🇸 Michael (Authoritative Tech Lead · VIP)</option>
             </optgroup>
             <optgroup label="🇬🇧 British Voices">
               <option value="bf_emma">🇬🇧 Emma (Polished &amp; Professional Female)</option>
@@ -1909,7 +1911,7 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
 
     function getWorker() {
       if (worker) return worker;
-      worker = new Worker("./js/tts.worker.js?v=11", { type: "module" });
+      worker = new Worker("./js/tts.worker.js?v=12", { type: "module" });
 
       worker.onmessage = (e) => {
         if (isStopping) return;
@@ -2241,7 +2243,7 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
     }
 
     const VIP_VOICE_SET = new Set([
-      "af_sky", "af_sarah", "am_michael",
+      "af_sky", "af_sarah", "am_fenrir",
       "bf_isabella", "bm_lewis",
       "pt_alex", "pt_santa",
       "ptbr_alex", "ptbr_santa",

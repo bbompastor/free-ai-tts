@@ -2179,16 +2179,25 @@ async function phonemizeEnglishForKokoro(text, isBritish = false) {
  * Synthesizes a chunk of text with an optional blended 256-dim style vector (Voice A + Voice B).
  */
 async function generateChunkWithVoiceOrBlend(tts, chunkTextStr, primaryVoiceId, speedValue, blendVoiceId = null, blendWeight = 0) {
+  // Apply subtle natural cadence calibration for slower baseline embeddings (am_adam, bm_george)
+  // so 1.0x slider speed sounds energetic and well-paced rather than dragging.
+  let effectiveSpeed = speedValue;
+  if (primaryVoiceId === "am_adam") {
+    effectiveSpeed = Math.min(2.0, +(speedValue * 1.08).toFixed(3));
+  } else if (primaryVoiceId === "bm_george") {
+    effectiveSpeed = Math.min(2.0, +(speedValue * 1.04).toFixed(3));
+  }
+
   const useBlend = Boolean(blendVoiceId && blendWeight > 0 && blendVoiceId !== primaryVoiceId);
   const isPrimaryMultilingual = Boolean(PORTUGUESE_VOICE_MAP[primaryVoiceId]);
 
   if (!useBlend) {
     if (isPrimaryMultilingual) {
-      return await generatePortugueseChunk(tts, chunkTextStr, primaryVoiceId, speedValue);
+      return await generatePortugueseChunk(tts, chunkTextStr, primaryVoiceId, effectiveSpeed);
     }
     return await tts.generate(chunkTextStr, {
       voice: primaryVoiceId,
-      speed: speedValue
+      speed: effectiveSpeed
     });
   }
 
@@ -2231,7 +2240,7 @@ async function generateChunkWithVoiceOrBlend(tts, chunkTextStr, primaryVoiceId, 
   const inputs = {
     input_ids,
     style: new TensorCtor("float32", mixedSlice, [1, STYLE_DIM]),
-    speed: new TensorCtor("float32", [speedValue], [1])
+    speed: new TensorCtor("float32", [effectiveSpeed], [1])
   };
 
   const { waveform } = await tts.model(inputs);
@@ -2458,6 +2467,8 @@ const SPEAKER_NAME_TO_VOICE = {
   "sarah": "af_sarah", "af_sarah": "af_sarah",
   "adam": "am_adam", "am_adam": "am_adam",
   "michael": "am_michael", "am_michael": "am_michael",
+  "puck": "am_puck", "am_puck": "am_puck",
+  "fenrir": "am_fenrir", "am_fenrir": "am_fenrir",
   "emma": "bf_emma", "bf_emma": "bf_emma",
   "isabella": "bf_isabella", "bf_isabella": "bf_isabella",
   "george": "bm_george", "bm_george": "bm_george",
