@@ -1241,7 +1241,7 @@ const masterUrl = URL.createObjectURL(blob);
 downloadBtn.href = masterUrl;
 const downloadSrtBtn = document.getElementById("downloadSrtBtn");
 if (downloadSrtBtn && srtContent) {
-if (localStorage.getItem("puretts_vip_verified") === "true") {
+if (isVipVerified()) {
 const srtBlob = new Blob([srtContent], { type: "text/plain;charset=utf-8" });
 downloadSrtBtn.href = URL.createObjectURL(srtBlob);
 downloadSrtBtn.setAttribute("download", "puretts_subtitles.srt");
@@ -1403,7 +1403,7 @@ if (voiceSelect) {
 voiceSelect.addEventListener("change", () => {
 triggerBackgroundPreload();
 const chosen = voiceSelect.value;
-if (VIP_VOICE_SET.has(chosen) && localStorage.getItem("puretts_vip_verified") !== "true") {
+if (VIP_VOICE_SET.has(chosen) && !isVipVerified()) {
 const optEl = voiceSelect.querySelector(`option[value="${chosen}"]`);
 const voiceLabel = optEl ? optEl.textContent.replace(/^🔒\s*/, "").replace(/\s*·\s*VIP\)/, ")") : chosen;
 voiceSelect.value = lastUnlockedVoice;
@@ -1420,8 +1420,25 @@ const blendVoiceSelect = document.getElementById("blendVoiceSelect");
 const blendWeightRange = document.getElementById("blendWeightRange");
 const blendWeightLabel = document.getElementById("blendWeightLabel");
 
+// Clear legacy boolean flags in localStorage so setting "true" in DevTools cannot unlock VIP
+localStorage.removeItem("puretts_supporter_unlocked");
+localStorage.removeItem("puretts_vip_verified");
+
+// Salted FNV-1a hash-verified VIP key check (raw key never appears in repository history)
+function verifyVipKeyHash(rawStr) {
+const s = String(rawStr || "").trim().toUpperCase();
+if (!s) return false;
+const salted = "PTTS_SALT_9921::" + s;
+let h1 = 0x811c9dc5;
+for (let i = 0; i < salted.length; i++) {
+h1 ^= salted.charCodeAt(i);
+h1 = Math.imul(h1, 0x01000193) >>> 0;
+}
+return h1 === 821146402;
+}
+
 function isVipVerified() {
-return localStorage.getItem("puretts_vip_verified") === "true";
+return verifyVipKeyHash(localStorage.getItem("puretts_vip_token"));
 }
 
 function promptVipUnlock(featureLabel, featureId) {
@@ -1560,21 +1577,6 @@ speed: selectedSpeed,
 id: Date.now()
 });
 });
-// Clear legacy false-positive click unlock key
-localStorage.removeItem("puretts_supporter_unlocked");
-
-// Salted FNV-1a hash-verified VIP key check (raw key never appears in repository history)
-function verifyVipKeyHash(rawStr) {
-const s = String(rawStr || "").trim().toUpperCase();
-if (!s) return false;
-const salted = "PTTS_SALT_9921::" + s;
-let h1 = 0x811c9dc5;
-for (let i = 0; i < salted.length; i++) {
-h1 ^= salted.charCodeAt(i);
-h1 = Math.imul(h1, 0x01000193) >>> 0;
-}
-return h1 === 821146402;
-}
 const openVipCodeBtn = document.getElementById("openVipCodeBtn");
 const vipKeyDrawer = document.getElementById("vipKeyDrawer");
 const vipKeyInput = document.getElementById("vipKeyInput");
@@ -1582,7 +1584,7 @@ const activateVipKeyBtn = document.getElementById("activateVipKeyBtn");
 const vipKeyStatusMsg = document.getElementById("vipKeyStatusMsg");
 
 function applyVipBadgeState() {
-const isVip = localStorage.getItem("puretts_vip_verified") === "true";
+const isVip = isVipVerified();
 const badge = document.getElementById("proStatusBadge");
 const srtBtn = document.getElementById("downloadSrtBtn");
 if (voiceSelect) {
@@ -1634,7 +1636,7 @@ try {
 const urlParams = new URLSearchParams(window.location.search);
 const supParam = (urlParams.get("supporter") || urlParams.get("vip") || "").trim().toUpperCase();
 if (verifyVipKeyHash(supParam)) {
-localStorage.setItem("puretts_vip_verified", "true");
+localStorage.setItem("puretts_vip_token", supParam);
 if (window.history && window.history.replaceState) {
 const cleanUrl = window.location.pathname + window.location.hash;
 window.history.replaceState({}, document.title, cleanUrl);
@@ -1658,7 +1660,7 @@ if (activateVipKeyBtn && vipKeyInput) {
 activateVipKeyBtn.addEventListener("click", () => {
 const code = vipKeyInput.value.trim().toUpperCase();
 if (verifyVipKeyHash(code)) {
-localStorage.setItem("puretts_vip_verified", "true");
+localStorage.setItem("puretts_vip_token", code);
 applyVipBadgeState();
 if (vipKeyStatusMsg) {
 vipKeyStatusMsg.style.display = "block";
@@ -1697,7 +1699,7 @@ const closeGratitudeBtn = document.getElementById("closeGratitudeBtn");
 const dismissGratitudeBtn = document.getElementById("dismissGratitudeBtn");
 function showGratitudeToast() {
 if (!gratitudeToast) return;
-if (localStorage.getItem("puretts_vip_verified") === "true") return;
+if (isVipVerified()) return;
 const lastDismissed = localStorage.getItem("puretts_tip_dismissed");
 if (lastDismissed && Date.now() - parseInt(lastDismissed, 10) < 12 * 60 * 60 * 1000) {
 return;
@@ -1709,7 +1711,7 @@ window.gtag("event", "gratitude_toast_shown", { page_type: "home" });
 }
 window.showCreatorSuiteToast = (featureName) => {
 if (!gratitudeToast) return;
-if (localStorage.getItem("puretts_vip_verified") === "true") return;
+if (isVipVerified()) return;
 const titleEl = gratitudeToast.querySelector(".gratitude-title");
 const bodyEl = gratitudeToast.querySelector(".gratitude-body");
 if (titleEl) titleEl.textContent = "🔒 Unlock VIP Creator Suite (.SRT, Voice Blender & 2-Speaker Dialogue)";

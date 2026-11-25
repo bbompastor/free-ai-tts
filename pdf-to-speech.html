@@ -1985,7 +1985,7 @@ Upload your PDF or click "Convert PDF to Speech" below to experience natural, ex
           downloadBtn.href = masterUrl;
           const downloadSrtBtn = document.getElementById("downloadSrtBtn");
           if (downloadSrtBtn && srtContent) {
-            if (localStorage.getItem("puretts_vip_verified") === "true") {
+            if (isVipVerified()) {
               const srtBlob = new Blob([srtContent], { type: "text/plain;charset=utf-8" });
               downloadSrtBtn.href = URL.createObjectURL(srtBlob);
               downloadSrtBtn.setAttribute("download", "puretts_pdf_subtitles.srt");
@@ -2263,7 +2263,7 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
     let lastUnlockedVoice = "af_heart";
 
     function syncPdfVipVoiceLabels() {
-      const isVip = localStorage.getItem("puretts_vip_verified") === "true";
+      const isVip = isVipVerified();
       if (!voiceSelect) return;
       voiceSelect.querySelectorAll('option[data-vip="true"]').forEach(opt => {
         if (!opt.dataset.origLabel) opt.dataset.origLabel = opt.textContent;
@@ -2279,7 +2279,7 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
       voiceSelect.addEventListener("change", () => {
         triggerBackgroundPreload();
         const chosen = voiceSelect.value;
-        if (VIP_VOICE_SET.has(chosen) && localStorage.getItem("puretts_vip_verified") !== "true") {
+        if (VIP_VOICE_SET.has(chosen) && !isVipVerified()) {
           const optEl = voiceSelect.querySelector(`option[value="${chosen}"]`);
           const voiceLabel = optEl ? optEl.textContent.replace(/^🔒\s*/, "").replace(/\s*·\s*VIP\)/, ")") : chosen;
           voiceSelect.value = lastUnlockedVoice;
@@ -2288,7 +2288,7 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
           }
           const entered = window.prompt(`🔒 ${voiceLabel} is a VIP Supporter voice!\n\nSupport PureTTS on Buy Me a Coffee (https://buymeacoffee.com/puretts) to receive your instant VIP Supporter Key in the thank-you message, or enter your key below:`);
           if (entered && typeof verifyVipKeyHash === "function" && verifyVipKeyHash(entered)) {
-            localStorage.setItem("puretts_vip_verified", "true");
+            localStorage.setItem("puretts_vip_token", entered.trim().toUpperCase());
             syncPdfVipVoiceLabels();
             voiceSelect.value = chosen;
             lastUnlockedVoice = chosen;
@@ -2388,11 +2388,16 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
       }
       return h1 === 821146402;
     }
+    function isVipVerified() {
+      return verifyVipKeyHash(localStorage.getItem("puretts_vip_token"));
+    }
     try {
+      localStorage.removeItem("puretts_vip_verified");
+      localStorage.removeItem("puretts_supporter_unlocked");
       const urlParams = new URLSearchParams(window.location.search);
       const supParam = (urlParams.get("supporter") || urlParams.get("vip") || "").trim().toUpperCase();
       if (verifyVipKeyHash(supParam)) {
-        localStorage.setItem("puretts_vip_verified", "true");
+        localStorage.setItem("puretts_vip_token", supParam);
         if (window.history && window.history.replaceState) {
           window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
         }
@@ -2402,13 +2407,13 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
 
     const downloadSrtBtnEl = document.getElementById("downloadSrtBtn");
     if (downloadSrtBtnEl) {
-      if (localStorage.getItem("puretts_vip_verified") !== "true") {
+      if (!isVipVerified()) {
         downloadSrtBtnEl.textContent = "🔒 Download .SRT Subtitles (VIP)";
         downloadSrtBtnEl.removeAttribute("href");
         downloadSrtBtnEl.removeAttribute("download");
       }
       downloadSrtBtnEl.addEventListener("click", (e) => {
-        const isVip = localStorage.getItem("puretts_vip_verified") === "true";
+        const isVip = isVipVerified();
         if (typeof window.gtag === "function") {
           window.gtag("event", "srt_download", { supporter: isVip, page_type: "pdf_to_speech" });
         }
@@ -2416,7 +2421,8 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
           e.preventDefault();
           const entered = window.prompt("🔒 Synced .SRT Subtitle Export is a VIP Supporter feature!\n\nSupport PureTTS on Buy Me a Coffee (https://buymeacoffee.com/puretts) to receive your instant VIP Supporter Key in the thank-you message, or enter your key below:");
           if (entered && verifyVipKeyHash(entered)) {
-            localStorage.setItem("puretts_vip_verified", "true");
+            localStorage.setItem("puretts_vip_token", entered.trim().toUpperCase());
+            syncPdfVipVoiceLabels();
             downloadSrtBtnEl.textContent = "📝 Download .SRT Subtitles";
             if (window.__latestSrtContent) {
               const srtBlob = new Blob([window.__latestSrtContent], { type: "text/plain;charset=utf-8" });
@@ -2436,7 +2442,7 @@ The Recipient agrees that all proprietary information, algorithms, and source ma
         if (typeof window.gtag === "function") {
           window.gtag("event", "wav_download", { page_type: "pdf_to_speech" });
         }
-        if (localStorage.getItem("puretts_vip_verified") !== "true") {
+        if (!isVipVerified()) {
           setTimeout(showGratitudeToast, 600);
         }
       });
