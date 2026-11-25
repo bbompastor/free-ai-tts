@@ -82,8 +82,8 @@
       </div>
       <div class="nav-badges">
         <span class="badge badge-free badge-hide-mobile">⚡ 100% Free</span>
-        <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="btn-coffee-nav">
-          ☕ Support
+        <a href="https://buy.stripe.com/dRm7sNdsFe2b1mw5QRaEE00" target="_blank" rel="noopener" class="btn-coffee-nav" title="Support PureTTS &amp; Unlock VIP Creator Suite (Apple Pay / Card - 0% Platform Fee)">
+          ⭐ Unlock VIP / Support
         </a>
       </div>
     </div>
@@ -310,12 +310,13 @@ Paste your script, article, or study notes here, choose your preferred voice, an
         <div id="vipKeyDrawer" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
           <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
             <div style="font-size: 0.8rem; color: #cbd5e1; flex: 1; min-width: 220px;">
-              <strong>☕ Have a Buy Me a Coffee Supporter Key?</strong> Enter the key from your supporter receipt to activate <strong>⭐ VIP Supporter</strong> status and disable supporter reminder popups:
+              <strong>⭐ Unlock VIP Automatically or Enter a Key:</strong> Pay via <strong>Direct Checkout (Apple Pay / Card)</strong> for automatic 1-click VIP activation, or enter a Buy Me a Coffee supporter key below:
             </div>
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <input type="password" id="vipKeyInput" placeholder="Enter your supporter key..." style="padding: 7px 12px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--card-inner); color: #fff; font-size: 0.82rem; width: 195px; outline: none;" />
-              <button type="button" id="activateVipKeyBtn" class="btn-pdf-action" style="padding: 7px 14px;">Activate VIP</button>
-              <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" style="font-size: 0.78rem; color: #fde047; font-weight: 700; text-decoration: underline;">Get a Key →</a>
+              <a href="https://buy.stripe.com/dRm7sNdsFe2b1mw5QRaEE00" target="_blank" rel="noopener" style="padding: 7px 14px; border-radius: 8px; background: linear-gradient(135deg, #facc15, #f59e0b); color: #090e1a; font-size: 0.8rem; font-weight: 800; text-decoration: none; white-space: nowrap;">⚡ Instant VIP Checkout →</a>
+              <input type="password" id="vipKeyInput" placeholder="Or enter supporter key..." style="padding: 7px 12px; border-radius: 8px; border: 1px solid var(--card-border); background: var(--card-inner); color: #fff; font-size: 0.82rem; width: 175px; outline: none;" />
+              <button type="button" id="activateVipKeyBtn" class="btn-pdf-action" style="padding: 7px 12px;">Activate</button>
+              <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" style="font-size: 0.74rem; color: #94a3b8; text-decoration: underline;" title="Alternative: Support via Buy Me a Coffee">BMAC</a>
             </div>
           </div>
           <div id="vipKeyStatusMsg" style="margin-top: 6px; font-size: 0.78rem; display: none;"></div>
@@ -384,8 +385,8 @@ Paste your script, article, or study notes here, choose your preferred voice, an
         </div>
         <audio id="audioPlayer" controls></audio>
         <div class="audio-actions" style="flex-wrap: wrap;">
-          <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="btn-tip" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: rgba(250, 204, 21, 0.12); border: 1px solid rgba(250, 204, 21, 0.4); border-radius: 8px; color: #fde047; text-decoration: none; font-size: 0.9rem; font-weight: 700;">
-            ☕ Support PureTTS
+          <a href="https://buy.stripe.com/dRm7sNdsFe2b1mw5QRaEE00" target="_blank" rel="noopener" class="btn-tip" style="display: inline-flex; align-items: center; gap: 6px; padding: 10px 16px; background: rgba(250, 204, 21, 0.12); border: 1px solid rgba(250, 204, 21, 0.4); border-radius: 8px; color: #fde047; text-decoration: none; font-size: 0.9rem; font-weight: 700;">
+            ⭐ Unlock VIP / Support
           </a>
           <a id="downloadSrtBtn" href="#" class="btn-download" download="puretts_subtitles.srt" style="display: none; background: linear-gradient(135deg, #06b6d4, #0284c7);" title="Download synced .SRT captions for Premiere Pro, CapCut, DaVinci Resolve & YouTube">
             📝 Download .SRT Subtitles
@@ -741,7 +742,8 @@ Paste your script, article, or study notes here, choose your preferred voice, an
       <a href="privacy.html">Privacy Policy</a>
       <a href="terms.html">Terms of Service</a>
       <a href="https://github.com/bbompastor/free-ai-tts/issues" target="_blank" rel="noopener">Contact &amp; Support</a>
-      <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener">☕ Support This Project</a>
+      <a href="https://buy.stripe.com/dRm7sNdsFe2b1mw5QRaEE00" target="_blank" rel="noopener">⭐ Unlock VIP / Support</a>
+      <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener">☕ Buy Me a Coffee</a>
     </div>
     <p>© 2026 PureTTS. Free, 100% private in-browser text-to-speech for everyone.</p>
   </footer>
@@ -1452,7 +1454,7 @@ setTimeout(() => vipKeyInput.focus(), 150);
 if (vipKeyStatusMsg) {
 vipKeyStatusMsg.style.display = "block";
 vipKeyStatusMsg.style.color = "#fde047";
-vipKeyStatusMsg.innerHTML = `🔒 <strong>${featureLabel}</strong> is a VIP Supporter feature! <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" style="color:#ffffff;text-decoration:underline;font-weight:700;">Support PureTTS on Buy Me a Coffee →</a> to receive your instant VIP Supporter Key in the thank-you receipt.`;
+vipKeyStatusMsg.innerHTML = `🔒 <strong>${featureLabel}</strong> is a VIP Supporter feature! <a href="https://buy.stripe.com/dRm7sNdsFe2b1mw5QRaEE00" target="_blank" rel="noopener" style="color:#ffffff;text-decoration:underline;font-weight:700;">⚡ Click here for Instant VIP Checkout (Apple Pay / Card) →</a> (unlocks automatically after payment) or enter a key above.`;
 }
 if (typeof window.showCreatorSuiteToast === "function") {
 window.showCreatorSuiteToast(featureId || "vip_lock");
@@ -1681,7 +1683,7 @@ vipKeyStatusMsg.textContent = "Invalid Supporter Key. Check your Buy Me a Coffee
 });
 }
 
-document.querySelectorAll('a[href*="buymeacoffee.com"]').forEach(link => {
+document.querySelectorAll('a[href*="buymeacoffee.com"], a[href*="buy.stripe.com"]').forEach(link => {
 link.addEventListener("click", () => {
 if (typeof window.gtag === "function") {
 let placement = "other";
@@ -1689,8 +1691,10 @@ if (link.classList.contains("btn-coffee-nav")) placement = "nav";
 else if (link.classList.contains("btn-tip")) placement = "audio_player";
 else if (link.classList.contains("btn-gratitude-coffee")) placement = "gratitude_toast";
 else if (link.classList.contains("floating-coffee")) placement = "floating_button";
+else if (link.closest("#vipKeyDrawer")) placement = "vip_drawer";
 else if (link.closest("footer")) placement = "footer";
-window.gtag("event", "bmac_support_click", { page_type: "home", placement: placement });
+const provider = link.href.includes("buy.stripe.com") ? "stripe_direct" : "bmac";
+window.gtag("event", "bmac_support_click", { page_type: "home", placement: placement, provider: provider });
 }
 });
 });
@@ -1715,7 +1719,7 @@ if (isVipVerified()) return;
 const titleEl = gratitudeToast.querySelector(".gratitude-title");
 const bodyEl = gratitudeToast.querySelector(".gratitude-body");
 if (titleEl) titleEl.textContent = "🔒 Unlock VIP Creator Suite (.SRT, Voice Blender & 2-Speaker Dialogue)";
-if (bodyEl) bodyEl.innerHTML = "Support PureTTS with a coffee on <strong>Buy Me a Coffee</strong> to immediately receive your <strong>VIP Supporter Key</strong> in the thank-you receipt—unlocking synced <code>.SRT</code> subtitles, 2-speaker podcast dialogue, and custom 256-D voice blending forever!";
+if (bodyEl) bodyEl.innerHTML = "Complete a quick supporter checkout via <strong>Apple Pay, Google Pay, or Card</strong> to <strong>automatically unlock VIP Supporter status</strong>—giving you all 33+ neural voices, synced <code>.SRT</code> subtitles, 2-speaker podcast dialogue, and custom 256-D voice blending forever!";
 gratitudeToast.classList.add("show");
 if (typeof window.gtag === "function") {
 window.gtag("event", "gratitude_toast_shown", { page_type: "home", trigger: featureName });
@@ -1740,23 +1744,23 @@ if (dismissGratitudeBtn) dismissGratitudeBtn.addEventListener("click", hideGrati
   <!-- Post-Generation & Download Gratitude Toast -->
   <div id="gratitudeToast" class="gratitude-toast">
     <div class="gratitude-header">
-      <span class="gratitude-title">☕ Saved You a Cloud TTS Subscription?</span>
+      <span class="gratitude-title">⭐ Saved You a Cloud TTS Subscription?</span>
       <button type="button" class="gratitude-close" id="closeGratitudeBtn" aria-label="Close notification">✕</button>
     </div>
     <p class="gratitude-body">
-      Cloud voice generators charge <strong>$139–$264/year</strong> for character limits and commercial rights. PureTTS gives you unlimited 24kHz WAV studio audio 100% free. If it helped your project or studies today, consider fueling our open-source development!
+      Cloud voice generators charge <strong>$139–$264/year</strong> for character limits and commercial rights. PureTTS gives you unlimited 24kHz WAV studio audio 100% free. Support our open-source development to automatically unlock all <strong>VIP Creator Suite</strong> features!
     </p>
     <div class="gratitude-actions" style="flex-wrap: wrap;">
-      <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="btn-gratitude-coffee">
-        ☕ Support PureTTS (Buy Me a Coffee) →
+      <a href="https://buy.stripe.com/dRm7sNdsFe2b1mw5QRaEE00" target="_blank" rel="noopener" class="btn-gratitude-coffee">
+        ⚡ Unlock VIP &amp; Support (Apple Pay / Card) →
       </a>
       <button type="button" class="btn-gratitude-dismiss" id="dismissGratitudeBtn">Maybe Later</button>
     </div>
   </div>
 
-  <!-- Floating Buy Me a Coffee Badge -->
-  <a href="https://buymeacoffee.com/puretts" target="_blank" rel="noopener" class="floating-coffee" title="Support PureTTS on Buy Me a Coffee">
-    <span>☕</span> Buy me a coffee
+  <!-- Floating VIP / Support Badge -->
+  <a href="https://buy.stripe.com/dRm7sNdsFe2b1mw5QRaEE00" target="_blank" rel="noopener" class="floating-coffee" title="Support PureTTS &amp; Unlock VIP Creator Suite">
+    <span>⭐</span> Unlock VIP / Support
   </a>
   <script src="js/feedback.js" defer></script>
 </body>
